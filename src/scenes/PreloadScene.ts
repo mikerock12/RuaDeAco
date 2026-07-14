@@ -43,7 +43,7 @@ export class PreloadScene extends Phaser.Scene {
     );
 
     this.load.on('progress', (progress: number) => {
-      this.loadingFill?.setDisplaySize(Math.max(1, Math.round(136 * progress)), 4);
+      this.loadingFill?.setDisplaySize(Math.max(1, Math.round(272 * progress)), 8);
     });
     this.load.on('loaderror', (file: Phaser.Loader.File) => {
       this.loadFailures.add(file.key);
@@ -70,10 +70,10 @@ export class PreloadScene extends Phaser.Scene {
 
     console.info(`[Rua de Aço] ${REQUIRED_TEXTURE_KEYS.length} texturas visuais validadas.`);
     this.children.removeAll();
-    this.add.image(INTERNAL_WIDTH / 2, 78, ASSET_MANIFEST.logo.key)
-      .setDisplaySize(132, 99)
+    this.add.image(INTERNAL_WIDTH / 2, 156, ASSET_MANIFEST.logo.key)
+      .setDisplaySize(264, 198)
       .setOrigin(0.5);
-    this.add.bitmapText(INTERNAL_WIDTH / 2, 145, ASSET_MANIFEST.font.key, 'ASSETS OK', 8)
+    this.add.bitmapText(INTERNAL_WIDTH / 2, 290, ASSET_MANIFEST.font.key, 'ASSETS OK', 16)
       .setOrigin(0.5)
       .setTint(PALETTE.cyanLight);
     this.time.delayedCall(220, () => this.scene.start('MainMenuScene'));
@@ -81,35 +81,35 @@ export class PreloadScene extends Phaser.Scene {
 
   private drawLoadingScreen(): void {
     this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink);
-    for (let y = 0; y < INTERNAL_HEIGHT; y += 4) {
-      this.add.rectangle(INTERNAL_WIDTH / 2, y, INTERNAL_WIDTH, 1, PALETTE.black, 0.32).setOrigin(0.5, 0);
+    for (let y = 0; y < INTERNAL_HEIGHT; y += 8) {
+      this.add.rectangle(INTERNAL_WIDTH / 2, y, INTERNAL_WIDTH, 2, PALETTE.black, 0.32).setOrigin(0.5, 0);
     }
-    this.add.rectangle(INTERNAL_WIDTH / 2, 94, 144, 10, PALETTE.steelDark)
-      .setStrokeStyle(1, PALETTE.steelLight);
-    this.loadingFill = this.add.rectangle(90, 94, 1, 4, PALETTE.cyan)
+    this.add.rectangle(INTERNAL_WIDTH / 2, 188, 288, 20, PALETTE.steelDark)
+      .setStrokeStyle(2, PALETTE.steelLight);
+    this.loadingFill = this.add.rectangle(180, 188, 1, 8, PALETTE.cyan)
       .setOrigin(0, 0.5);
   }
 
   private showDebugFailure(missing: readonly string[], fontMissing: boolean): void {
     this.children.removeAll();
     this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 88, 304, 164, PALETTE.panel)
-      .setStrokeStyle(2, PALETTE.danger);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 176, 608, 328, PALETTE.panel)
+      .setStrokeStyle(4, PALETTE.danger);
 
     const addLine = (y: number, text: string, tint: number): void => {
       if (!fontMissing) {
-        this.add.bitmapText(12, y, ASSET_MANIFEST.font.key, text, 8).setTint(tint);
+        this.add.bitmapText(24, y, ASSET_MANIFEST.font.key, text, 16).setTint(tint);
         return;
       }
-      this.add.text(12, y, text, {
+      this.add.text(24, y, text, {
         color: '#ffffff',
         fontFamily: 'monospace',
-        fontSize: '8px',
+        fontSize: '16px',
       }).setResolution(1);
     };
 
-    addLine(12, 'ERRO DE ASSET', PALETTE.danger);
-    missing.slice(0, 16).forEach((key, index) => addLine(28 + index * 8, `- ${key}`, PALETTE.ivory));
-    addLine(164, 'CONSULTE O CONSOLE', PALETTE.gold);
+    addLine(24, 'ERRO DE ASSET', PALETTE.danger);
+    missing.slice(0, 16).forEach((key, index) => addLine(56 + index * 16, `- ${key}`, PALETTE.ivory));
+    addLine(328, 'CONSULTE O CONSOLE', PALETTE.gold);
   }
 }

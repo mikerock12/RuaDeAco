@@ -13,30 +13,33 @@ const files: Readonly<Record<FighterAnimationId, string>> = {
   victory: 'victory.png',
 };
 
+const FRAME_SIZE = 192;
+
 function animation(id: FighterAnimationId, frameRate: number, repeat: number): FighterAnimationAsset {
   return {
     id,
     key: `rafa-mare-${id}`,
     path: `assets/fighters/rafa-mare/${files[id]}`,
-    frameWidth: 96,
-    frameHeight: 96,
+    frameWidth: FRAME_SIZE,
+    frameHeight: FRAME_SIZE,
     frames: 4,
     frameRate,
     repeat,
   };
 }
 
+// Rushdown ágil: corpo atlético ~176px de altura em frames 192x192.
 export const rafaMareSpriteAsset: FighterSpriteAsset = {
   fighterId: 'rafa-mare',
-  frameWidth: 96,
-  frameHeight: 96,
+  frameWidth: FRAME_SIZE,
+  frameHeight: FRAME_SIZE,
   origin: { x: 0.5, y: 1 },
   scale: 1,
-  visualOffset: { x: 0, y: 2 },
-  hitboxGuide: [{ x: 8, y: -58, width: 42, height: 28 }],
+  visualOffset: { x: 0, y: 4 },
+  hitboxGuide: [{ x: 16, y: -116, width: 84, height: 56 }],
   hurtboxGuide: [
-    { x: -11, y: -68, width: 22, height: 22 },
-    { x: -15, y: -47, width: 30, height: 47 },
+    { x: -22, y: -136, width: 44, height: 44 },
+    { x: -30, y: -94, width: 60, height: 94 },
   ],
   animations: {
     idle: animation('idle', 6, -1),

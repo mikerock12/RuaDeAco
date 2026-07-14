@@ -1,11 +1,17 @@
 import type { LocalRect } from '../types/combat';
 
-export const INTERNAL_WIDTH = 320;
-export const INTERNAL_HEIGHT = 180;
-export const WORLD_TO_SCREEN = 0.5;
-export const DEFAULT_SPRITE_SIZE = 96;
-export const PORTRAIT_SIZE = 48;
-export const VISUAL_GROUND_Y = 152;
+export const INTERNAL_WIDTH = 640;
+export const INTERNAL_HEIGHT = 360;
+// A apresentação principal é 1280x720 (escala inteira exata de 2x via Scale.FIT).
+export const PRESENTATION_WIDTH = 1280;
+export const PRESENTATION_HEIGHT = 720;
+// Mundo de combate e tela compartilham o mesmo espaço 640x360.
+export const WORLD_TO_SCREEN = 1;
+export const DEFAULT_SPRITE_SIZE = 192;
+export const PORTRAIT_SIZE = 96;
+export const VISUAL_GROUND_Y = 304;
+// Assets rasterizados em 320x180 (palco, HUD, efeitos) são exibidos em 2x inteiro.
+export const RASTER_ASSET_SCALE = 2;
 
 export const PALETTE = {
   black: 0x02040a,

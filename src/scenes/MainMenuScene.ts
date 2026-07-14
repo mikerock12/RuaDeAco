@@ -26,7 +26,8 @@ interface MenuRow {
   readonly label: Phaser.GameObjects.BitmapText;
 }
 
-const MENU_WIDTH = 178;
+const MENU_WIDTH = 356;
+const STAGE_LAYER_SCALE = 2;
 
 function pressedIn(frames: readonly InputFrame[], action: InputAction): boolean {
   return frames.some((frame) => frame.pressed.has(action));
@@ -64,12 +65,12 @@ export class MainMenuScene extends Phaser.Scene {
     });
 
     const settings = settingsStore.get();
-    pixelText(this, 3, INTERNAL_HEIGHT - 4, `V ${settings.wins}  D ${settings.losses}`, {
-      size: 8,
+    pixelText(this, 8, INTERNAL_HEIGHT - 12, `V ${settings.wins}  D ${settings.losses}`, {
+      size: 16,
       color: '#8796ae',
     });
-    pixelText(this, INTERNAL_WIDTH - 3, INTERNAL_HEIGHT - 4, 'W/S  ENTER/F', {
-      size: 8,
+    pixelText(this, INTERNAL_WIDTH - 8, INTERNAL_HEIGHT - 12, 'W/S  ENTER/F', {
+      size: 16,
       color: '#9af7ff',
       align: 'right',
     });
@@ -96,64 +97,64 @@ export class MainMenuScene extends Phaser.Scene {
 
   private drawBackdrop(): void {
     const { stage } = ASSET_MANIFEST;
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.far.key);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.mid.key);
-    this.add.sprite(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.water.key, 1);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.foreground.key);
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.far.key).setScale(STAGE_LAYER_SCALE);
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.mid.key).setScale(STAGE_LAYER_SCALE);
+    this.add.sprite(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.water.key, 1).setScale(STAGE_LAYER_SCALE);
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.foreground.key).setScale(STAGE_LAYER_SCALE);
     this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink, 0.5);
     const scanlines = this.add.graphics();
     scanlines.fillStyle(PALETTE.black, 0.24);
-    for (let y = 1; y < INTERNAL_HEIGHT; y += 3) scanlines.fillRect(0, y, INTERNAL_WIDTH, 1);
+    for (let y = 2; y < INTERNAL_HEIGHT; y += 6) scanlines.fillRect(0, y, INTERNAL_WIDTH, 2);
   }
 
   private drawLogo(): void {
     const logoKey = ASSET_MANIFEST.logo.key;
     if (this.textures.exists(logoKey)) {
-      this.add.image(INTERNAL_WIDTH / 2, 23, logoKey)
-        .setDisplaySize(66, 50)
+      this.add.image(INTERNAL_WIDTH / 2, 46, logoKey)
+        .setDisplaySize(132, 100)
         .setOrigin(0.5);
     } else {
-      pixelText(this, INTERNAL_WIDTH / 2, 20, 'LOGO AUSENTE', {
-        size: 8,
+      pixelText(this, INTERNAL_WIDTH / 2, 40, 'LOGO AUSENTE', {
+        size: 16,
         color: '#f64070',
         align: 'center',
       });
     }
 
-    pixelText(this, INTERNAL_WIDTH / 2, 50, 'A CIDADE LUTA DE VOLTA', {
-      size: 8,
+    pixelText(this, INTERNAL_WIDTH / 2, 100, 'A CIDADE LUTA DE VOLTA', {
+      size: 16,
       color: '#ffd55c',
       align: 'center',
     });
-    this.add.rectangle(INTERNAL_WIDTH / 2, 56, 112, 1, PALETTE.cyan, 1);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 112, 224, 2, PALETTE.cyan, 1);
   }
 
   private drawRosterGallery(): void {
     FIGHTERS.forEach((fighter, index) => {
       const isLeft = index < 3;
       const slot = index % 3;
-      const x = isLeft ? 19 : INTERNAL_WIDTH - 19;
-      const y = 70 + slot * 36;
+      const x = isLeft ? 38 : INTERNAL_WIDTH - 38;
+      const y = 140 + slot * 72;
       const concept = ASSET_MANIFEST.concepts[fighter.id];
 
       if (this.textures.exists(concept.key)) {
-        createConceptPortrait(this, x, y, fighter.id, 34, 30, {
+        createConceptPortrait(this, x, y, fighter.id, 68, 60, {
           crop: 'framed',
           locked: !fighter.available,
           frameColor: fighter.available ? fighter.visual.accent : PALETTE.muted,
         });
       } else {
-        this.add.rectangle(x, y, 34, 30, PALETTE.panel, 1)
-          .setStrokeStyle(1, PALETTE.pink);
+        this.add.rectangle(x, y, 68, 60, PALETTE.panel, 1)
+          .setStrokeStyle(2, PALETTE.pink);
         pixelText(this, x, y, 'SEM\nIMAGEM', {
-          size: 8,
+          size: 16,
           color: '#f64070',
           align: 'center',
         });
       }
 
-      pixelText(this, x, y + 18, fighter.name.split(' ')[0] ?? fighter.name, {
-        size: 8,
+      pixelText(this, x, y + 36, fighter.name.split(' ')[0] ?? fighter.name, {
+        size: 16,
         color: fighter.available ? '#f7f2d0' : '#73829b',
         align: 'center',
       });
@@ -179,20 +180,20 @@ export class MainMenuScene extends Phaser.Scene {
     this.entries = entries;
     this.selectedIndex = Phaser.Math.Clamp(this.selectedIndex, 0, entries.length - 1);
 
-    const spacing = entries.length > 5 ? 15 : 17;
-    const startY = entries.length > 5 ? 63 : 64;
+    const spacing = entries.length > 5 ? 30 : 34;
+    const startY = entries.length > 5 ? 126 : 128;
     entries.forEach((entry, index) => {
       const y = startY + index * spacing;
-      const background = this.add.rectangle(INTERNAL_WIDTH / 2, y, MENU_WIDTH, 13, PALETTE.panel, 1)
-        .setStrokeStyle(1, PALETTE.metalLight)
+      const background = this.add.rectangle(INTERNAL_WIDTH / 2, y, MENU_WIDTH, 26, PALETTE.panel, 1)
+        .setStrokeStyle(2, PALETTE.metalLight)
         .setInteractive({ useHandCursor: true });
-      const marker = pixelText(this, 82, y, '>', {
-        size: 8,
+      const marker = pixelText(this, 164, y, '>', {
+        size: 16,
         color: '#ffd55c',
         align: 'center',
       });
       const label = pixelText(this, INTERNAL_WIDTH / 2, y, entry.label, {
-        size: 8,
+        size: 16,
         color: '#f7f2d0',
         align: 'center',
       });
@@ -226,7 +227,7 @@ export class MainMenuScene extends Phaser.Scene {
       const selected = index === this.selectedIndex;
       row.background
         .setFillStyle(selected ? PALETTE.panelLight : PALETTE.panel, 1)
-        .setStrokeStyle(1, selected ? PALETTE.cyan : PALETTE.metalLight);
+        .setStrokeStyle(2, selected ? PALETTE.cyan : PALETTE.metalLight);
       row.marker.setVisible(selected);
       row.label.setTint(selected ? PALETTE.ivory : PALETTE.muted);
     });

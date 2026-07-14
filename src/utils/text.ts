@@ -17,6 +17,12 @@ function tintFrom(color: string | number | undefined): number {
   return Phaser.Display.Color.HexStringToColor(color).color;
 }
 
+// A fonte bitmap não possui glifos acentuados; remove diacríticos
+// para evitar caracteres trocados (ex.: 'É' renderizado errado).
+export function toPixelFontText(text: string): string {
+  return text.normalize('NFD').replace(/[̀-ͯ]/gu, '');
+}
+
 export function pixelText(
   scene: Phaser.Scene,
   x: number,
@@ -29,8 +35,8 @@ export function pixelText(
     Math.round(x),
     Math.round(y),
     ASSET_MANIFEST.font.key,
-    text,
-    options.size ?? 8,
+    toPixelFontText(text),
+    options.size ?? 16,
   );
   bitmap
     .setOrigin(align === 'center' ? 0.5 : align === 'right' ? 1 : 0, 0.5)

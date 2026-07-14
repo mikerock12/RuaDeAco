@@ -6,7 +6,7 @@ import { FixedStepRunner } from '../combat/FixedStepRunner';
 import { toWorldRect } from '../combat/geometry';
 import { gameSession } from '../config/session';
 import { settingsStore } from '../config/settings';
-import { worldRectToScreen, worldToScreen } from '../config/pixelArtConfig';
+import { RASTER_ASSET_SCALE, worldRectToScreen, worldToScreen } from '../config/pixelArtConfig';
 import { getFighterDefinition } from '../fighters';
 import { inputManager } from '../input/InputManager';
 import { touchControls } from '../input/TouchControls';
@@ -118,7 +118,7 @@ export class FightScene extends Phaser.Scene {
         audioManager.play('special');
         const freeze = event.cinematic === 'freeze';
         this.cameras.main.flash(110, freeze ? 168 : 90, freeze ? 233 : 210, 255);
-        this.cameras.main.setScroll(event.attacker === this.world.fighters[0].id ? -2 : 2, 0);
+        this.cameras.main.setScroll(event.attacker === this.world.fighters[0].id ? -4 : 4, 0);
         this.time.delayedCall(freeze ? 120 : 80, () => this.cameras.main.setScroll(0, 0));
       }
     }
@@ -178,7 +178,9 @@ export class FightScene extends Phaser.Scene {
 
   private drawProjectiles(snapshot: ReturnType<CombatWorld['snapshot']>): void {
     while (this.projectileSprites.length < snapshot.projectiles.length) {
-      this.projectileSprites.push(this.add.sprite(0, 0, 'effectWave', 0).setDepth(18));
+      this.projectileSprites.push(
+        this.add.sprite(0, 0, 'effectWave', 0).setScale(RASTER_ASSET_SCALE).setDepth(18),
+      );
     }
     this.projectileSprites.forEach((sprite, index) => {
       const projectile = snapshot.projectiles[index];

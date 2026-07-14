@@ -74,16 +74,16 @@ export class SettingsScene extends Phaser.Scene {
     inputManager.clear();
 
     this.drawBackdrop();
-    pixelText(this, INTERNAL_WIDTH / 2, 14, 'CONFIGURACOES', { size: 16, align: 'center' })
+    pixelText(this, INTERNAL_WIDTH / 2, 28, 'CONFIGURACOES', { size: 32, align: 'center' })
       .setTint(PALETTE.ivory);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 25, 150, 2, PALETTE.gold);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 27, 190, 1, PALETTE.cyan);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 50, 300, 4, PALETTE.gold);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 54, 380, 2, PALETTE.cyan);
 
     SETTINGS_ENTRIES.forEach((entry, index) => this.createRow(entry, index));
     this.refreshRows();
 
-    pixelText(this, INTERNAL_WIDTH / 2, 173, 'W/S ITEM  A/D ALTERA  ESC VOLTA', {
-      size: 8,
+    pixelText(this, INTERNAL_WIDTH / 2, 346, 'W/S ITEM  A/D ALTERA  ESC VOLTA', {
+      size: 16,
       align: 'center',
     }).setTint(PALETTE.cyanLight);
 
@@ -114,13 +114,13 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   private createRow(entry: SettingEntry, index: number): void {
-    const y = 36 + index * 14;
-    const background = this.add.rectangle(INTERNAL_WIDTH / 2, y, 282, 12, PALETTE.metalDark)
-      .setStrokeStyle(1, PALETTE.steelDark)
+    const y = 72 + index * 28;
+    const background = this.add.rectangle(INTERNAL_WIDTH / 2, y, 564, 24, PALETTE.metalDark)
+      .setStrokeStyle(2, PALETTE.steelDark)
       .setInteractive({ useHandCursor: true });
-    const marker = pixelText(this, 22, y, '>', { size: 8, align: 'center' }).setTint(PALETTE.gold);
-    const label = pixelText(this, 30, y, entry.label, { size: 8 }).setTint(PALETTE.steelLight);
-    const value = pixelText(this, 298, y, '', { size: 8, align: 'right' }).setTint(PALETTE.cyanLight);
+    const marker = pixelText(this, 44, y, '>', { size: 16, align: 'center' }).setTint(PALETTE.gold);
+    const label = pixelText(this, 60, y, entry.label, { size: 16 }).setTint(PALETTE.steelLight);
+    const value = pixelText(this, 596, y, '', { size: 16, align: 'right' }).setTint(PALETTE.cyanLight);
 
     background.on('pointerover', () => this.setSelected(index));
     background.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -142,24 +142,24 @@ export class SettingsScene extends Phaser.Scene {
       PALETTE.ink,
     );
 
-    this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, 306, 172, PALETTE.panel)
-      .setStrokeStyle(2, PALETTE.steelLight);
-    this.add.image(INTERNAL_WIDTH / 2, 97, ASSET_MANIFEST.ui.panel.key).setScale(2);
+    this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, 612, 344, PALETTE.panel)
+      .setStrokeStyle(4, PALETTE.steelLight);
+    this.add.image(INTERNAL_WIDTH / 2, 194, ASSET_MANIFEST.ui.panel.key).setScale(4);
 
     const corners = this.add.graphics();
     corners.fillStyle(PALETTE.gold);
-    corners.fillRect(5, 4, 18, 2);
-    corners.fillRect(5, 4, 2, 18);
-    corners.fillRect(297, 4, 18, 2);
-    corners.fillRect(313, 4, 2, 18);
-    corners.fillRect(5, 174, 18, 2);
-    corners.fillRect(5, 158, 2, 18);
-    corners.fillRect(297, 174, 18, 2);
-    corners.fillRect(313, 158, 2, 18);
+    corners.fillRect(10, 8, 36, 4);
+    corners.fillRect(10, 8, 4, 36);
+    corners.fillRect(594, 8, 36, 4);
+    corners.fillRect(626, 8, 4, 36);
+    corners.fillRect(10, 348, 36, 4);
+    corners.fillRect(10, 316, 4, 36);
+    corners.fillRect(594, 348, 36, 4);
+    corners.fillRect(626, 316, 4, 36);
 
     const scanlines = this.add.graphics();
     scanlines.fillStyle(PALETTE.black, 0.15);
-    for (let y = 1; y < INTERNAL_HEIGHT; y += 4) scanlines.fillRect(0, y, INTERNAL_WIDTH, 1);
+    for (let y = 2; y < INTERNAL_HEIGHT; y += 8) scanlines.fillRect(0, y, INTERNAL_WIDTH, 2);
   }
 
   private moveSelection(delta: number): void {
@@ -249,7 +249,7 @@ export class SettingsScene extends Phaser.Scene {
       const entry = SETTINGS_ENTRIES[index];
       row.background
         .setFillStyle(selected ? PALETTE.panelLight : PALETTE.metalDark)
-        .setStrokeStyle(selected ? 2 : 1, selected ? PALETTE.gold : PALETTE.steelDark);
+        .setStrokeStyle(selected ? 4 : 2, selected ? PALETTE.gold : PALETTE.steelDark);
       row.marker.setVisible(selected);
       row.label.setTint(selected ? PALETTE.ivory : PALETTE.steelLight);
       row.value.setTint(selected ? PALETTE.gold : PALETTE.cyanLight);

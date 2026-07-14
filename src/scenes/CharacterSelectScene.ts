@@ -72,21 +72,21 @@ export class CharacterSelectScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(PALETTE.ink);
     this.drawBackdrop();
 
-    pixelText(this, INTERNAL_WIDTH / 2, 7, 'SELECAO DE LUTADORES', {
-      size: 8,
+    pixelText(this, INTERNAL_WIDTH / 2, 16, 'SELECAO DE LUTADORES', {
+      size: 16,
       color: '#ffd55c',
       align: 'center',
     });
-    this.phaseTitle = pixelText(this, INTERNAL_WIDTH / 2, 19, '', {
-      size: 8,
+    this.phaseTitle = pixelText(this, INTERNAL_WIDTH / 2, 38, '', {
+      size: 16,
       color: '#9af7ff',
       align: 'center',
     });
 
     this.selectionLayer = this.add.container(0, 0);
     this.arenaLayer = this.add.container(0, 0).setVisible(false);
-    this.footerText = pixelText(this, INTERNAL_WIDTH / 2, INTERNAL_HEIGHT - 5, '', {
-      size: 8,
+    this.footerText = pixelText(this, INTERNAL_WIDTH / 2, INTERNAL_HEIGHT - 10, '', {
+      size: 16,
       color: '#aebbd0',
       align: 'center',
     });
@@ -127,12 +127,12 @@ export class CharacterSelectScene extends Phaser.Scene {
   }
 
   private createBackButton(): void {
-    const background = this.add.rectangle(22, 8, 40, 12, PALETTE.panel, 1)
-      .setStrokeStyle(1, PALETTE.cyan)
+    const background = this.add.rectangle(52, 16, 88, 24, PALETTE.panel, 1)
+      .setStrokeStyle(2, PALETTE.cyan)
       .setInteractive({ useHandCursor: true })
       .setDepth(100);
-    pixelText(this, 22, 8, '< VOLTAR', {
-      size: 8,
+    pixelText(this, 52, 16, '< VOLTAR', {
+      size: 16,
       color: '#9af7ff',
       align: 'center',
     }).setDepth(101);
@@ -157,21 +157,21 @@ export class CharacterSelectScene extends Phaser.Scene {
 
   private drawBackdrop(): void {
     const { stage } = ASSET_MANIFEST;
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.far.key);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.mid.key);
-    this.add.sprite(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.water.key, 2);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.foreground.key);
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.far.key).setScale(2);
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.mid.key).setScale(2);
+    this.add.sprite(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.water.key, 2).setScale(2);
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.foreground.key).setScale(2);
     this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink, 0.78);
-    this.add.rectangle(90, 94, 178, 136, PALETTE.panel, 0.94).setStrokeStyle(1, PALETTE.steelDark);
-    this.add.rectangle(250, 94, 138, 136, PALETTE.ink, 0.94).setStrokeStyle(1, PALETTE.steelDark);
-    this.add.rectangle(179, 94, 1, 134, PALETTE.gold, 0.5);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 25, INTERNAL_WIDTH, 1, PALETTE.cyan, 0.8);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 162, INTERNAL_WIDTH, 1, PALETTE.pink, 0.65);
+    this.add.rectangle(180, 188, 356, 272, PALETTE.panel, 0.94).setStrokeStyle(2, PALETTE.steelDark);
+    this.add.rectangle(500, 188, 276, 272, PALETTE.ink, 0.94).setStrokeStyle(2, PALETTE.steelDark);
+    this.add.rectangle(358, 188, 2, 268, PALETTE.gold, 0.5);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 50, INTERNAL_WIDTH, 2, PALETTE.cyan, 0.8);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 324, INTERNAL_WIDTH, 2, PALETTE.pink, 0.65);
   }
 
   private createFighterCards(): void {
-    const xPositions = [31, 89, 147] as const;
-    const yPositions = [58, 119] as const;
+    const xPositions = [62, 178, 294] as const;
+    const yPositions = [116, 238] as const;
 
     FIGHTERS.forEach((fighter, index) => {
       const column = index % CARD_COLUMNS;
@@ -180,35 +180,35 @@ export class CharacterSelectScene extends Phaser.Scene {
       const y = yPositions[row];
       if (x === undefined || y === undefined) return;
 
-      const frame = this.add.rectangle(0, 0, 52, 54, PALETTE.panel, 1)
-        .setStrokeStyle(1, fighter.available ? PALETTE.metalLight : PALETTE.metalDark)
+      const frame = this.add.rectangle(0, 0, 104, 108, PALETTE.panel, 1)
+        .setStrokeStyle(2, fighter.available ? PALETTE.metalLight : PALETTE.metalDark)
         .setInteractive({ useHandCursor: true });
       const concept = ASSET_MANIFEST.concepts[fighter.id];
       let portrait: Phaser.GameObjects.GameObject;
       if (this.textures.exists(concept.key)) {
-        portrait = createConceptPortrait(this, 0, -8, fighter.id, 46, 32, {
+        portrait = createConceptPortrait(this, 0, -16, fighter.id, 92, 64, {
           crop: 'framed',
           locked: !fighter.available,
           frameColor: fighter.available ? fighter.visual.accent : PALETTE.muted,
         });
       } else {
-        const missing = this.add.container(0, -8);
-        missing.add(this.add.rectangle(0, 0, 46, 32, PALETTE.ink, 1).setStrokeStyle(1, PALETTE.pink));
+        const missing = this.add.container(0, -16);
+        missing.add(this.add.rectangle(0, 0, 92, 64, PALETTE.ink, 1).setStrokeStyle(2, PALETTE.pink));
         missing.add(pixelText(this, 0, 0, 'IMAGEM\nAUSENTE', {
-          size: 8,
+          size: 16,
           color: '#f64070',
           align: 'center',
         }));
         portrait = missing;
       }
 
-      const name = pixelText(this, 0, 13, fighter.name.split(' ')[0] ?? fighter.name, {
-        size: 8,
+      const name = pixelText(this, 0, 26, fighter.name.split(' ')[0] ?? fighter.name, {
+        size: 16,
         color: fighter.available ? '#f7f2d0' : '#80889a',
         align: 'center',
       });
-      const status = pixelText(this, 0, 22, fighter.available ? 'OK' : 'DEV', {
-        size: 8,
+      const status = pixelText(this, 0, 44, fighter.available ? 'OK' : 'DEV', {
+        size: 16,
         color: fighter.available ? '#29d9ff' : '#e08499',
         align: 'center',
       });
@@ -249,7 +249,7 @@ export class CharacterSelectScene extends Phaser.Scene {
     this.cards.forEach((card, index) => {
       const selected = index === this.cursorIndex;
       const accent = card.fighter.available ? card.fighter.visual.accent : PALETTE.muted;
-      card.frame.setStrokeStyle(selected ? 2 : 1, selected ? accent : PALETTE.metalLight, 1);
+      card.frame.setStrokeStyle(selected ? 4 : 2, selected ? accent : PALETTE.metalLight, 1);
       card.frame.setFillStyle(selected ? PALETTE.panelLight : PALETTE.panel, 1);
       card.container.setAlpha(card.fighter.available ? 1 : selected ? 0.82 : 0.58);
       card.container.setX(card.restingX);
@@ -260,37 +260,37 @@ export class CharacterSelectScene extends Phaser.Scene {
   private renderFighterDetails(fighter: FighterDefinition): void {
     this.detailContainer?.destroy();
 
-    const panel = this.add.rectangle(250, 96, 134, 134, PALETTE.panel, 1)
-      .setStrokeStyle(2, fighter.available ? fighter.visual.accent : PALETTE.muted, 1);
-    const metalTop = this.add.rectangle(250, 31, 130, 3, PALETTE.metalLight, 1);
-    const label = pixelText(this, 187, 36, 'FICHA DO LUTADOR', {
-      size: 8,
+    const panel = this.add.rectangle(500, 192, 268, 268, PALETTE.panel, 1)
+      .setStrokeStyle(4, fighter.available ? fighter.visual.accent : PALETTE.muted, 1);
+    const metalTop = this.add.rectangle(500, 62, 260, 6, PALETTE.metalLight, 1);
+    const label = pixelText(this, 374, 72, 'FICHA DO LUTADOR', {
+      size: 16,
       color: '#ffd55c',
     });
-    const portrait = createConceptPortrait(this, 205, 66, fighter.id, 36, 48, {
+    const portrait = createConceptPortrait(this, 410, 132, fighter.id, 72, 96, {
       crop: 'hud',
       locked: !fighter.available,
       frameColor: fighter.available ? fighter.visual.accent : PALETTE.muted,
     });
-    const name = pixelText(this, 230, 45, fighter.name, {
-      size: 8,
+    const name = pixelText(this, 460, 90, fighter.name.toUpperCase(), {
+      size: 16,
       color: fighter.available ? '#f7f2d0' : '#9aa2b2',
     });
-    const archetype = pixelText(this, 230, 56, wrapCopy(fighter.archetype, 14), {
-      size: 8,
+    const archetype = pixelText(this, 460, 112, wrapCopy(fighter.archetype, 14), {
+      size: 16,
       color: fighter.available ? '#29d9ff' : '#80889a',
     }).setOrigin(0, 0);
-    const abilitiesLabel = pixelText(this, 187, 94, 'HABILIDADES', {
-      size: 8,
+    const abilitiesLabel = pixelText(this, 374, 188, 'HABILIDADES', {
+      size: 16,
       color: '#ffd55c',
     });
     const abilityTexts = fighter.abilities.map((ability, index) => pixelText(
       this,
-      187,
-      105 + index * 11,
+      374,
+      210 + index * 22,
       `> ${ability.toUpperCase()}`,
       {
-        size: 8,
+        size: 16,
         color: fighter.available ? '#f7f2d0' : '#747d90',
       },
     ));
@@ -306,11 +306,11 @@ export class CharacterSelectScene extends Phaser.Scene {
     ];
 
     if (fighter.available) {
-      const button = this.add.rectangle(251, 151, 112, 14, 0x12364c, 1)
-        .setStrokeStyle(1, PALETTE.cyan)
+      const button = this.add.rectangle(502, 302, 224, 28, 0x12364c, 1)
+        .setStrokeStyle(2, PALETTE.cyan)
         .setInteractive({ useHandCursor: true });
-      const buttonLabel = pixelText(this, 251, 151, 'CONFIRMAR', {
-        size: 8,
+      const buttonLabel = pixelText(this, 502, 302, 'CONFIRMAR', {
+        size: 16,
         color: '#9af7ff',
         align: 'center',
       });
@@ -322,8 +322,8 @@ export class CharacterSelectScene extends Phaser.Scene {
       });
       children.push(button, buttonLabel);
     } else {
-      children.push(pixelText(this, 251, 151, 'EM DESENVOLVIMENTO', {
-        size: 8,
+      children.push(pixelText(this, 502, 302, 'EM DESENVOLVIMENTO', {
+        size: 16,
         color: '#e08499',
         align: 'center',
       }));
@@ -343,8 +343,8 @@ export class CharacterSelectScene extends Phaser.Scene {
     if (!fighter.available) {
       audioManager.play('block');
       card.frame.setFillStyle(PALETTE.pink, 1);
-      card.container.setX(card.restingX + 2);
-      this.time.delayedCall(45, () => card.container.setX(card.restingX - 2));
+      card.container.setX(card.restingX + 4);
+      this.time.delayedCall(45, () => card.container.setX(card.restingX - 4));
       this.time.delayedCall(90, () => this.refreshSelection());
       return;
     }
@@ -352,9 +352,9 @@ export class CharacterSelectScene extends Phaser.Scene {
     this.confirming = true;
     audioManager.play('confirm');
     card.frame.setFillStyle(PALETTE.gold, 1);
-    card.container.setX(card.restingX + 2);
+    card.container.setX(card.restingX + 4);
     this.time.delayedCall(45, () => {
-      card.container.setX(card.restingX - 2);
+      card.container.setX(card.restingX - 4);
       card.container.setVisible(false);
     });
     this.time.delayedCall(90, () => {
@@ -396,56 +396,56 @@ export class CharacterSelectScene extends Phaser.Scene {
     this.phaseTitle.setText('ARENA E CONFRONTO');
     this.footerText.setText('ENTER / F OU TOQUE PARA LUTAR  |  ESC VOLTA');
 
-    const panel = this.add.rectangle(0, 0, 308, 136, PALETTE.panel, 1)
-      .setStrokeStyle(2, PALETTE.cyan, 1);
-    const topRail = this.add.rectangle(0, -66, 304, 4, PALETTE.metalLight, 1);
-    const arenaName = pixelText(this, 0, -56, CAIS_DA_CIDADE.name, {
-      size: 8,
+    const panel = this.add.rectangle(0, 0, 616, 272, PALETTE.panel, 1)
+      .setStrokeStyle(4, PALETTE.cyan, 1);
+    const topRail = this.add.rectangle(0, -132, 608, 8, PALETTE.metalLight, 1);
+    const arenaName = pixelText(this, 0, -112, CAIS_DA_CIDADE.name, {
+      size: 16,
       color: '#ffd55c',
       align: 'center',
     });
     const arenaSubtitle = pixelText(
       this,
       0,
-      -45,
+      -90,
       'NOITE | ZONA PORTUARIA',
       {
-        size: 8,
+        size: 16,
       color: '#9af7ff',
       align: 'center',
       },
     );
 
-    const portraitOne = createConceptPortrait(this, -94, 2, playerOne.id, 94, 100, {
-      crop: 'full',
+    const portraitOne = createConceptPortrait(this, -188, 10, playerOne.id, 168, 176, {
+      crop: 'framed',
       frameColor: playerOne.visual.accent,
     });
-    const portraitTwo = createConceptPortrait(this, 94, 2, opponent.id, 94, 100, {
-      crop: 'full',
+    const portraitTwo = createConceptPortrait(this, 188, 10, opponent.id, 168, 176, {
+      crop: 'framed',
       frameColor: opponent.visual.accent,
     });
-    const nameOne = pixelText(this, -94, 55, playerOne.name, {
-      size: 8,
+    const nameOne = pixelText(this, -188, 110, playerOne.name.toUpperCase(), {
+      size: 16,
       color: '#f7f2d0',
       align: 'center',
     });
-    const nameTwo = pixelText(this, 94, 55, opponent.name, {
-      size: 8,
+    const nameTwo = pixelText(this, 188, 110, opponent.name.toUpperCase(), {
+      size: 16,
       color: '#f7f2d0',
       align: 'center',
     });
 
     const stagePreview = this.createCaisPreview();
-    const versus = pixelText(this, 0, -4, 'VS', {
-      size: 16,
+    const versus = pixelText(this, 0, -8, 'VS', {
+      size: 32,
       color: '#f64070',
       align: 'center',
     });
-    const button = this.add.rectangle(0, 59, 92, 14, 0x12364c, 1)
-      .setStrokeStyle(1, PALETTE.cyan)
+    const button = this.add.rectangle(0, 118, 184, 28, 0x12364c, 1)
+      .setStrokeStyle(2, PALETTE.cyan)
       .setInteractive({ useHandCursor: true });
-    const buttonLabel = pixelText(this, 0, 59, 'LUTAR NO CAIS', {
-      size: 8,
+    const buttonLabel = pixelText(this, 0, 118, 'LUTAR NO CAIS', {
+      size: 16,
       color: '#9af7ff',
       align: 'center',
     });
@@ -456,7 +456,7 @@ export class CharacterSelectScene extends Phaser.Scene {
       this.confirmArena();
     });
 
-    this.arenaCard = this.add.container(INTERNAL_WIDTH / 2, 94, [
+    this.arenaCard = this.add.container(INTERNAL_WIDTH / 2, 188, [
       panel,
       topRail,
       arenaName,
@@ -475,12 +475,12 @@ export class CharacterSelectScene extends Phaser.Scene {
 
   private createCaisPreview(): Phaser.GameObjects.Container {
     const { stage } = ASSET_MANIFEST;
-    const far = this.add.image(0, 29, stage.far.key).setDisplaySize(76, 43);
-    const mid = this.add.image(0, 29, stage.mid.key).setDisplaySize(76, 43);
-    const water = this.add.sprite(0, 29, stage.water.key, 3).setDisplaySize(76, 43);
-    const foreground = this.add.image(0, 29, stage.foreground.key).setDisplaySize(76, 43);
-    const shade = this.add.rectangle(0, 29, 76, 43, PALETTE.ink, 0.18);
-    const frame = this.add.rectangle(0, 29, 78, 45, 0x000000, 0).setStrokeStyle(1, PALETTE.pink);
+    const far = this.add.image(0, 58, stage.far.key).setDisplaySize(152, 86);
+    const mid = this.add.image(0, 58, stage.mid.key).setDisplaySize(152, 86);
+    const water = this.add.sprite(0, 58, stage.water.key, 3).setDisplaySize(152, 86);
+    const foreground = this.add.image(0, 58, stage.foreground.key).setDisplaySize(152, 86);
+    const shade = this.add.rectangle(0, 58, 152, 86, PALETTE.ink, 0.18);
+    const frame = this.add.rectangle(0, 58, 156, 90, 0x000000, 0).setStrokeStyle(2, PALETTE.pink);
     return this.add.container(0, 0, [far, mid, water, foreground, shade, frame]);
   }
 
@@ -491,8 +491,8 @@ export class CharacterSelectScene extends Phaser.Scene {
     audioManager.unlock();
     audioManager.play('confirm');
 
-    this.arenaCard.setX(INTERNAL_WIDTH / 2 + 2);
-    this.time.delayedCall(50, () => this.arenaCard?.setX(INTERNAL_WIDTH / 2 - 2));
+    this.arenaCard.setX(INTERNAL_WIDTH / 2 + 4);
+    this.time.delayedCall(50, () => this.arenaCard?.setX(INTERNAL_WIDTH / 2 - 4));
     this.time.delayedCall(100, () => this.arenaCard?.setX(INTERNAL_WIDTH / 2));
     this.time.delayedCall(140, () => {
       const shutter = this.add.rectangle(-INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink, 1)

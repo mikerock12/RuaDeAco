@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 // Adaptador raster: as fichas conceituais nunca são usadas como corpos de luta.
 import type { FighterSnapshot } from '../combat/FighterRuntime';
-import { roundPixel, worldToScreen } from '../config/pixelArtConfig';
+import { RASTER_ASSET_SCALE, roundPixel, worldToScreen } from '../config/pixelArtConfig';
 import { getFighterSpriteAsset } from '../fighters/visual';
 import type { FighterDefinition, FighterState } from '../types/combat';
 import type { FighterAnimationAsset, FighterAnimationId, FighterSpriteAsset } from '../types/assets';
@@ -43,6 +43,7 @@ class SpriteFighterView implements FighterView {
       .setDepth(20);
     this.effect = scene.add.sprite(0, 0, 'effectIce', 0)
       .setOrigin(0.5)
+      .setScale(RASTER_ASSET_SCALE)
       .setVisible(false)
       .setDepth(21);
 
@@ -76,7 +77,7 @@ class SpriteFighterView implements FighterView {
     const showIce = snapshot.freezeEffectFrames > 0 || snapshot.armorHits > 0;
     this.effect
       .setVisible(showIce)
-      .setPosition(roundPixel(x), roundPixel(y - 38))
+      .setPosition(roundPixel(x), roundPixel(y - 96))
       .setFrame(Math.floor(snapshot.stateFrame / 4) % 4)
       .setFlipX(snapshot.facing < 0);
   }

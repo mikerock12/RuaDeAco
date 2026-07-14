@@ -13,30 +13,33 @@ const files: Readonly<Record<FighterAnimationId, string>> = {
   victory: 'victory.png',
 };
 
+const FRAME_SIZE = 256;
+
 function animation(id: FighterAnimationId, frameRate: number, repeat: number): FighterAnimationAsset {
   return {
     id,
     key: `guto-barba-${id}`,
     path: `assets/fighters/guto-barba/${files[id]}`,
-    frameWidth: 96,
-    frameHeight: 96,
+    frameWidth: FRAME_SIZE,
+    frameHeight: FRAME_SIZE,
     frames: 4,
     frameRate,
     repeat,
   };
 }
 
+// Tank/grappler: silhueta larga ~210px de altura em frames 256x256.
 export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
   fighterId: 'guto-barba',
-  frameWidth: 96,
-  frameHeight: 96,
+  frameWidth: FRAME_SIZE,
+  frameHeight: FRAME_SIZE,
   origin: { x: 0.5, y: 1 },
   scale: 1,
-  visualOffset: { x: 0, y: 2 },
-  hitboxGuide: [{ x: 4, y: -66, width: 54, height: 42 }],
+  visualOffset: { x: 0, y: 4 },
+  hitboxGuide: [{ x: 8, y: -132, width: 108, height: 84 }],
   hurtboxGuide: [
-    { x: -15, y: -75, width: 30, height: 23 },
-    { x: -21, y: -53, width: 42, height: 53 },
+    { x: -30, y: -150, width: 60, height: 46 },
+    { x: -42, y: -106, width: 84, height: 106 },
   ],
   animations: {
     idle: animation('idle', 5, -1),

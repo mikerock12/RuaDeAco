@@ -39,12 +39,18 @@ describe('assetManifest', () => {
     expect(files.filter((path) => !existsSync(publicAsset(path)))).toEqual([]);
   });
 
-  it('mantém todas as animações de luta em frames 96x96', () => {
+  it('mantém os frames de luta no padrão por lutador (Rafa 192, Guto 256)', () => {
+    const expectedFrameSize: Record<string, number> = {
+      'rafa-mare': 192,
+      'guto-barba': 256,
+    };
     for (const fighter of FIGHTER_SPRITE_ASSETS) {
+      const frameSize = expectedFrameSize[fighter.fighterId] ?? 0;
+      expect(frameSize).toBeGreaterThan(0);
       for (const animation of Object.values(fighter.animations)) {
-        expect(animation.frameWidth).toBe(96);
-        expect(animation.frameHeight).toBe(96);
-        expect(pngDimensions(publicAsset(animation.path))).toEqual([384, 96]);
+        expect(animation.frameWidth).toBe(frameSize);
+        expect(animation.frameHeight).toBe(frameSize);
+        expect(pngDimensions(publicAsset(animation.path))).toEqual([frameSize * 4, frameSize]);
       }
     }
   });

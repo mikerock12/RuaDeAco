@@ -11,7 +11,9 @@ const concept = (
   key,
   path: `assets/references/${file}`,
   hudCrop,
-  framedCrop: { x: 600, y: 30, width: 480, height: 570 },
+  // Altura termina antes do letreiro embutido na ficha conceitual,
+  // evitando texto cortado nos retratos.
+  framedCrop: { x: 600, y: 30, width: 480, height: 520 },
 });
 
 export const CONCEPT_ASSETS: Readonly<Record<FighterId, PortraitAsset>> = {
