@@ -1,0 +1,210 @@
+@font-face {
+  font-family: 'Rua de Aco Pixel';
+  src: url('/assets/fonts/PressStart2P-Regular.ttf') format('truetype');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: 'Rua de Aco Pixel', monospace;
+  background: #000;
+  --touch-opacity: 0.58;
+  --pixel-cyan: #20c8e5;
+  --pixel-gold: #e8b84a;
+  --pixel-ink: #050814;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #000;
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#app,
+#game-shell,
+#game-container,
+#game-container canvas {
+  touch-action: none;
+}
+
+#game-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #000;
+}
+
+#game-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+canvas,
+#game-container canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  outline: none;
+  filter: none;
+  transform: none;
+}
+
+#rotate-warning {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  background: #050814;
+  color: #f3e7bd;
+  font-size: 10px;
+  line-height: 1.8;
+  letter-spacing: 0;
+}
+
+.rotate-icon {
+  display: block;
+  width: 48px;
+  height: 32px;
+  border: 6px solid #20c8e5;
+  box-shadow: 4px 4px 0 #26364c;
+  color: transparent;
+  overflow: hidden;
+}
+
+#touch-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  pointer-events: none;
+  padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+}
+
+#touch-controls.visible {
+  display: block;
+}
+
+.touch-cluster {
+  position: absolute;
+  bottom: max(9px, env(safe-area-inset-bottom));
+  width: min(34vw, 196px);
+  height: min(34vw, 196px);
+  pointer-events: none;
+}
+
+.touch-cluster.dpad {
+  left: max(8px, env(safe-area-inset-left));
+}
+
+.touch-cluster.buttons {
+  right: max(8px, env(safe-area-inset-right));
+}
+
+.touch-button {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: clamp(48px, 8vw, 68px);
+  height: clamp(48px, 8vw, 68px);
+  margin: 0;
+  padding: 0;
+  appearance: none;
+  border: 4px solid rgba(157, 182, 198, calc(var(--touch-opacity) + 0.2));
+  border-radius: 0;
+  background: rgba(5, 8, 20, var(--touch-opacity));
+  color: rgba(243, 231, 189, calc(var(--touch-opacity) + 0.32));
+  font: 400 clamp(14px, 2.4vw, 20px) / 1 'Rua de Aco Pixel', monospace;
+  text-shadow: 3px 3px 0 #050814;
+  box-shadow:
+    inset 3px 3px 0 rgba(82, 107, 130, calc(var(--touch-opacity) * 0.75)),
+    inset -3px -3px 0 rgba(2, 4, 10, 0.8),
+    3px 3px 0 rgba(2, 4, 10, 0.65);
+  pointer-events: auto;
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+}
+
+.touch-button::before {
+  content: '';
+  position: absolute;
+  inset: -13px;
+}
+
+.buttons .touch-button::before {
+  inset: -9px;
+}
+
+.touch-button.pressed {
+  color: #fff;
+  background: rgba(21, 122, 163, 0.88);
+  border-color: #9af7ff;
+  box-shadow:
+    inset -3px -3px 0 rgba(82, 107, 130, 0.65),
+    inset 3px 3px 0 rgba(2, 4, 10, 0.8);
+}
+
+.dpad .up { left: calc(50% - 34px); top: 0; }
+.dpad .down { left: calc(50% - 34px); bottom: 0; }
+.dpad .left { left: 0; top: calc(50% - 34px); }
+.dpad .right { right: 0; top: calc(50% - 34px); }
+.buttons .heavy { left: 0; top: 0; }
+.buttons .light { right: 0; top: 0; }
+.buttons .special { left: 0; bottom: 0; }
+.buttons .block { right: 0; bottom: 0; }
+
+@media (orientation: portrait) {
+  #rotate-warning { display: flex; }
+  #game-shell { visibility: hidden; }
+}
+
+@media (max-height: 440px) {
+  .touch-cluster {
+    width: min(44vh, 164px);
+    height: min(44vh, 164px);
+  }
+
+  .touch-button {
+    width: clamp(44px, 14vh, 60px);
+    height: clamp(44px, 14vh, 60px);
+  }
+
+  .dpad .up,
+  .dpad .down { left: calc(50% - 30px); }
+  .dpad .left,
+  .dpad .right { top: calc(50% - 30px); }
+}
