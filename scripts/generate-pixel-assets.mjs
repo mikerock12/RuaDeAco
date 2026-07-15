@@ -586,10 +586,12 @@ async function generateUi() {
   await save('public/assets/ui/panel.png',panel);
   const button = new PixelCanvas(128,24); frameBorder(button,0,0,128,24); button.rect(7,7,114,2,COLORS.navy); button.rect(8,16,112,1,COLORS.goldDark); button.pixel(5,5,COLORS.silver); button.pixel(122,5,COLORS.silver);
   await save('public/assets/ui/button.png',button);
-  const hud = new PixelCanvas(320,48); hud.rect(0,0,320,2,COLORS.ink); hud.rect(0,2,320,2,COLORS.steel); hud.rect(0,4,320,1,COLORS.silver);
-  frameBorder(hud,4,6,38,38); frameBorder(hud,278,6,38,38); frameBorder(hud,43,8,91,17); frameBorder(hud,186,8,91,17); frameBorder(hud,137,6,46,31);
-  hud.rect(48,13,81,7,COLORS.red); hud.rect(191,13,81,7,COLORS.red); for(let x=58;x<129;x+=10)hud.rect(x,13,1,7,COLORS.ink2); for(let x=201;x<272;x+=10)hud.rect(x,13,1,7,COLORS.ink2);
-  hud.rect(44,29,90,5,COLORS.cyanDark); hud.rect(186,29,90,5,COLORS.cyanDark); hud.rect(45,30,2,3,COLORS.cyanLight); hud.rect(273,30,2,3,COLORS.cyanLight);
+  // Faixa compacta de 32px (64px na tela em 2x). Barras de vida/meter são
+  // desenhadas dinamicamente pela UIScene; aqui ficam só molduras e bordas,
+  // evitando o desalinhamento entre a arte fixa e os segmentos dinâmicos.
+  const hud = new PixelCanvas(320,32); hud.rect(0,0,320,2,COLORS.ink); hud.rect(0,2,320,1,COLORS.steel); hud.rect(0,3,320,1,COLORS.silver);
+  frameBorder(hud,4,4,20,23); frameBorder(hud,296,4,20,23); frameBorder(hud,146,1,28,17);
+  hud.rect(0,29,320,1,COLORS.steel); hud.rect(0,30,320,2,COLORS.ink);
   await save('public/assets/ui/hud-frame.png',hud);
   const selection = new PixelCanvas(64,80); frameBorder(selection,0,0,64,80); selection.rect(5,58,54,16,COLORS.navy); selection.rect(7,60,50,1,COLORS.cyan); selection.rect(4,4,56,52,COLORS.ink);
   await save('public/assets/ui/selection-frame.png',selection);

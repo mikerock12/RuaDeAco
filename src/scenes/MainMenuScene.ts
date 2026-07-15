@@ -6,14 +6,13 @@ import { gameSession } from '../config/session';
 import { settingsStore } from '../config/settings';
 import { FIGHTERS } from '../fighters';
 import { inputManager } from '../input/InputManager';
-import { installPromptManager } from '../pwa/installPrompt';
 import type { InputAction, InputFrame } from '../types/combat';
 import type { GameMode } from '../types/game';
 import { createConceptPortrait } from '../ui/PortraitView';
 import { toggleFullscreen } from '../utils/fullscreen';
 import { pixelText } from '../utils/text';
 
-type MenuAction = GameMode | 'settings' | 'install' | 'fullscreen';
+type MenuAction = GameMode | 'settings' | 'fullscreen';
 
 interface MenuEntry {
   readonly action: MenuAction;
@@ -37,8 +36,6 @@ export class MainMenuScene extends Phaser.Scene {
   private entries: readonly MenuEntry[] = [];
   private rows: MenuRow[] = [];
   private selectedIndex = 0;
-  private installAvailable = false;
-  private installUnsubscribe: (() => void) | null = null;
   private transitionLocked = false;
 
   constructor() {
@@ -56,13 +53,7 @@ export class MainMenuScene extends Phaser.Scene {
     this.drawLogo();
     this.drawRosterGallery();
 
-    this.installAvailable = installPromptManager.available;
     this.rebuildMenu();
-    this.installUnsubscribe = installPromptManager.subscribe((available) => {
-      if (available === this.installAvailable) return;
-      this.installAvailable = available;
-      this.rebuildMenu();
-    });
 
     const settings = settingsStore.get();
     pixelText(this, 8, INTERNAL_HEIGHT - 12, `V ${settings.wins}  D ${settings.losses}`, {
@@ -76,8 +67,6 @@ export class MainMenuScene extends Phaser.Scene {
     });
 
     this.events.once('shutdown', () => {
-      this.installUnsubscribe?.();
-      this.installUnsubscribe = null;
       this.rows = [];
     });
   }
@@ -174,9 +163,8 @@ export class MainMenuScene extends Phaser.Scene {
       { action: 'versus', label: 'DOIS JOGADORES' },
       { action: 'training', label: 'TREINAMENTO' },
       { action: 'settings', label: 'CONFIGURACOES' },
+      { action: 'fullscreen', label: 'TELA CHEIA' },
     ];
-    if (this.installAvailable) entries.push({ action: 'install', label: 'INSTALAR JOGO' });
-    entries.push({ action: 'fullscreen', label: 'TELA CHEIA' });
     this.entries = entries;
     this.selectedIndex = Phaser.Math.Clamp(this.selectedIndex, 0, entries.length - 1);
 
@@ -241,10 +229,6 @@ export class MainMenuScene extends Phaser.Scene {
       this.transitionTo('SettingsScene');
       return;
     }
-    if (entry.action === 'install') {
-      void this.installGame();
-      return;
-    }
     if (entry.action === 'fullscreen') {
       void this.switchFullscreen();
       return;
@@ -273,17 +257,6 @@ export class MainMenuScene extends Phaser.Scene {
       easeParams: [8],
       onComplete: () => this.scene.start(sceneKey),
     });
-  }
-
-  private async installGame(): Promise<void> {
-    this.transitionLocked = true;
-    audioManager.unlock();
-    audioManager.play('confirm');
-    try {
-      await installPromptManager.prompt();
-    } finally {
-      this.transitionLocked = false;
-    }
   }
 
   private async switchFullscreen(): Promise<void> {

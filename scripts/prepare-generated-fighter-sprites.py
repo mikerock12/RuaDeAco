@@ -120,6 +120,16 @@ def repeated(pose: Image.Image, frame_size: int, offsets: list[tuple[int, int]])
     return [frame_from(pose, frame_size, x, y) for x, y in offsets]
 
 
+def crouch_pose(pose: Image.Image, height_ratio: float = 0.6) -> Image.Image:
+    """Pose de agachamento provisória: squash vertical mantendo a largura.
+
+    A silhueta fica visivelmente mais baixa (60% da altura) com a base
+    alinhada ao chão, legível mesmo sem arte quadro a quadro dedicada.
+    """
+    size = (pose.width, max(1, round(pose.height * height_ratio)))
+    return binarize_alpha(pose.resize(size, Image.Resampling.NEAREST))
+
+
 def build_rafa() -> None:
     frame_size = 192
     body_max = (188, 176)
@@ -137,7 +147,7 @@ def build_rafa() -> None:
         "idle.png": repeated(idle, frame_size, [(0, 0), (0, -2), (0, 0), (0, 2)]),
         "walk.png": repeated(idle, frame_size, [(-4, 0), (0, -2), (4, 0), (0, 2)]),
         "jump.png": repeated(kick, frame_size, [(0, 4), (0, 0), (0, -4), (0, 0)]),
-        "crouch.png": repeated(wave, frame_size, [(0, 6), (0, 4), (0, 6), (0, 4)]),
+        "crouch.png": repeated(crouch_pose(idle), frame_size, [(0, 0), (0, 1), (0, 0), (0, 1)]),
         "light-attack.png": repeated(punch, frame_size, [(-6, 0), (-2, 0), (2, 0), (0, 0)]),
         "heavy-attack.png": repeated(kick, frame_size, [(-4, 2), (0, 0), (4, -2), (0, 0)]),
         "special.png": repeated(wave, frame_size, [(-4, 0), (0, -2), (4, 0), (0, 2)]),
@@ -151,7 +161,10 @@ def build_rafa() -> None:
 
 def build_guto() -> None:
     frame_size = 256
-    body_max = (248, 232)
+    # 216px de altura máxima: o topo da cabeça fica em y~88 na tela
+    # (faixa do HUD termina em 64), sem invadir o HUD e sem achatar —
+    # a proporção largura/altura é preservada pelo extract_pose.
+    body_max = (234, 216)
     source = key_magenta_background(
         Image.open(REFERENCE_ROOT / "guto-barba-pixel-direction.png"),
     )
@@ -165,7 +178,7 @@ def build_guto() -> None:
         "idle.png": repeated(idle, frame_size, [(0, 0), (0, -2), (0, 0), (0, 2)]),
         "walk.png": repeated(idle, frame_size, [(-4, 0), (0, -2), (4, 0), (0, 2)]),
         "jump.png": repeated(idle, frame_size, [(0, 4), (0, 0), (0, -4), (0, 0)]),
-        "crouch.png": repeated(grab, frame_size, [(0, 6), (0, 4), (0, 6), (0, 4)]),
+        "crouch.png": repeated(crouch_pose(idle), frame_size, [(0, 0), (0, 1), (0, 0), (0, 1)]),
         "light-attack.png": repeated(ice, frame_size, [(-4, 0), (0, 0), (4, 0), (0, 0)]),
         "heavy-attack.png": repeated(grab, frame_size, [(-6, 0), (-2, 0), (2, 0), (0, 0)]),
         "special.png": repeated(ice, frame_size, [(-4, 0), (0, -2), (4, 0), (0, 2)]),

@@ -1,5 +1,6 @@
 import { GROUND_Y, MAX_METER, STAGE_LEFT, STAGE_RIGHT } from '../config/gameConfig';
 import type {
+  DirectionToken,
   FighterDefinition,
   FighterId,
   FighterState,
@@ -64,6 +65,8 @@ export class FighterRuntime {
   invulnerableFrames = 0;
   passiveFrames = 0;
   freezeEffectFrames = 0;
+  /** Último golpe iniciado (inspeção/debug). */
+  lastMoveId: string | null = null;
 
   private input: InputFrame = EMPTY_INPUT;
   private readonly commandBuffer = new CommandBuffer();
@@ -75,6 +78,8 @@ export class FighterRuntime {
   private hitStunFrames = 0;
   private blockStunFrames = 0;
   private knockdownPending = false;
+  // Impulso horizontal do pulo, fixado na decolagem (sem controle aéreo).
+  private airDriftX = 0;
   private damageTowardPassive = 0;
   private frozen = false;
   private moveConnected: 'none' | 'hit' | 'block' = 'none';
@@ -140,10 +145,20 @@ export class FighterRuntime {
     }
 
     if (this.y < GROUND_Y) {
-      const horizontal = Number(input.held.has('right')) - Number(input.held.has('left'));
-      this.x += horizontal * this.definition.stats.walkSpeed * 0.58 * this.speedMultiplier;
+      const airMove = this.commandBuffer.findMove(this.definition.moves, input, simulationFrame, this.meter, true);
+      if (airMove) {
+        this.startMove(airMove);
+        this.applyMoveMotion(airMove);
+        return;
+      }
+      this.x += this.airDriftX * this.speedMultiplier;
       this.updateVertical();
-      this.state = this.velocityY < 0 ? 'jump' : 'fall';
+      if (this.y >= GROUND_Y) {
+        this.airDriftX = 0;
+        this.transition('idle');
+      } else {
+        this.state = this.velocityY < 0 ? 'jump' : 'fall';
+      }
       return;
     }
 
@@ -164,8 +179,18 @@ export class FighterRuntime {
     }
 
     if (input.pressed.has('up')) {
+      const horizontal = Number(input.held.has('right')) - Number(input.held.has('left'));
+      const movingForward = horizontal === this.facing;
+      const jumpDrift = movingForward
+        ? this.definition.stats.jumpForwardSpeed
+        : this.definition.stats.jumpBackwardSpeed;
+      this.airDriftX = horizontal * jumpDrift;
       this.velocityY = -this.definition.stats.jumpSpeed;
       this.transition('jump');
+      // Integra já neste frame: sem isso y continua em GROUND_Y e o
+      // próximo beginFrame trata o lutador como se estivesse no chão,
+      // cancelando o salto para idle/walk.
+      this.updateVertical();
       return;
     }
 
@@ -246,12 +271,14 @@ export class FighterRuntime {
       this.emittedEvents.add(event.frame);
       if (event.type === 'grantArmor') this.armorHits = event.hits;
       if (event.type === 'clearArmor') this.armorHits = 0;
+      if (event.type === 'grantBuff') this.passiveFrames = event.durationFrames;
     }
     return events;
   }
 
   getActiveHitboxes(): readonly HitboxDefinition[] {
     if (!this.activeMove) return [];
+    if (this.activeMove.air && this.y >= GROUND_Y) return [];
     const timed = this.activeMove.hitboxes.find(({ range }) => this.stateFrame >= range.from && this.stateFrame <= range.to);
     return timed?.boxes ?? [];
   }
@@ -327,6 +354,7 @@ export class FighterRuntime {
       this.hitStunFrames = calculateHitStun(hitbox.hitStun, counterHit, comboHits);
       this.knockdownPending = Boolean(hitbox.knockdown);
       this.freezeEffectFrames = Math.max(this.freezeEffectFrames, hitbox.freezeFrames ?? 0);
+      this.airDriftX = 0;
       this.velocityX = attackerFacing * hitbox.knockbackX;
       this.velocityY = hitbox.knockbackY;
       this.transition('hitStun');
@@ -383,6 +411,7 @@ export class FighterRuntime {
     this.hitStunFrames = 0;
     this.blockStunFrames = 0;
     this.knockdownPending = false;
+    this.airDriftX = 0;
     this.frozen = false;
     this.moveConnected = 'none';
     this.transition('idle');
@@ -404,6 +433,15 @@ export class FighterRuntime {
 
   get isFrozen(): boolean {
     return this.frozen;
+  }
+
+  get grounded(): boolean {
+    return this.y >= GROUND_Y;
+  }
+
+  /** Última direção reconhecida pelo buffer de comandos (debug). */
+  get lastDirection(): DirectionToken {
+    return this.commandBuffer.history.at(-1)?.token ?? 'neutral';
   }
 
   get speedMultiplier(): number {
@@ -433,6 +471,7 @@ export class FighterRuntime {
 
   private startMove(move: MoveDefinition): void {
     this.activeMove = move;
+    this.lastMoveId = move.id;
     this.armorHits = 0;
     this.meter = applyEnergy(this.meter, -move.meterCost, MAX_METER);
     this.attackInstance += 1;
@@ -448,7 +487,14 @@ export class FighterRuntime {
       this.x += movement.velocityX * this.facing * this.speedMultiplier;
       if (movement.velocityY !== undefined) this.velocityY = movement.velocityY;
     }
+    if (move.air && this.y < GROUND_Y) this.x += this.airDriftX * this.speedMultiplier;
     if (this.y < GROUND_Y || this.velocityY !== 0) this.updateVertical();
+    if (move.air && this.y >= GROUND_Y && this.velocityY === 0) {
+      // Aterrissou: encerra o ataque aéreo e desliga a hitbox.
+      this.activeMove = null;
+      this.airDriftX = 0;
+      this.transition('idle');
+    }
   }
 
   private updateVertical(): void {

@@ -208,6 +208,7 @@ export class CpuController {
     switch (direction) {
       case 'down': return ['down'];
       case 'downForward': return ['down', toward];
+      case 'downBack': return ['down', away];
       case 'forward': return [toward];
       case 'back': return [away];
       case 'up': return ['up'];

@@ -21,7 +21,7 @@ describe('assetManifest', () => {
       'astroRisoConcept',
       'danteSinalConcept',
       'leoVioletaConcept',
-      'gutoBarbaConcept',
+      'gutoBarbaPortrait',
     ]);
     expect(ASSET_MANIFEST.logo.key).toBe('ruaDeAcoLogo');
     expect(new Set(Object.values(CONCEPT_ASSETS).map((asset) => asset.key)).size).toBe(6);

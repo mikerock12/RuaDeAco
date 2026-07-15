@@ -3,7 +3,6 @@ import { audioManager } from '../audio/AudioManager';
 import { settingsStore } from '../config/settings';
 import { inputManager } from '../input/InputManager';
 import { touchControls } from '../input/TouchControls';
-import { installPromptManager } from '../pwa/installPrompt';
 import { registerServiceWorker } from '../pwa/registerServiceWorker';
 
 export class BootScene extends Phaser.Scene {
@@ -17,7 +16,8 @@ export class BootScene extends Phaser.Scene {
     settingsStore.load();
     inputManager.attach();
     audioManager.attachUnlock();
-    installPromptManager.attach();
+    // O fluxo de instalação PWA foi removido do menu; o service worker
+    // continua ativo para manter a compatibilidade web offline.
     void registerServiceWorker();
     touchControls.build();
     globalThis.document?.addEventListener('fullscreenchange', this.syncFullscreenPreference);

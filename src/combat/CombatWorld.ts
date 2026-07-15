@@ -212,8 +212,9 @@ export class CombatWorld {
 
   private stepActive(playerOneInput: InputFrame, playerTwoInput: InputFrame): void {
     const [one, two] = this.fighters;
-    if (!one.currentMove?.lockFacing) one.facing = one.x <= two.x ? 1 : -1;
-    if (!two.currentMove?.lockFacing) two.facing = two.x <= one.x ? 1 : -1;
+    // Facing congela no ar: o lutador só vira ao aterrissar.
+    if (!one.currentMove?.lockFacing && one.grounded) one.facing = one.x <= two.x ? 1 : -1;
+    if (!two.currentMove?.lockFacing && two.grounded) two.facing = two.x <= one.x ? 1 : -1;
 
     const onePreviousMove = one.currentMove;
     const twoPreviousMove = two.currentMove;
@@ -316,6 +317,14 @@ export class CombatWorld {
   private consumeFighterEvents(fighter: FighterRuntime): void {
     for (const event of fighter.consumeMoveEvents()) {
       if (event.type === 'spawnProjectile') this.spawnProjectile(fighter, event.projectileId);
+      if (event.type === 'grantBuff') {
+        this.emit({
+          type: 'passive',
+          frame: this.frame,
+          attacker: fighter.id,
+          text: fighter.definition.passive?.label ?? fighter.currentMove?.label ?? 'BUFF',
+        });
+      }
     }
   }
 
@@ -495,7 +504,7 @@ export class CombatWorld {
 
   private resolvePushboxes(): void {
     const [one, two] = this.fighters;
-    if (Math.abs(one.y - two.y) > 48) return;
+    if (Math.abs(one.y - two.y) > 96) return;
     const oneBox = toWorldRect(one.definition.stats.pushbox, one);
     const twoBox = toWorldRect(two.definition.stats.pushbox, two);
     const overlap = horizontalOverlap(oneBox, twoBox);

@@ -39,7 +39,7 @@ export type InputAction =
   | 'cancel';
 
 export type CombatButton = 'light' | 'heavy' | 'special' | 'block';
-export type DirectionToken = 'neutral' | 'down' | 'downForward' | 'forward' | 'back' | 'up';
+export type DirectionToken = 'neutral' | 'down' | 'downForward' | 'downBack' | 'forward' | 'back' | 'up';
 export type HitLevel = 'high' | 'mid' | 'low' | 'overhead';
 export type HitKind = 'strike' | 'throw' | 'projectile';
 
@@ -109,6 +109,7 @@ export type MoveEvent =
   | { readonly frame: number; readonly type: 'spawnProjectile'; readonly projectileId: string }
   | { readonly frame: number; readonly type: 'grantArmor'; readonly hits: number }
   | { readonly frame: number; readonly type: 'clearArmor' }
+  | { readonly frame: number; readonly type: 'grantBuff'; readonly durationFrames: number }
   | { readonly frame: number; readonly type: 'throw'; readonly range: number; readonly damage: number; readonly cinematic?: boolean };
 
 export interface CancelWindow {
@@ -123,6 +124,8 @@ export interface MoveDefinition {
   readonly state: Extract<FighterState, 'lightAttack' | 'heavyAttack' | 'kickAttack' | 'specialAttack'>;
   readonly animation: string;
   readonly command: InputCommand;
+  /** Golpe executável apenas no ar; a hitbox desliga ao aterrissar. */
+  readonly air?: boolean;
   readonly totalFrames: number;
   readonly hitboxes: readonly TimedHitbox[];
   readonly hurtboxes?: readonly TimedHurtbox[];
@@ -149,6 +152,9 @@ export interface FighterStats {
   readonly walkSpeed: number;
   readonly backwardSpeed: number;
   readonly jumpSpeed: number;
+  /** Impulso horizontal do pulo diagonal, fixado na decolagem. */
+  readonly jumpForwardSpeed: number;
+  readonly jumpBackwardSpeed: number;
   readonly gravity: number;
   readonly weight: number;
   readonly pushbox: LocalRect;

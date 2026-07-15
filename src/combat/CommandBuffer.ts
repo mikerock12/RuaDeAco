@@ -32,6 +32,7 @@ export function directionFromInput(input: InputFrame, facing: 1 | -1): Direction
   const worldBack = facing === 1 ? input.held.has('left') : input.held.has('right');
   if (up) return 'up';
   if (down && worldForward) return 'downForward';
+  if (down && worldBack) return 'downBack';
   if (down) return 'down';
   if (worldForward) return 'forward';
   if (worldBack) return 'back';
@@ -63,6 +64,14 @@ function buttonActivationFrame(
   return activationFrame;
 }
 
+// Golpes de direção única "baixo" aceitam as diagonais (ex.: baixo-frente
+// + fraco ainda dispara o golpe agachado), sem afrouxar sequências de
+// quarto de círculo nem os golpes de frente/trás.
+function tokenMatches(expected: DirectionToken, actual: DirectionToken, singleDirection: boolean): boolean {
+  if (expected === actual) return true;
+  return singleDirection && expected === 'down' && (actual === 'downForward' || actual === 'downBack');
+}
+
 export function matchCommand(
   command: InputCommand,
   samples: readonly DirectionSample[],
@@ -75,6 +84,7 @@ export function matchCommand(
   const sequence = command.directions;
   if (!sequence || sequence.length === 0) return true;
 
+  const singleDirection = sequence.length === 1;
   let sampleIndex = samples.length - 1;
   let previousFrame = activationFrame;
   for (let commandIndex = sequence.length - 1; commandIndex >= 0; commandIndex -= 1) {
@@ -84,7 +94,7 @@ export function matchCommand(
       const sample = samples[sampleIndex];
       sampleIndex -= 1;
       if (sample && sample.frame > activationFrame) continue;
-      if (sample?.token === expected) {
+      if (sample && expected !== undefined && tokenMatches(expected, sample.token, singleDirection)) {
         found = sample;
         break;
       }
@@ -115,9 +125,11 @@ export class CommandBuffer {
     input: InputFrame,
     frame: number,
     meter: number,
+    airborne = false,
   ): MoveDefinition | null {
     const candidates = Object.values(moves)
       .filter((move) => canSpendEnergy(meter, move.meterCost))
+      .filter((move) => Boolean(move.air) === airborne)
       .sort((a, b) => b.command.priority - a.command.priority);
     return candidates.find((move) => matchCommand(move.command, this.samples, input, frame, this.buttonSamples)) ?? null;
   }

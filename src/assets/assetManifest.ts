@@ -22,7 +22,15 @@ export const CONCEPT_ASSETS: Readonly<Record<FighterId, PortraitAsset>> = {
   'astro-riso': concept('astro-riso', 'astroRisoConcept', 'astro-riso-concept.png', { x: 635, y: 55, width: 420, height: 420 }),
   'dante-sinal': concept('dante-sinal', 'danteSinalConcept', 'dante-sinal-concept.png', { x: 620, y: 50, width: 440, height: 440 }),
   'leo-violeta': concept('leo-violeta', 'leoVioletaConcept', 'leo-violeta-concept.png', { x: 630, y: 50, width: 430, height: 430 }),
-  'guto-barba': concept('guto-barba', 'gutoBarbaConcept', 'guto-barba-concept.png', { x: 610, y: 35, width: 460, height: 460 }),
+  // Retrato oficial aprovado manualmente (1254x1254, moldura e letreiro embutidos);
+  // a ficha conceitual guto-barba-concept.png segue em public/assets/references como referencia.
+  'guto-barba': {
+    fighterId: 'guto-barba',
+    key: 'gutoBarbaPortrait',
+    path: 'assets/references/guto-barba-portrait-final.png',
+    hudCrop: { x: 270, y: 70, width: 720, height: 880 },
+    framedCrop: { x: 0, y: 0, width: 1254, height: 1254 },
+  },
 };
 
 const logo: ImageAsset = { key: 'ruaDeAcoLogo', path: 'assets/references/rua-de-aco-logo.png' };

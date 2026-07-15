@@ -18,6 +18,9 @@ const enterFight = (world: CombatWorld): void => {
 
 const approach = (world: CombatWorld): void => {
   for (let frame = 0; frame < 70; frame += 1) world.step(input(['right']), empty);
+  // Frames neutros para expirar a amostra de "frente" e garantir que o
+  // próximo botão saia como golpe neutro, não como golpe avançando.
+  for (let frame = 0; frame < 4; frame += 1) world.step(empty, empty);
 };
 
 const quarterCircle = (world: CombatWorld, buttons: readonly InputAction[]): void => {
@@ -25,6 +28,13 @@ const quarterCircle = (world: CombatWorld, buttons: readonly InputAction[]): voi
   for (let frame = 0; frame < 3; frame += 1) world.step(input(['down', 'right']), empty);
   for (let frame = 0; frame < 3; frame += 1) world.step(input(['right']), empty);
   world.step(input(['right', ...buttons], buttons), empty);
+};
+
+const quarterCircleBack = (world: CombatWorld, buttons: readonly InputAction[]): void => {
+  for (let frame = 0; frame < 3; frame += 1) world.step(input(['down']), empty);
+  for (let frame = 0; frame < 3; frame += 1) world.step(input(['down', 'left']), empty);
+  for (let frame = 0; frame < 3; frame += 1) world.step(input(['left']), empty);
+  world.step(input(['left', ...buttons], buttons), empty);
 };
 
 describe('integração do mundo de combate', () => {
@@ -58,9 +68,40 @@ describe('integração do mundo de combate', () => {
 
     const superWorld = new CombatWorld(rafaMare, gutoBarba, 'training');
     enterFight(superWorld);
-    quarterCircle(superWorld, ['heavy', 'special']);
+    quarterCircle(superWorld, ['heavy']);
     expect(superWorld.fighters[0].currentMove?.id).toBe('chuteRessaca');
     expect(superWorld.fighters[0].meter).toBe(100);
+  });
+
+  it('reconhece quarto de círculo para trás nos especiais', () => {
+    const ecoWorld = new CombatWorld(rafaMare, gutoBarba, 'training');
+    enterFight(ecoWorld);
+    quarterCircleBack(ecoWorld, ['special']);
+    expect(ecoWorld.fighters[0].currentMove?.id).toBe('ecoTatuado');
+
+    const abracoWorld = new CombatWorld(gutoBarba, rafaMare, 'training');
+    enterFight(abracoWorld);
+    quarterCircleBack(abracoWorld, ['special']);
+    expect(abracoWorld.fighters[0].currentMove?.id).toBe('abracoGlacial');
+  });
+
+  it('agarrão do Guto só conecta dentro do alcance', () => {
+    const farWorld = new CombatWorld(gutoBarba, rafaMare, 'versus');
+    enterFight(farWorld);
+    farWorld.drainEvents();
+    farWorld.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+    for (let frame = 0; frame < 45; frame += 1) farWorld.step(empty, empty);
+    expect(farWorld.drainEvents().some((event) => event.type === 'hit')).toBe(false);
+
+    const nearWorld = new CombatWorld(gutoBarba, rafaMare, 'versus');
+    enterFight(nearWorld);
+    nearWorld.fighters[0].x = 300;
+    nearWorld.fighters[1].x = 330;
+    nearWorld.drainEvents();
+    nearWorld.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+    for (let frame = 0; frame < 45; frame += 1) nearWorld.step(empty, empty);
+    const events = nearWorld.drainEvents();
+    expect(events.some((event) => event.type === 'hit' && event.moveId === 'ganchoUrso')).toBe(true);
   });
 
   it('concede a armadura configurada da Muralha Norte', () => {

@@ -5,6 +5,7 @@ import type { CombatWorld, CombatWorldSnapshot } from '../combat/CombatWorld';
 import { MAX_METER } from '../config/gameConfig';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { getFighterDefinition } from '../fighters';
+import type { CombatButton, DirectionToken, MoveDefinition } from '../types/combat';
 import { createConceptPortrait } from '../ui/PortraitView';
 import { pixelText, toPixelFontText } from '../utils/text';
 
@@ -40,6 +41,7 @@ export class UIScene extends Phaser.Scene {
   private pausePanel: Phaser.GameObjects.Rectangle | null = null;
   private pauseTitle: Phaser.GameObjects.BitmapText | null = null;
   private pauseHint: Phaser.GameObjects.BitmapText | null = null;
+  private pauseMoveTexts: Phaser.GameObjects.BitmapText[] = [];
   private pauseButton: HudButton | null = null;
   private trainingButtons: HudButton[] = [];
   private previousBanner = '';
@@ -78,71 +80,71 @@ export class UIScene extends Phaser.Scene {
     this.roundMarkers[0].length = 0;
     this.roundMarkers[1].length = 0;
     this.trainingButtons = [];
+    this.pauseMoveTexts = [];
     this.infoText = null;
     this.previousBanner = '';
   }
 
+  // Faixa do HUD: 64px de altura (safe area superior). Os lutadores em pé
+  // ficam abaixo de y=88, garantindo margem visual para a arena.
   private createHudFrame(): void {
-    this.add.rectangle(INTERNAL_WIDTH / 2, 48, INTERNAL_WIDTH, 96, PALETTE.black, 0.94).setDepth(4);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 32, INTERNAL_WIDTH, 64, PALETTE.black, 0.94).setDepth(4);
     this.add.image(0, 0, ASSET_MANIFEST.ui.hudFrame.key).setOrigin(0).setScale(2).setDepth(5);
 
-    this.timerText = pixelText(this, INTERNAL_WIDTH / 2, 36, '99', { size: 32, align: 'center' })
+    this.timerText = pixelText(this, INTERNAL_WIDTH / 2, 20, '99', { size: 32, align: 'center' })
       .setTint(PALETTE.gold)
-      .setDepth(9);
-    pixelText(this, INTERNAL_WIDTH / 2, 64, 'TEMPO', { size: 16, align: 'center' })
-      .setTint(PALETTE.steelLight)
       .setDepth(9);
   }
 
   private createFighterHud(index: 0 | 1, fighterId: CombatWorldSnapshot['fighters'][number]['id']): void {
     const fighter = getFighterDefinition(fighterId);
     const playerOne = index === 0;
-    const portraitX = playerOne ? 44 : INTERNAL_WIDTH - 44;
-    const barStart = playerOne ? 90 : INTERNAL_WIDTH - 90;
+    const portraitX = playerOne ? 28 : INTERNAL_WIDTH - 28;
+    const barStart = playerOne ? 56 : INTERNAL_WIDTH - 56;
     const direction = playerOne ? 1 : -1;
     const tint = playerOne ? PALETTE.cyan : PALETTE.pink;
 
-    createConceptPortrait(this, portraitX, 48, fighterId, 56, 60, {
+    createConceptPortrait(this, portraitX, 31, fighterId, 34, 38, {
       crop: 'hud',
       frameColor: tint,
     }).setDepth(8);
 
-    // Margem superior segura: topo do texto (16 - 8) fica a 8px da borda.
-    pixelText(this, barStart, 16, fighter.name.toUpperCase(), {
+    // Margem superior segura: topo do texto (12 - 8) fica a 4px da borda.
+    pixelText(this, barStart, 12, fighter.name.toUpperCase(), {
       size: 16,
       align: playerOne ? 'left' : 'right',
     }).setTint(PALETTE.ivory).setDepth(9);
 
     this.add.rectangle(
-      barStart + direction * 90,
-      36,
-      180,
-      16,
+      barStart + direction * 70,
+      26,
+      140,
+      10,
       PALETTE.metalDark,
     ).setStrokeStyle(2, PALETTE.steel).setDepth(6);
     for (let segment = 0; segment < HEALTH_SEGMENTS; segment += 1) {
       const cell = this.add.rectangle(
-        barStart + direction * (8 + segment * 18),
-        36,
-        14,
+        barStart + direction * (7 + segment * 14),
+        26,
         12,
+        6,
         tint,
       ).setDepth(8);
       this.healthSegments[index].push(cell);
     }
 
     this.add.rectangle(
-      barStart + direction * 90,
-      68,
-      180,
-      10,
+      barStart + direction * 70,
+      40,
+      140,
+      8,
       PALETTE.ink,
     ).setStrokeStyle(2, PALETTE.steelDark).setDepth(6);
     for (let segment = 0; segment < METER_SEGMENTS; segment += 1) {
       const cell = this.add.rectangle(
-        barStart + direction * (8 + segment * 18),
-        68,
-        14,
+        barStart + direction * (7 + segment * 14),
+        40,
+        12,
         4,
         PALETTE.gold,
       ).setDepth(8);
@@ -150,8 +152,8 @@ export class UIScene extends Phaser.Scene {
     }
 
     for (let round = 0; round < 2; round += 1) {
-      const markerX = INTERNAL_WIDTH / 2 + (playerOne ? -1 : 1) * (28 + round * 10);
-      const marker = this.add.rectangle(markerX, 82, 6, 6, PALETTE.metalDark)
+      const markerX = INTERNAL_WIDTH / 2 + (playerOne ? -1 : 1) * (26 + round * 10);
+      const marker = this.add.rectangle(markerX, 44, 6, 6, PALETTE.metalDark)
         .setStrokeStyle(2, tint)
         .setDepth(9);
       this.roundMarkers[index].push(marker);
@@ -175,22 +177,81 @@ export class UIScene extends Phaser.Scene {
       PALETTE.black,
       0.78,
     ).setVisible(false).setDepth(90);
-    this.pausePanel = this.add.rectangle(INTERNAL_WIDTH / 2, 174, 360, 132, PALETTE.panel, 1)
+    this.pausePanel = this.add.rectangle(INTERNAL_WIDTH / 2, 202, 608, 268, PALETTE.panel, 1)
       .setStrokeStyle(4, PALETTE.steelLight)
       .setVisible(false)
       .setDepth(91);
-    this.pauseTitle = pixelText(this, INTERNAL_WIDTH / 2, 154, 'PAUSA', { size: 48, align: 'center' })
+    this.pauseTitle = pixelText(this, INTERNAL_WIDTH / 2, 86, 'PAUSA', { size: 32, align: 'center' })
       .setTint(PALETTE.gold)
       .setVisible(false)
       .setDepth(92);
-    this.pauseHint = pixelText(this, INTERNAL_WIDTH / 2, 210, 'ESC OU II PARA CONTINUAR', {
+    this.pauseHint = pixelText(this, INTERNAL_WIDTH / 2, 322, 'ESC OU II PARA CONTINUAR', {
       size: 16,
       align: 'center',
     }).setTint(PALETTE.ivory).setVisible(false).setDepth(92);
+    this.createPauseMoveList();
+  }
+
+  // Lista de golpes exibida no menu de pausa. Notacao: B/F/T = baixo/
+  // frente/tras relativos ao lutador, AR = golpe executado no ar,
+  // * = usa energia.
+  private createPauseMoveList(): void {
+    if (!this.world) return;
+    const legendLines = [
+      'PULO: CIMA  PULO DIAGONAL: CIMA+ESQ/DIR',
+      'B=BAIXO F=FRENTE T=TRAS AR=NO AR %=ENERGIA',
+    ];
+    const legend = pixelText(this, INTERNAL_WIDTH / 2, 104, legendLines.join('\n'), {
+      size: 16,
+      align: 'center',
+    }).setTint(PALETTE.cyanLight).setVisible(false).setDepth(92);
+    legend.setOrigin(0.5, 0).setCenterAlign();
+    this.pauseMoveTexts.push(legend);
+
+    const keys: readonly [string, string] = ['TECLAS F G H R / TOUCH A B S', 'TECLAS J K L U'];
+    for (const index of [0, 1] as const) {
+      const definition = this.world.fighters[index].definition;
+      const lines = [
+        `P${index + 1} ${definition.name} (${keys[index]})`,
+        ...Object.values(definition.moves).map((move) => this.describeMove(move)),
+      ];
+      const column = pixelText(this, index === 0 ? 32 : 328, 146, lines.join('\n'), { size: 8 })
+        .setTint(index === 0 ? PALETTE.cyan : PALETTE.pink)
+        .setVisible(false)
+        .setDepth(92);
+      column.setOrigin(0, 0).setLineSpacing(5);
+      this.pauseMoveTexts.push(column);
+    }
+  }
+
+  private describeMove(move: MoveDefinition): string {
+    const directionLabels: Readonly<Record<DirectionToken, string>> = {
+      neutral: '',
+      down: 'B',
+      downForward: 'BF',
+      downBack: 'BT',
+      forward: 'F',
+      back: 'T',
+      up: 'C',
+    };
+    const buttonLabels: Readonly<Record<CombatButton, string>> = {
+      light: 'FRACO',
+      heavy: 'FORTE',
+      special: 'ESP',
+      block: 'DEF',
+    };
+    const directions = (move.command.directions ?? [])
+      .map((token) => directionLabels[token])
+      .filter(Boolean)
+      .join(',');
+    const buttons = move.command.buttons.map((button) => buttonLabels[button]).join('+');
+    const prefix = move.air ? 'AR ' : '';
+    const cost = move.meterCost > 0 ? '%' : '';
+    return `${toPixelFontText(move.label).toUpperCase()}: ${prefix}${directions ? directions + '+' : ''}${buttons}${cost}`;
   }
 
   private createButtons(snapshot: CombatWorldSnapshot): void {
-    this.pauseButton = this.createButton(INTERNAL_WIDTH / 2, 86, 40, 20, 'II', () => {
+    this.pauseButton = this.createButton(INTERNAL_WIDTH / 2, 55, 40, 14, 'II', () => {
       this.game.events.emit('fight:pause');
     });
     this.pauseButton.container.setDepth(100);
@@ -308,6 +369,7 @@ export class UIScene extends Phaser.Scene {
     this.pausePanel?.setVisible(paused);
     this.pauseTitle?.setVisible(paused);
     this.pauseHint?.setVisible(paused);
+    for (const text of this.pauseMoveTexts) text.setVisible(paused);
     this.pauseButton?.label.setText(paused ? '>' : 'II');
   }
 

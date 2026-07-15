@@ -13,12 +13,17 @@ import { touchControls } from '../input/TouchControls';
 import type { CombatEvent, InputFrame } from '../types/combat';
 import { CaisStageView } from '../ui/CaisStageView';
 import { createFighterView, type FighterView } from '../ui/FighterSpriteView';
+import { pixelText } from '../utils/text';
 
 const EMPTY_INPUT: InputFrame = {
   held: new Set(),
   pressed: new Set(),
   released: new Set(),
 };
+
+// Overlay de desenvolvimento (estado, entradas, velocidades). Sempre
+// desligado por padrão; alterne com F9 durante a luta.
+const DEBUG_OVERLAY_DEFAULT = false;
 
 export class FightScene extends Phaser.Scene {
   private world!: CombatWorld;
@@ -28,6 +33,8 @@ export class FightScene extends Phaser.Scene {
   private stageView!: CaisStageView;
   private projectileSprites: Phaser.GameObjects.Sprite[] = [];
   private debugGraphics!: Phaser.GameObjects.Graphics;
+  private debugOverlayEnabled = DEBUG_OVERLAY_DEFAULT;
+  private debugOverlayText: Phaser.GameObjects.BitmapText | null = null;
   private resultScheduled = false;
   private orientationQuery: MediaQueryList | null = null;
 
@@ -43,6 +50,10 @@ export class FightScene extends Phaser.Scene {
     const playerOne = getFighterDefinition(selection.playerOne);
     const playerTwo = getFighterDefinition(selection.playerTwo);
     this.world = new CombatWorld(playerOne, playerTwo, selection.mode);
+    // Gancho de inspeção para testes instrumentados (apenas em dev).
+    if (import.meta.env.DEV) {
+      (globalThis as { __ruaWorld?: CombatWorld }).__ruaWorld = this.world;
+    }
     this.stageView = new CaisStageView(this);
     this.views = [
       createFighterView(this, playerOne),
@@ -66,6 +77,7 @@ export class FightScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-F1', this.toggleTrainingDebug, this);
     this.input.keyboard?.on('keydown-F2', this.resetTraining, this);
     this.input.keyboard?.on('keydown-F3', this.toggleTrainingCpu, this);
+    this.input.keyboard?.on('keydown-F9', this.toggleDebugOverlay, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
     globalThis.document?.addEventListener('visibilitychange', this.handleVisibility);
     this.orientationQuery = globalThis.matchMedia?.('(orientation: portrait)') ?? null;
@@ -81,6 +93,7 @@ export class FightScene extends Phaser.Scene {
     this.views[1].sync(snapshot.fighters[1], this.runner.alpha);
     this.drawProjectiles(snapshot);
     this.drawDebug(snapshot);
+    this.drawDebugOverlay();
   }
 
   private simulateStep(): void {
@@ -229,6 +242,38 @@ export class FightScene extends Phaser.Scene {
     }
   }
 
+  private toggleDebugOverlay(): void {
+    this.debugOverlayEnabled = !this.debugOverlayEnabled;
+    if (!this.debugOverlayEnabled) {
+      this.debugOverlayText?.destroy();
+      this.debugOverlayText = null;
+    }
+  }
+
+  private drawDebugOverlay(): void {
+    if (!this.debugOverlayEnabled) return;
+    if (!this.debugOverlayText) {
+      this.debugOverlayText = pixelText(this, 8, 70, '', { size: 16 })
+        .setTint(0xffd55c)
+        .setDepth(200)
+        .setOrigin(0, 0);
+    }
+    const lines = this.world.fighters.map((fighter, index) => {
+      const vx = (fighter.x - fighter.previousX).toFixed(1);
+      const vy = (fighter.y - fighter.previousY).toFixed(1);
+      const hitboxActive = fighter.getActiveHitboxes().length > 0;
+      return [
+        `P${index + 1} ${fighter.state}:${fighter.stateFrame}`,
+        `GOLPE ${fighter.currentMove?.id ?? fighter.lastMoveId ?? '-'}`,
+        `VX ${vx} VY ${vy}`,
+        `CHAO ${fighter.grounded ? 'SIM' : 'NAO'}`,
+        `DIR ${fighter.lastDirection}`,
+        `HITBOX ${hitboxActive ? 'ATIVA' : 'OFF'}`,
+      ].join('  ');
+    });
+    this.debugOverlayText.setText(lines.join('\n'));
+  }
+
   private handleVisibility = (): void => {
     if (document.hidden) {
       this.world.setPaused(true);
@@ -257,6 +302,8 @@ export class FightScene extends Phaser.Scene {
     this.input.keyboard?.off('keydown-F1', this.toggleTrainingDebug, this);
     this.input.keyboard?.off('keydown-F2', this.resetTraining, this);
     this.input.keyboard?.off('keydown-F3', this.toggleTrainingCpu, this);
+    this.input.keyboard?.off('keydown-F9', this.toggleDebugOverlay, this);
+    this.debugOverlayText = null;
     globalThis.document?.removeEventListener('visibilitychange', this.handleVisibility);
     this.orientationQuery?.removeEventListener('change', this.handleOrientation);
     this.orientationQuery = null;

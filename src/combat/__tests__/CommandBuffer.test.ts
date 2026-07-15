@@ -71,5 +71,34 @@ describe('leitura de comandos', () => {
     expect(directionFromInput(frame(['left']), -1)).toBe('forward');
     expect(directionFromInput(frame(['down', 'left']), -1)).toBe('downForward');
     expect(directionFromInput(frame(['right']), -1)).toBe('back');
+    expect(directionFromInput(frame(['down', 'right']), -1)).toBe('downBack');
+    expect(directionFromInput(frame(['down', 'left']), 1)).toBe('downBack');
+  });
+
+  it('golpe de direção única "baixo" aceita a diagonal baixo-frente', () => {
+    const lowCommand: InputCommand = {
+      directions: ['down'],
+      buttons: ['light'],
+      maxGapFrames: 2,
+      bufferFrames: 5,
+      priority: 14,
+    };
+    const diagonalSamples: readonly DirectionSample[] = [{ token: 'downForward', frame: 3 }];
+    expect(matchCommand(lowCommand, diagonalSamples, frame(['light'], ['light']), 3)).toBe(true);
+    // Sequências continuam estritas: quarto de círculo não aceita atalhos.
+    const sloppy: readonly DirectionSample[] = [
+      { token: 'downForward', frame: 2 },
+      { token: 'downForward', frame: 5 },
+      { token: 'forward', frame: 8 },
+    ];
+    expect(matchCommand(quarterCircle, sloppy, frame(['special'], ['special']), 10)).toBe(false);
+  });
+
+  it('separa golpes aéreos dos terrestres no findMove', () => {
+    const buffer = new CommandBuffer();
+    buffer.push(1, frame(['light'], ['light']), 1);
+    const moves = { lightPunch: rafaMare.moves.lightPunch!, jumpLight: rafaMare.moves.jumpLight! };
+    expect(buffer.findMove(moves, frame(['light'], ['light']), 1, 0)?.id).toBe('lightPunch');
+    expect(buffer.findMove(moves, frame(['light'], ['light']), 1, 0, true)?.id).toBe('jumpLight');
   });
 });
