@@ -25,6 +25,8 @@ export type FighterAnimationId =
   | 'crouch'
   | 'lightAttack'
   | 'heavyAttack'
+  | 'crouchLightAttack'
+  | 'crouchHeavyAttack'
   | 'special'
   | 'hit'
   | 'knockdown'

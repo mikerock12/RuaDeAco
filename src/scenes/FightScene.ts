@@ -127,16 +127,17 @@ export class FightScene extends Phaser.Scene {
     this.game.events.emit('combat:event', event);
     if (event.type === 'hit') {
       audioManager.play('hit');
-      if (event.isSuper) {
-        audioManager.play('special');
-        const freeze = event.cinematic === 'freeze';
-        this.cameras.main.flash(110, freeze ? 168 : 90, freeze ? 233 : 210, 255);
-        this.cameras.main.setScroll(event.attacker === this.world.fighters[0].id ? -4 : 4, 0);
-        this.time.delayedCall(freeze ? 120 : 80, () => this.cameras.main.setScroll(0, 0));
-      }
     }
     if (event.type === 'blocked') audioManager.play('block');
-    if (event.type === 'special' || event.type === 'passive') audioManager.play('special');
+    if (event.type === 'special' || event.type === 'passive') {
+      audioManager.play('special');
+      if (event.isSuper) {
+        const freeze = event.cinematic === 'freeze';
+        this.cameras.main.flash(400, freeze ? 168 : 90, freeze ? 233 : 210, 255);
+        this.cameras.main.setScroll(event.attacker === this.world.fighters[0].id ? -4 : 4, 0);
+        this.time.delayedCall(freeze ? 200 : 150, () => this.cameras.main.setScroll(0, 0));
+      }
+    }
     if (event.type === 'roundStart' || event.type === 'fight') audioManager.play('round');
     if (event.type === 'knockout') audioManager.play('ko');
     if (event.type === 'matchEnd') this.scheduleResult();

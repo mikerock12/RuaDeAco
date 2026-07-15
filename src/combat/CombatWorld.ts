@@ -303,6 +303,11 @@ export class CombatWorld {
   private emitMoveStart(fighter: FighterRuntime, previousMove: MoveDefinition | null): void {
     const move = fighter.currentMove;
     if (!move || move === previousMove || move.state !== 'specialAttack') return;
+    if (move.isSuper) {
+      this.fighters[0].addHitStop(30);
+      this.fighters[1].addHitStop(30);
+    }
+    
     this.emit({
       type: 'special',
       frame: this.frame,

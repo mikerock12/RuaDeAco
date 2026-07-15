@@ -126,6 +126,7 @@ export interface MoveDefinition {
   readonly command: InputCommand;
   /** Golpe executável apenas no ar; a hitbox desliga ao aterrissar. */
   readonly air?: boolean;
+  readonly jumpTrajectory?: 'neutral' | 'forward' | 'backward';
   readonly totalFrames: number;
   readonly hitboxes: readonly TimedHitbox[];
   readonly hurtboxes?: readonly TimedHurtbox[];

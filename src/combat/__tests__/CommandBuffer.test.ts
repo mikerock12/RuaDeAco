@@ -97,8 +97,8 @@ describe('leitura de comandos', () => {
   it('separa golpes aéreos dos terrestres no findMove', () => {
     const buffer = new CommandBuffer();
     buffer.push(1, frame(['light'], ['light']), 1);
-    const moves = { lightPunch: rafaMare.moves.lightPunch!, jumpLight: rafaMare.moves.jumpLight! };
+    const moves = { lightPunch: rafaMare.moves.lightPunch!, jumpLightNeutral: rafaMare.moves.jumpLightNeutral! };
     expect(buffer.findMove(moves, frame(['light'], ['light']), 1, 0)?.id).toBe('lightPunch');
-    expect(buffer.findMove(moves, frame(['light'], ['light']), 1, 0, true)?.id).toBe('jumpLight');
+    expect(buffer.findMove(moves, frame(['light'], ['light']), 1, 0, true)?.id).toBe('jumpLightNeutral');
   });
 });

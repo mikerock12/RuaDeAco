@@ -145,7 +145,11 @@ export class FighterRuntime {
     }
 
     if (this.y < GROUND_Y) {
-      const airMove = this.commandBuffer.findMove(this.definition.moves, input, simulationFrame, this.meter, true);
+      let trajectory: 'neutral' | 'forward' | 'backward' = 'neutral';
+      if (this.airDriftX > 0) trajectory = this.facing === 1 ? 'forward' : 'backward';
+      else if (this.airDriftX < 0) trajectory = this.facing === 1 ? 'backward' : 'forward';
+
+      const airMove = this.commandBuffer.findMove(this.definition.moves, input, simulationFrame, this.meter, true, trajectory);
       if (airMove) {
         this.startMove(airMove);
         this.applyMoveMotion(airMove);

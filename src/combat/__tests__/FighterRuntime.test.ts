@@ -207,7 +207,7 @@ describe('ataques aéreos', () => {
     airborne.finishFrame();
     airborne.beginFrame(input(['light'], ['light']), 2, 400);
     airborne.finishFrame();
-    expect(airborne.currentMove?.id).toBe('jumpLight');
+    expect(airborne.currentMove?.id).toBe('jumpLightNeutral');
   });
 
   it('desliga a hitbox do golpe aéreo ao aterrissar', () => {
@@ -224,7 +224,7 @@ describe('ataques aéreos', () => {
     frameNumber += 1;
     fighter.beginFrame(input(['heavy'], ['heavy']), frameNumber, 400);
     fighter.finishFrame();
-    expect(fighter.currentMove?.id).toBe('jumpKick');
+    expect(fighter.currentMove?.id).toBe('jumpHeavyNeutral');
 
     let sawActiveHitbox = false;
     while (fighter.y < GROUND_Y && frameNumber < 240) {

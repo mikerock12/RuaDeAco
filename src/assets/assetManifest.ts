@@ -29,7 +29,7 @@ export const CONCEPT_ASSETS: Readonly<Record<FighterId, PortraitAsset>> = {
     key: 'gutoBarbaPortrait',
     path: 'assets/references/guto-barba-portrait-final.png',
     hudCrop: { x: 270, y: 70, width: 720, height: 880 },
-    framedCrop: { x: 0, y: 0, width: 1254, height: 1254 },
+    framedCrop: { x: 180, y: 60, width: 900, height: 950 },
   },
 };
 

@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 import type { FighterSnapshot } from '../combat/FighterRuntime';
 import { RASTER_ASSET_SCALE, roundPixel, worldToScreen } from '../config/pixelArtConfig';
 import { getFighterSpriteAsset } from '../fighters/visual';
-import type { FighterDefinition, FighterState } from '../types/combat';
+import type { FighterDefinition, FighterState, MoveDefinition } from '../types/combat';
 import type { FighterAnimationAsset, FighterAnimationId, FighterSpriteAsset } from '../types/assets';
 
 export interface FighterView {
@@ -12,8 +12,9 @@ export interface FighterView {
   destroy(): void;
 }
 
-function animationForState(state: FighterState, activeMoveId: string | null): FighterAnimationId {
-  if (activeMoveId || state === 'lightAttack' || state === 'heavyAttack' || state === 'kickAttack' || state === 'specialAttack') {
+function animationForState(state: FighterState, activeMove: MoveDefinition | null): FighterAnimationId {
+  if (activeMove) return activeMove.animation as FighterAnimationId;
+  if (state === 'lightAttack' || state === 'heavyAttack' || state === 'kickAttack' || state === 'specialAttack') {
     if (state === 'lightAttack') return 'lightAttack';
     if (state === 'heavyAttack' || state === 'kickAttack') return 'heavyAttack';
     return 'special';
@@ -28,12 +29,14 @@ function animationForState(state: FighterState, activeMoveId: string | null): Fi
 }
 
 class SpriteFighterView implements FighterView {
+  private readonly definition: FighterDefinition;
   private readonly sprite: Phaser.GameObjects.Sprite;
   private readonly effect: Phaser.GameObjects.Sprite;
   private readonly asset: FighterSpriteAsset;
   private currentAnimation: FighterAnimationId = 'idle';
 
   constructor(scene: Phaser.Scene, definition: FighterDefinition, asset: FighterSpriteAsset) {
+    this.definition = definition;
     this.asset = asset;
     const idle = asset.animations.idle;
     this.assertTexture(scene, idle);
@@ -60,7 +63,8 @@ class SpriteFighterView implements FighterView {
       .setPosition(roundPixel(x), roundPixel(y))
       .setScale(snapshot.facing * this.asset.scale, this.asset.scale);
 
-    this.currentAnimation = animationForState(snapshot.state, snapshot.activeMoveId);
+    const activeMove = snapshot.activeMoveId ? this.definition.moves[snapshot.activeMoveId] ?? null : null;
+    this.currentAnimation = animationForState(snapshot.state, activeMove);
     const animation = this.asset.animations[this.currentAnimation];
     const ticksPerFrame = Math.max(1, Math.round(60 / animation.frameRate));
     const elapsed = Math.floor(snapshot.stateFrame / ticksPerFrame);

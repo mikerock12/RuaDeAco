@@ -126,10 +126,12 @@ export class CommandBuffer {
     frame: number,
     meter: number,
     airborne = false,
+    trajectory: 'neutral' | 'forward' | 'backward' = 'neutral',
   ): MoveDefinition | null {
     const candidates = Object.values(moves)
       .filter((move) => canSpendEnergy(meter, move.meterCost))
       .filter((move) => Boolean(move.air) === airborne)
+      .filter((move) => !move.jumpTrajectory || move.jumpTrajectory === trajectory)
       .sort((a, b) => b.command.priority - a.command.priority);
     return candidates.find((move) => matchCommand(move.command, this.samples, input, frame, this.buttonSamples)) ?? null;
   }
