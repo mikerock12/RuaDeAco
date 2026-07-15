@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { setupCapacitorApp } from './capacitor';
 import './styles.css';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH } from './config/pixelArtConfig';
 import { BootScene } from './scenes/BootScene';
@@ -57,4 +58,5 @@ const config: Phaser.Types.Core.GameConfig = {
   ],
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+setupCapacitorApp(game);

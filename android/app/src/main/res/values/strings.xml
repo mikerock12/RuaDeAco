@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Rua de Aço</string>
+    <string name="title_activity_main">Rua de Aço</string>
+    <string name="package_name">com.mikerock12.ruadeaco</string>
+    <string name="custom_url_scheme">com.mikerock12.ruadeaco</string>
+</resources>

@@ -1,0 +1,6 @@
+{
+  "appId": "com.mikerock12.ruadeaco",
+  "appName": "Rua de Aço",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

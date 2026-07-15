@@ -5,3 +5,9 @@ coverage/
 *.log
 .DS_Store
 backups/
+release-android/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/build/
+android/capacitor.build.gradle
