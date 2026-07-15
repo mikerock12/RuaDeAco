@@ -21,16 +21,27 @@ export interface PortraitAsset extends ImageAsset {
 export type FighterAnimationId =
   | 'idle'
   | 'walk'
-  | 'jump'
+  | 'jumpNeutral'
+  | 'jumpForward'
+  | 'jumpBackward'
+  | 'fall'
+  | 'landing'
   | 'crouch'
-  | 'lightAttack'
-  | 'heavyAttack'
-  | 'crouchLightAttack'
-  | 'crouchHeavyAttack'
+  | 'standingLight'
+  | 'standingHeavy'
+  | 'crouchLight'
+  | 'crouchHeavy'
+  | 'airLightNeutral'
+  | 'airHeavyNeutral'
+  | 'airLightForward'
+  | 'airHeavyForward'
+  | 'airLightBackward'
+  | 'airHeavyBackward'
   | 'special'
   | 'hit'
   | 'knockdown'
   | 'victory';
+
 
 export interface FighterAnimationAsset extends ImageAsset {
   readonly id: FighterAnimationId;

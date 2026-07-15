@@ -14,17 +14,18 @@ export interface FighterView {
 
 function animationForState(state: FighterState, activeMove: MoveDefinition | null): FighterAnimationId {
   if (activeMove) return activeMove.animation as FighterAnimationId;
-  if (state === 'lightAttack' || state === 'heavyAttack' || state === 'kickAttack' || state === 'specialAttack') {
-    if (state === 'lightAttack') return 'lightAttack';
-    if (state === 'heavyAttack' || state === 'kickAttack') return 'heavyAttack';
-    return 'special';
-  }
+  
+  if (state === 'lightAttack') return 'standingLight';
+  if (state === 'heavyAttack' || state === 'kickAttack') return 'standingHeavy';
+  if (state === 'specialAttack') return 'special';
   if (state === 'walkForward' || state === 'walkBackward') return 'walk';
-  if (state === 'jump' || state === 'fall') return 'jump';
+  if (state === 'jump') return 'jumpNeutral';
+  if (state === 'fall') return 'fall';
   if (state === 'crouch' || state === 'blockCrouching') return 'crouch';
   if (state === 'hitStun' || state === 'blockStanding') return 'hit';
   if (state === 'knockdown' || state === 'wakeUp' || state === 'knockout') return 'knockdown';
   if (state === 'victory') return 'victory';
+  
   return 'idle';
 }
 
@@ -66,12 +67,22 @@ class SpriteFighterView implements FighterView {
     const activeMove = snapshot.activeMoveId ? this.definition.moves[snapshot.activeMoveId] ?? null : null;
     this.currentAnimation = animationForState(snapshot.state, activeMove);
     const animation = this.asset.animations[this.currentAnimation];
-    const ticksPerFrame = Math.max(1, Math.round(60 / animation.frameRate));
-    const elapsed = Math.floor(snapshot.stateFrame / ticksPerFrame);
-    const frame = animation.repeat === -1
-      ? elapsed % animation.frames
-      : Math.min(animation.frames - 1, elapsed);
-    this.sprite.setTexture(animation.key, frame);
+    
+    if (!animation) {
+      console.error(`[Rua de Aço] Animação ausente: key=${this.currentAnimation} fighter=${this.definition.id} state=${snapshot.state} move=${snapshot.activeMoveId}`);
+      const fallback = this.asset.animations['idle'];
+      const ticksPerFrame = Math.max(1, Math.round(60 / fallback.frameRate));
+      const elapsed = Math.floor(snapshot.stateFrame / ticksPerFrame);
+      const frame = fallback.repeat === -1 ? elapsed % fallback.frames : Math.min(fallback.frames - 1, elapsed);
+      this.sprite.setTexture(fallback.key, frame);
+    } else {
+      const ticksPerFrame = Math.max(1, Math.round(60 / animation.frameRate));
+      const elapsed = Math.floor(snapshot.stateFrame / ticksPerFrame);
+      const frame = animation.repeat === -1
+        ? elapsed % animation.frames
+        : Math.min(animation.frames - 1, elapsed);
+      this.sprite.setTexture(animation.key, frame);
+    }
 
     if (snapshot.freezeEffectFrames > 0) this.sprite.setTint(0xa8e9ff);
     else if (snapshot.armorHits > 0) this.sprite.setTint(0xd8f8ff);

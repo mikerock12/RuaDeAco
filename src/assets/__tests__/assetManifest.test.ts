@@ -50,7 +50,7 @@ describe('assetManifest', () => {
       for (const animation of Object.values(fighter.animations)) {
         expect(animation.frameWidth).toBe(frameSize);
         expect(animation.frameHeight).toBe(frameSize);
-        expect(pngDimensions(publicAsset(animation.path))).toEqual([frameSize * 4, frameSize]);
+        expect(pngDimensions(publicAsset(animation.path))).toEqual([frameSize * animation.frames, frameSize]);
       }
     }
   });

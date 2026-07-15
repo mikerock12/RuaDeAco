@@ -57,6 +57,23 @@ describe('pulo e agachamento', () => {
     expect(fighter.y).toBeLessThan(GROUND_Y);
   });
 
+  it('W (up) apenas pula, não ataca e não ativa hitbox', () => {
+    const fighter = new FighterRuntime(rafaMare, 200, 1);
+    fighter.beginFrame(input([], ['up']), 1, 400);
+    fighter.finishFrame();
+    expect(fighter.state).toBe('jump');
+    expect(fighter.isAttacking).toBe(false);
+    expect(fighter.getActiveHitboxes().length).toBe(0);
+    
+    // Testar o avanço dos frames para garantir que em nenhum frame de pulo a hitbox é ativada.
+    for (let frameNumber = 2; frameNumber <= 20; frameNumber += 1) {
+      fighter.beginFrame(input(), frameNumber, 400);
+      fighter.finishFrame();
+      expect(fighter.isAttacking).toBe(false);
+      expect(fighter.getActiveHitboxes().length).toBe(0);
+    }
+  });
+
   it('completa o arco do pulo e volta ao idle sem travar no ar', () => {
     const fighter = new FighterRuntime(rafaMare, 200, 1);
     fighter.beginFrame(input(['up'], ['up']), 1, 400);
