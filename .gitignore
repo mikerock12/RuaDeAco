@@ -11,3 +11,6 @@ android/.gradle/
 android/local.properties
 android/build/
 android/capacitor.build.gradle
+
+# Contexto local de conversas e prompts dos assistentes
+/RuaDeAco_Contexto_GPTWork/
