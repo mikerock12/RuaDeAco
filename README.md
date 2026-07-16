@@ -29,7 +29,7 @@ npm run preview
 
 ## Renderização 16-bits
 
-- viewport lógico: **320 × 180**;
+- viewport lógico: **640 × 360**;
 - `Phaser.AUTO`, `Scale.FIT` e `Scale.CENTER_BOTH`;
 - `pixelArt: true`, `antialias: false`, `roundPixels: true` e canvas opaco;
 - CSS com `image-rendering: pixelated` e `crisp-edges`;
@@ -90,7 +90,7 @@ src/
   ui/          arena raster, retratos e sprites de luta
 public/
   assets/
-    fighters/  spritesheets planos de Rafa (192) e Guto (256)
+    fighters/  spritesheets planos de Rafa (256) e Guto (288)
     fonts/     fonte bitmap e fonte web local licenciada
     references/ seis conceitos e logo fornecidos
     stages/    camadas raster do Cais da Cidade
@@ -146,7 +146,7 @@ victory.png, knockout.png
 
 Rafa acrescenta `mao-da-mare`, `chute-da-ressaca` e `eco-tatuado`, cada qual com seu PNG de efeito. Guto acrescenta `muralha-norte` e seu efeito; Gancho do Urso usa os strips `startup`, `grab`, `hold`, `throw` e `recovery`; Abraço Glacial usa `startup`, `grab`, `hold`, `freeze`, `finish` e seu efeito. Guto nunca inclui a vítima dentro do próprio PNG.
 
-Cada strip tem quatro frames horizontais: 192 × 192 por frame para Rafa e 256 × 256 para Guto. Ao substituir uma arte:
+Cada strip tem quatro frames horizontais: 256 × 256 por frame para Rafa e 288 × 288 para Guto. Ao substituir uma arte:
 
 1. mantenha nome, transparência e quatro quadros realmente distintos;
 2. preserve a referência conceitual em `public/assets/references/` sem alterá-la;
@@ -168,14 +168,14 @@ Para publicar:
 
 ## Testes
 
-Os testes cobrem dano, energia, hit stun, comandos, passo fixo, defesa, agarrões genéricos, projéteis, rounds, preferências, projeção 320 × 180, manifesto plano e dimensões reais dos spritesheets.
+Os testes cobrem dano, energia, hit stun, comandos, passo fixo, defesa, agarrões genéricos, projéteis, rounds, preferências, viewport 640 × 360, manifesto, alpha, baseline e escala visual dos spritesheets.
 
 ## Estado dos recursos
 
 Definitivos nesta etapa:
 
 - arquitetura de combate, entrada, CPU, persistência e PWA;
-- resolução e pipeline de renderização 320 × 180;
+- resolução lógica e pipeline de renderização 640 × 360;
 - manifesto, validação e separação entre conceitos e sprites;
 - sprites animados e estados de vítima separados de Rafa e Guto;
 - uso correto dos seis conceitos e do logo fornecido;

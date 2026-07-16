@@ -1,10 +1,10 @@
 """Normalize a transparent 2x2 contact sheet into a horizontal Phaser sheet.
 
 The image model produces four equally sized cells.  This tool keeps a single
-scale for all four poses, aligns them consistently and writes exactly four
-square frames side by side.  It deliberately contains no character-specific
-artwork; the visual source remains the generated, reference-driven contact
-sheet.
+scale for all poses, aligns them consistently and writes exactly four square
+frames side by side.  Production calls pass ``--scale`` from a fighter-level
+reference (normally the idle sheet); the tool never needs to resize an
+animation merely because that pose is wider or shorter.
 """
 
 from __future__ import annotations
@@ -46,6 +46,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--padding", type=int, default=6)
     parser.add_argument("--hard-alpha", action="store_true")
     parser.add_argument(
+        "--scale",
+        type=float,
+        help=(
+            "fixed source-to-output scale shared by every body sheet of one "
+            "fighter; when omitted, legacy per-sheet fitting is used"
+        ),
+    )
+    parser.add_argument(
+        "--footline",
+        type=int,
+        help="inclusive output Y used by the lowest visible body pixel",
+    )
+    parser.add_argument(
         "--isolate-subjects",
         action="store_true",
         help=(
@@ -54,6 +67,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     return parser.parse_args()
+
+
+def harden_alpha(image: Image.Image) -> Image.Image:
+    """Quantize alpha before measuring bounds, so discarded fringe cannot move pivots."""
+
+    red, green, blue, alpha = image.split()
+    alpha = alpha.point(lambda value: 255 if value >= 128 else 0)
+    return Image.merge("RGBA", (red, green, blue, alpha))
 
 
 def alpha_components(image: Image.Image) -> list[AlphaComponent]:
@@ -156,6 +177,11 @@ def isolate_four_subjects(source: Image.Image) -> list[Image.Image]:
 def main() -> None:
     args = parse_args()
     source = Image.open(args.input).convert("RGBA")
+    # Bounds, connected components, scale and alignment must all observe the
+    # same alpha that will be exported.  Quantizing after bbox calculation was
+    # the source of the old four-pixel foot jitter.
+    if args.hard_alpha:
+        source = harden_alpha(source)
     if args.isolate_subjects:
         cells = isolate_four_subjects(source)
     else:
@@ -182,9 +208,13 @@ def main() -> None:
     max_width = max(box[2] - box[0] for box in boxes)
     max_height = max(box[3] - box[1] for box in boxes)
     usable = args.frame_size - 2 * args.padding
-    scale = min(usable / max_width, usable / max_height)
+    scale = args.scale if args.scale is not None else min(usable / max_width, usable / max_height)
     if scale <= 0:
         raise ValueError("invalid output scale")
+
+    footline = args.footline if args.footline is not None else args.frame_size - args.padding - 1
+    if not 0 <= footline < args.frame_size:
+        raise ValueError(f"footline outside frame: {footline}")
 
     sheet = Image.new("RGBA", (args.frame_size * 4, args.frame_size), (0, 0, 0, 0))
     for index, (cell, box) in enumerate(zip(cells, boxes, strict=True)):
@@ -192,16 +222,18 @@ def main() -> None:
         width = max(1, round(pose.width * scale))
         height = max(1, round(pose.height * scale))
         pose = pose.resize((width, height), Image.Resampling.NEAREST)
-        if args.hard_alpha:
-            red, green, blue, alpha = pose.split()
-            alpha = alpha.point(lambda value: 255 if value >= 128 else 0)
-            pose = Image.merge("RGBA", (red, green, blue, alpha))
-
         x = index * args.frame_size + (args.frame_size - width) // 2
         if args.alignment == "ground":
-            y = args.frame_size - args.padding - height
+            y = footline - height + 1
         else:
             y = (args.frame_size - height) // 2
+        frame_left = index * args.frame_size
+        frame_right = frame_left + args.frame_size
+        if x < frame_left or x + width > frame_right or y < 0 or y + height > args.frame_size:
+            raise ValueError(
+                f"pose {index} does not fit {args.frame_size}px frame at fixed scale {scale:.6f}: "
+                f"size={width}x{height}, position=({x - frame_left},{y})"
+            )
         sheet.alpha_composite(pose, (x, y))
 
     args.output.parent.mkdir(parents=True, exist_ok=True)

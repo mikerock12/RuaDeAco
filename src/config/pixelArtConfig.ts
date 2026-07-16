@@ -7,7 +7,7 @@ export const PRESENTATION_WIDTH = 1280;
 export const PRESENTATION_HEIGHT = 720;
 // Mundo de combate e tela compartilham o mesmo espaço 640x360.
 export const WORLD_TO_SCREEN = 1;
-export const DEFAULT_SPRITE_SIZE = 192;
+export const DEFAULT_SPRITE_SIZE = 256;
 export const PORTRAIT_SIZE = 96;
 export const VISUAL_GROUND_Y = 304;
 // Assets rasterizados em 320x180 (palco, HUD, efeitos) são exibidos em 2x inteiro.

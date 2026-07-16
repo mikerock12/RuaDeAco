@@ -43,7 +43,7 @@ const files: Readonly<Record<SharedFighterAnimationId, string>> = {
   victory: 'victory.png',
 };
 
-const FRAME_SIZE = 192;
+const FRAME_SIZE = 256;
 
 function animation(id: SharedFighterAnimationId, frameRate: number, repeat: number): FighterAnimationAsset {
   return {
@@ -86,7 +86,7 @@ function effect(
   };
 }
 
-// Rushdown ágil: corpo atlético ~176px de altura em frames 192x192.
+// Rushdown ágil: corpo atlético ~176px, com canvas folgado e raiz nos pés.
 export const rafaMareSpriteAsset: FighterSpriteAsset = {
   fighterId: 'rafa-mare',
   frameWidth: FRAME_SIZE,

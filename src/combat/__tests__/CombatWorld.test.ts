@@ -280,7 +280,6 @@ describe('integração do mundo de combate', () => {
                 anchorOffsetX: 7,
                 anchorOffsetY: -3,
                 rotationOffset: 0.1,
-                scaleMultiplier: 0.9,
               },
             },
           },
@@ -302,7 +301,6 @@ describe('integração do mundo de combate', () => {
       expect(victim.x).toBeCloseTo(attacker.x + 32);
       expect(victim.y).toBeCloseTo(attacker.y - 3);
       expect(victim.victimRotation).toBeCloseTo(0.1);
-      expect(victim.victimScale).toBeCloseTo(0.9);
       break;
     }
     expect(captured).toBe(true);

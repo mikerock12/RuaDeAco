@@ -61,10 +61,9 @@ class SpriteFighterView implements FighterView {
     const worldY = Phaser.Math.Linear(snapshot.previousY, snapshot.y, alpha);
     const x = worldToScreen(worldX) + this.asset.visualOffset.x;
     const y = worldToScreen(worldY) + this.asset.visualOffset.y;
-    const presentationScale = this.asset.scale * snapshot.victimScale;
     this.sprite
       .setPosition(roundPixel(x), roundPixel(y))
-      .setScale(snapshot.facing * presentationScale, presentationScale)
+      .setScale(snapshot.facing * this.asset.scale, this.asset.scale)
       .setRotation(snapshot.victimRotation)
       // A vítima continua sendo seu próprio sprite, apenas atrás da camada
       // corporal do grappler durante a sustentação.

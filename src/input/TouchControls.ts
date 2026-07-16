@@ -59,6 +59,11 @@ export class TouchControls {
     dpad.addEventListener('lostpointercapture', this.handlePointerEnd);
     globalThis.window?.addEventListener('blur', this.releaseAll);
     globalThis.window?.addEventListener('orientationchange', this.releaseAll);
+    globalThis.window?.addEventListener('resize', this.releaseAll, { passive: true });
+    globalThis.window?.addEventListener('pagehide', this.releaseAll);
+    globalThis.window?.visualViewport?.addEventListener('resize', this.releaseAll, { passive: true });
+    globalThis.window?.screen.orientation?.addEventListener('change', this.releaseAll);
+    globalThis.document?.addEventListener('fullscreenchange', this.releaseAll);
     globalThis.document?.addEventListener('visibilitychange', this.handleVisibility);
     this.refreshVisibility();
   }
@@ -84,6 +89,11 @@ export class TouchControls {
     this.releaseAll();
     globalThis.window?.removeEventListener('blur', this.releaseAll);
     globalThis.window?.removeEventListener('orientationchange', this.releaseAll);
+    globalThis.window?.removeEventListener('resize', this.releaseAll);
+    globalThis.window?.removeEventListener('pagehide', this.releaseAll);
+    globalThis.window?.visualViewport?.removeEventListener('resize', this.releaseAll);
+    globalThis.window?.screen.orientation?.removeEventListener('change', this.releaseAll);
+    globalThis.document?.removeEventListener('fullscreenchange', this.releaseAll);
     globalThis.document?.removeEventListener('visibilitychange', this.handleVisibility);
     this.root.replaceChildren();
     this.root.classList.remove('visible');

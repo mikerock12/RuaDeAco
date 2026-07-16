@@ -59,7 +59,6 @@ export interface FighterSnapshot {
   readonly moveConnected: 'none' | 'hit' | 'block';
   readonly grabbedBy: FighterId | null;
   readonly victimRotation: number;
-  readonly victimScale: number;
   readonly victimPhaseFrame: number;
   readonly victimPhaseFrames: number;
 }
@@ -85,7 +84,6 @@ export class FighterRuntime {
   freezeEffectFrames = 0;
   grabbedBy: FighterId | null = null;
   victimRotation = 0;
-  victimScale = 1;
   victimPhaseFrame = 0;
   victimPhaseFrames = 0;
   /** Último golpe iniciado (inspeção/debug). */
@@ -429,7 +427,6 @@ export class FighterRuntime {
     y: number,
     attackerFacing: 1 | -1,
     rotation: number,
-    scale: number,
     phaseFrame: number,
     phaseFrames: number,
   ): void {
@@ -446,7 +443,6 @@ export class FighterRuntime {
     this.y = y;
     this.facing = attackerFacing === 1 ? -1 : 1;
     this.victimRotation = rotation;
-    this.victimScale = scale;
     this.victimPhaseFrame = Math.max(0, phaseFrame);
     this.victimPhaseFrames = Math.max(1, phaseFrames);
     this.transition(state);
@@ -465,7 +461,6 @@ export class FighterRuntime {
     this.velocityX = attackerFacing * throwVelocityX;
     this.velocityY = throwVelocityY;
     this.victimRotation = 0;
-    this.victimScale = 1;
     if (!result.knockout) this.transition('thrown');
     return result;
   }
@@ -516,7 +511,6 @@ export class FighterRuntime {
     this.freezeEffectFrames = 0;
     this.grabbedBy = null;
     this.victimRotation = 0;
-    this.victimScale = 1;
     this.victimPhaseFrame = 0;
     this.victimPhaseFrames = 0;
     this.damageTowardPassive = 0;
@@ -591,7 +585,6 @@ export class FighterRuntime {
       moveConnected: this.moveConnected,
       grabbedBy: this.grabbedBy,
       victimRotation: this.victimRotation,
-      victimScale: this.victimScale,
       victimPhaseFrame: this.victimPhaseFrame,
       victimPhaseFrames: this.victimPhaseFrames,
     };
@@ -637,7 +630,6 @@ export class FighterRuntime {
   private clearGrabPresentation(): void {
     this.grabbedBy = null;
     this.victimRotation = 0;
-    this.victimScale = 1;
     this.victimPhaseFrame = 0;
     this.victimPhaseFrames = 0;
   }

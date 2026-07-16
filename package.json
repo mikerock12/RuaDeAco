@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "validate:sprites": "node scripts/audit-fighter-sprites.mjs",
     "generate:icons": "node scripts/generate-icons.mjs",
     "android:sync": "npx cap sync android",
     "android:open": "npx cap open android",

@@ -124,18 +124,13 @@ export interface GrabVictimTransform {
   readonly victimAnchorY: number;
   /** Rotação em radianos; o sinal acompanha a direção do atacante. */
   readonly victimRotation: number;
-  readonly victimScale: number;
 }
 
-/**
- * Ajuste aditivo por personagem. `scaleMultiplier` é multiplicativo para
- * permitir pequenas correções de proporção sem criar sprites do oponente no atacante.
- */
+/** Ajuste aditivo por personagem sem alterar a escala visual da vítima. */
 export interface GrabVictimOffset {
   readonly anchorOffsetX?: number;
   readonly anchorOffsetY?: number;
   readonly rotationOffset?: number;
-  readonly scaleMultiplier?: number;
 }
 
 /** Pose/âncora opcional para um trecho específico da animação do atacante. */
@@ -145,7 +140,6 @@ export interface GrabVictimPhase {
   readonly victimAnchorX?: number;
   readonly victimAnchorY?: number;
   readonly victimRotation?: number;
-  readonly victimScale?: number;
 }
 
 /**

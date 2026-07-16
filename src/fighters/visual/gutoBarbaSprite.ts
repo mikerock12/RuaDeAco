@@ -51,7 +51,7 @@ const files: Readonly<Record<FighterAnimationId, string>> = {
   victory: 'victory.png',
 };
 
-const FRAME_SIZE = 256;
+const FRAME_SIZE = 288;
 
 function animation(id: FighterAnimationId, frameRate: number, repeat: number): FighterAnimationAsset {
   return {
@@ -93,7 +93,7 @@ function effect(
   };
 }
 
-// Tank/grappler: silhueta larga ~210px de altura em frames 256x256.
+// Tank/grappler: silhueta larga ~210px, com canvas folgado e raiz nos pés.
 export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
   fighterId: 'guto-barba',
   frameWidth: FRAME_SIZE,

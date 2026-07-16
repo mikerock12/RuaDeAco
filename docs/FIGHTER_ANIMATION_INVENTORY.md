@@ -6,7 +6,7 @@ Este documento mapeia o status dos sprites de luta e especiais criados a partir 
 - ❌ **Ausente**: Nenhum arquivo existe.
 - ⚠️ **Placeholder ruim**: Arquivo genérico/duplicado sem relação com o card.
 - ⚙️ **Em produção**: Arquivo isolado do card, em processo de ajustes de spritesheet.
-- ✅ **Concluído**: Spritesheet (192x192 por frame) gerado corretamente, com animação própria.
+- ✅ **Concluído**: Spritesheet com canvas padronizado por lutador, gerado corretamente e com animação própria.
 - 🚀 **Validado no jogo**: Spritesheet conectado, configurado e testado no jogo (hitboxes, frameRate).
 
 ---

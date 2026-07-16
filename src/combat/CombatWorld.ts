@@ -564,10 +564,6 @@ export class CombatWorld {
     const anchorX = (phase?.victimAnchorX ?? definition.victimAnchorX) + (offset?.anchorOffsetX ?? 0);
     const anchorY = (phase?.victimAnchorY ?? definition.victimAnchorY) + (offset?.anchorOffsetY ?? 0);
     const rotation = (phase?.victimRotation ?? definition.victimRotation) + (offset?.rotationOffset ?? 0);
-    const scale = Math.max(
-      0.01,
-      (phase?.victimScale ?? definition.victimScale) * (offset?.scaleMultiplier ?? 1),
-    );
     const captureStart = Math.min(
       ...grab.move.hitboxes.map(({ range }) => range.from),
       definition.holdStartFrame,
@@ -584,7 +580,6 @@ export class CombatWorld {
       attacker.y + anchorY,
       attacker.facing,
       attacker.facing * rotation,
-      scale,
       frame - phaseStart,
       phaseEnd - phaseStart + 1,
     );

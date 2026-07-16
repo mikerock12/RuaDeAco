@@ -14,6 +14,14 @@ const FIGHTER_NAMES = {
   'guto-barba': 'Guto Barba',
 };
 
+// Contrato do raster final. O baseline é expresso nas coordenadas locais do
+// frame e coincide com a última linha visível do corpo (seis pixels de respiro).
+const FIGHTER_RASTER_CONTRACTS = {
+  'rafa-mare': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
+  'guto-barba': { frameWidth: 288, frameHeight: 288, baselineY: 281 },
+};
+const BODY_MASS_RATIO_TOLERANCE = 0.08;
+
 function cleanAssetPath(path) {
   return path.split(/[?#]/, 1)[0];
 }
@@ -33,7 +41,10 @@ async function loadFighterManifest() {
       id: fighter.fighterId,
       frameWidth: fighter.frameWidth,
       frameHeight: fighter.frameHeight,
-      files: [...Object.values(fighter.animations), ...fighter.effects].map((sheet) => {
+      files: [
+        ...Object.values(fighter.animations).map((sheet) => ({ ...sheet, rasterKind: 'body' })),
+        ...fighter.effects.map((sheet) => ({ ...sheet, rasterKind: 'effect' })),
+      ].map((sheet) => {
         const publicPath = cleanAssetPath(sheet.path);
         return {
           ...sheet,
@@ -167,14 +178,50 @@ function frameBounds(sheet, frameIndex) {
       };
 }
 
-function frameIsEmpty(image, frameIndex, sheet) {
+function auditFrameAlpha(image, frameIndex, sheet) {
   const bounds = frameBounds(sheet, frameIndex);
+  let transparent = 0;
+  let opaque = 0;
+  let intermediate = 0;
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
   for (let y = bounds.startY; y <= bounds.endY; y += 1) {
     for (let x = bounds.startX; x <= bounds.endX; x += 1) {
-      if (image.pixels[(y * image.width + x) * 4 + 3] > 0) return false;
+      const alpha = image.pixels[(y * image.width + x) * 4 + 3];
+      if (alpha === 0) {
+        transparent += 1;
+        continue;
+      }
+      if (alpha === 255) opaque += 1;
+      else intermediate += 1;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
     }
   }
-  return true;
+
+  const empty = opaque + intermediate === 0;
+  const bbox = empty
+    ? null
+    : {
+        minX: minX - bounds.startX,
+        minY: minY - bounds.startY,
+        maxX: maxX - bounds.startX,
+        maxY: maxY - bounds.startY,
+        width: maxX - minX + 1,
+        height: maxY - minY + 1,
+      };
+
+  return {
+    frame: frameIndex,
+    alpha: { transparent, opaque, intermediate },
+    bbox,
+    baselineY: bbox?.maxY ?? null,
+  };
 }
 
 function frameBoundaryContacts(image, frameIndex, sheet) {
@@ -234,6 +281,7 @@ const manifestPaths = new Map();
 const pixelHashes = new Map();
 
 for (const fighter of FIGHTERS) {
+  const rasterContract = FIGHTER_RASTER_CONTRACTS[fighter.id];
   const fighterDirectory = join(ROOT, 'public', 'assets', 'fighters', fighter.id);
   const expectedNames = new Set(fighter.files.map(({ file }) => file));
   const directoryEntries = existsSync(fighterDirectory)
@@ -269,6 +317,7 @@ for (const fighter of FIGHTERS) {
       fighterId: fighter.id,
       file: sheet.file,
       path: relative,
+      rasterKind: sheet.rasterKind,
       textureKey: sheet.key,
       layout: sheet.layout,
       frames: sheet.frames,
@@ -278,6 +327,9 @@ for (const fighter of FIGHTERS) {
       repeat: sheet.repeat,
       preload: sheet.preload,
       phaserAnimationKey: sheet.phaserAnimationKey,
+      expectedFrameWidth: rasterContract?.frameWidth ?? null,
+      expectedFrameHeight: rasterContract?.frameHeight ?? null,
+      expectedBaselineY: sheet.rasterKind === 'body' ? rasterContract?.baselineY ?? null : null,
       issues: [],
     };
     results.push(entry);
@@ -298,6 +350,14 @@ for (const fighter of FIGHTERS) {
     }
     if (!Number.isInteger(sheet.frameHeight) || sheet.frameHeight <= 0) {
       entry.issues.push(`frameHeight INVÁLIDO: ${String(sheet.frameHeight)}`);
+    }
+    if (!rasterContract) {
+      entry.issues.push(`CONTRATO RASTER AUSENTE PARA ${fighter.id}`);
+    } else if (sheet.frameWidth !== rasterContract.frameWidth
+      || sheet.frameHeight !== rasterContract.frameHeight) {
+      entry.issues.push(
+        `CANVAS ${sheet.frameWidth}x${sheet.frameHeight}, ESPERADO ${rasterContract.frameWidth}x${rasterContract.frameHeight}`,
+      );
     }
     if (sheet.frameWidth !== fighter.frameWidth || sheet.frameHeight !== fighter.frameHeight) {
       entry.issues.push(
@@ -397,8 +457,23 @@ for (const fighter of FIGHTERS) {
 
     const availableFrames = Math.min(sheet.frames, physicalFrames);
     const frameHashes = new Map();
+    entry.frameAudits = [];
     for (let frame = 0; frame < availableFrames; frame += 1) {
-      if (frameIsEmpty(image, frame, sheet)) entry.issues.push(`FRAME ${frame} VAZIO`);
+      const frameAudit = auditFrameAlpha(image, frame, sheet);
+      entry.frameAudits.push(frameAudit);
+      if (!frameAudit.bbox) entry.issues.push(`FRAME ${frame} VAZIO`);
+      if (sheet.rasterKind === 'body' && frameAudit.alpha.intermediate > 0) {
+        entry.issues.push(
+          `FRAME ${frame} ALPHA NÃO BINÁRIO: ${frameAudit.alpha.intermediate} pixels intermediários`,
+        );
+      }
+      if (sheet.rasterKind === 'body'
+        && rasterContract
+        && frameAudit.baselineY !== rasterContract.baselineY) {
+        entry.issues.push(
+          `FRAME ${frame} BASELINE ${String(frameAudit.baselineY)}, ESPERADO ${rasterContract.baselineY}`,
+        );
+      }
       const boundaryContacts = frameBoundaryContacts(image, frame, sheet);
       if (boundaryContacts.length > 0) {
         entry.issues.push(`FRAME ${frame} TOCA LIMITE ${boundaryContacts.join('/')}`);
@@ -411,11 +486,46 @@ for (const fighter of FIGHTERS) {
         frameHashes.set(frameHash, frame);
       }
     }
+  }
+}
 
-    // Corpos usam alpha binário; água, gelo e glow podem ser translúcidos.
-    if (alpha.intermediate > 0 && !sheet.file.endsWith('-effect.png')) {
-      const percent = ((alpha.intermediate / (image.width * image.height)) * 100).toFixed(2);
-      entry.issues.push(`ALPHA INTERMEDIÁRIO: ${alpha.intermediate} pixels (${percent}%)`);
+function median(values) {
+  const ordered = [...values].sort((left, right) => left - right);
+  const midpoint = Math.floor(ordered.length / 2);
+  return ordered.length % 2 === 0
+    ? (ordered[midpoint - 1] + ordered[midpoint]) / 2
+    : ordered[midpoint];
+}
+
+// Bbox e baseline sozinhos não detectam um corpo exportado menor no mesmo
+// canvas. A mediana de massa opaca protege a escala visual sem confundir a
+// altura natural de poses agachadas, aéreas ou derrubadas.
+for (const fighter of FIGHTERS) {
+  const bodies = results.filter(
+    (entry) => entry.fighterId === fighter.id
+      && entry.rasterKind === 'body'
+      && entry.frameAudits?.length === entry.frames,
+  );
+  for (const entry of bodies) {
+    entry.medianOpaquePixels = median(
+      entry.frameAudits.map((frame) => frame.alpha.opaque),
+    );
+  }
+
+  const idle = bodies.find(({ file }) => file === 'idle.png');
+  const referenceMass = idle?.medianOpaquePixels;
+  if (!referenceMass || referenceMass <= 0) {
+    for (const entry of bodies) entry.issues.push('MASSA DE REFERÊNCIA IDLE AUSENTE');
+    continue;
+  }
+
+  for (const entry of bodies) {
+    entry.visualMassRatio = entry.medianOpaquePixels / referenceMass;
+    if (Math.abs(1 - entry.visualMassRatio) > BODY_MASS_RATIO_TOLERANCE) {
+      entry.issues.push(
+        `MASSA VISUAL ${(entry.visualMassRatio * 100).toFixed(1)}% DO IDLE, `
+        + `TOLERÂNCIA ±${(BODY_MASS_RATIO_TOLERANCE * 100).toFixed(0)}%`,
+      );
     }
   }
 }

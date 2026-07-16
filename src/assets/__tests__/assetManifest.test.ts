@@ -48,8 +48,8 @@ describe('assetManifest', () => {
 
   it('mantém todos os sheets horizontais no padrão real por lutador', () => {
     const expectedFrameSize: Record<string, number> = {
-      'rafa-mare': 192,
-      'guto-barba': 256,
+      'rafa-mare': 256,
+      'guto-barba': 288,
     };
     for (const fighter of FIGHTER_SPRITE_ASSETS) {
       const frameSize = expectedFrameSize[fighter.fighterId] ?? 0;
