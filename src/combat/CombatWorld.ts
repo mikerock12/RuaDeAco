@@ -9,13 +9,15 @@ import type {
   CombatEvent,
   FighterDefinition,
   FighterId,
+  GrabDefinition,
+  HeldVictimState,
   HitboxDefinition,
   InputFrame,
   LocalRect,
   MoveDefinition,
 } from '../types/combat';
 import type { GameMode } from '../types/game';
-import { FighterRuntime, type FighterSnapshot } from './FighterRuntime';
+import { FighterRuntime, type AppliedHit, type FighterSnapshot } from './FighterRuntime';
 import { horizontalOverlap, intersects, toWorldRect } from './geometry';
 
 export type CombatPhase = 'intro' | 'active' | 'roundOver' | 'matchOver';
@@ -29,6 +31,7 @@ interface Contact {
 
 interface ProjectileRuntime {
   readonly runtimeId: number;
+  readonly projectileId: string;
   readonly owner: FighterRuntime;
   readonly hitbox: HitboxDefinition;
   x: number;
@@ -36,16 +39,39 @@ interface ProjectileRuntime {
   velocityX: number;
   facing: 1 | -1;
   life: number;
+  ageFrames: number;
   readonly sourceMove: MoveDefinition;
+}
+
+interface ActiveGrab {
+  readonly attacker: FighterRuntime;
+  readonly defender: FighterRuntime;
+  readonly hitbox: HitboxDefinition;
+  readonly move: MoveDefinition;
+  readonly definition: GrabDefinition;
+  readonly attackerIndex: 0 | 1;
+  readonly comboDepth: number;
 }
 
 export interface ProjectileSnapshot {
   readonly runtimeId: number;
+  readonly projectileId: string;
+  readonly sourceMoveId: string;
   readonly ownerId: FighterId;
+  readonly ageFrames: number;
   readonly x: number;
   readonly y: number;
   readonly facing: 1 | -1;
   readonly hitbox: LocalRect;
+}
+
+export interface GrabSnapshot {
+  readonly attackerId: FighterId;
+  readonly victimId: FighterId;
+  readonly moveId: string;
+  readonly attackerFrame: number;
+  readonly holdStartFrame: number;
+  readonly releaseFrame: number;
 }
 
 export interface CombatWorldSnapshot {
@@ -58,6 +84,7 @@ export interface CombatWorldSnapshot {
   readonly fighters: readonly [FighterSnapshot, FighterSnapshot];
   readonly roundWins: readonly [number, number];
   readonly projectiles: readonly ProjectileSnapshot[];
+  readonly activeGrab: GrabSnapshot | null;
   readonly combo: readonly [number, number];
   readonly lastDamage: number;
   readonly debugBoxes: boolean;
@@ -85,6 +112,7 @@ export class CombatWorld {
 
   private readonly events: CombatEvent[] = [];
   private projectiles: ProjectileRuntime[] = [];
+  private activeGrab: ActiveGrab | null = null;
   private projectileSequence = 0;
   private readonly comboHits: [number, number] = [0, 0];
   private readonly comboTimers: [number, number] = [0, 0];
@@ -107,9 +135,14 @@ export class CombatWorld {
   }
 
   step(playerOneInput: InputFrame, playerTwoInput: InputFrame): void {
-    if (this.paused || this.phase === 'matchOver') return;
+    if (this.paused) return;
     this.frame += 1;
     this.phaseFrame += 1;
+
+    if (this.phase === 'matchOver') {
+      this.stepPresentationFrame();
+      return;
+    }
 
     if (this.phase === 'intro') {
       this.stepIntro();
@@ -135,6 +168,8 @@ export class CombatWorld {
 
   resetTrainingPositions(): void {
     if (this.mode !== 'training') return;
+    this.activeGrab?.defender.cancelGrab();
+    this.activeGrab = null;
     this.fighters[0].resetPosition(220, 1);
     this.fighters[1].resetPosition(420, -1);
     this.projectiles = [];
@@ -170,12 +205,25 @@ export class CombatWorld {
       roundWins: [this.fighters[0].roundWins, this.fighters[1].roundWins],
       projectiles: this.projectiles.map((projectile) => ({
         runtimeId: projectile.runtimeId,
+        projectileId: projectile.projectileId,
+        sourceMoveId: projectile.sourceMove.id,
         ownerId: projectile.owner.id,
+        ageFrames: projectile.ageFrames,
         x: projectile.x,
         y: projectile.y,
         facing: projectile.facing,
         hitbox: this.projectileRect(projectile),
       })),
+      activeGrab: this.activeGrab
+        ? {
+            attackerId: this.activeGrab.attacker.id,
+            victimId: this.activeGrab.defender.id,
+            moveId: this.activeGrab.move.id,
+            attackerFrame: this.activeGrab.attacker.stateFrame,
+            holdStartFrame: this.activeGrab.definition.holdStartFrame,
+            releaseFrame: this.activeGrab.definition.releaseFrame,
+          }
+        : null,
       combo: [this.comboHits[0], this.comboHits[1]],
       lastDamage: this.lastDamage,
       debugBoxes: this.debugBoxes,
@@ -248,6 +296,10 @@ export class CombatWorld {
     this.resolveProjectileContacts();
     one.finishFrame();
     two.finishFrame();
+    // O snapshot apresenta o stateFrame já finalizado. Atualizar o agarrão
+    // aqui mantém pose, âncora e liberação da vítima na mesma fase visual
+    // do atacante, além de cancelar no mesmo step se um projétil o interromper.
+    this.updateActiveGrab();
     this.tickCombos();
 
     if (this.mode === 'training') {
@@ -269,6 +321,7 @@ export class CombatWorld {
   }
 
   private stepRoundOver(): void {
+    this.stepPresentationFrame();
     if (this.phaseFrame < 150) return;
     const winner = this.roundWinner;
     if (winner === null && !this.roundDraw) return;
@@ -287,6 +340,7 @@ export class CombatWorld {
     if (winner !== null) this.round += 1;
     this.timeFrames = ROUND_TIME_FRAMES;
     this.projectiles = [];
+    this.activeGrab = null;
     this.comboHits[0] = 0;
     this.comboHits[1] = 0;
     this.comboTimers[0] = 0;
@@ -342,12 +396,14 @@ export class CombatWorld {
     this.projectileSequence += 1;
     this.projectiles.push({
       runtimeId: this.projectileSequence,
+      projectileId: definition.id,
       owner,
       x: owner.x + owner.facing * definition.offsetX,
       y: GROUND_Y + definition.offsetY,
       velocityX: owner.facing * definition.velocityX,
       facing: owner.facing,
       life: definition.lifeFrames,
+      ageFrames: 0,
       sourceMove,
       hitbox: {
         ...definition.hitbox,
@@ -360,11 +416,13 @@ export class CombatWorld {
     for (const projectile of this.projectiles) {
       projectile.x += projectile.velocityX;
       projectile.life -= 1;
+      projectile.ageFrames += 1;
     }
     this.projectiles = this.projectiles.filter((projectile) => projectile.life > 0 && projectile.x > STAGE_LEFT - 30 && projectile.x < STAGE_RIGHT + 30);
   }
 
   private findContact(attacker: FighterRuntime, defender: FighterRuntime): Contact | null {
+    if (attacker.isBeingGrabbed || defender.isBeingGrabbed) return null;
     const hurtboxes = defender.getHurtboxes().map((box) => toWorldRect(box, defender));
     const hitboxes = attacker.getActiveHitboxes()
       .filter((box) => attacker.canRegisterHit(box.id, defender.id))
@@ -380,13 +438,45 @@ export class CombatWorld {
 
   private applyContact(contact: Contact, attackerIndex: 0 | 1): void {
     const { attacker, defender, hitbox, move } = contact;
-    if (!attacker.canRegisterHit(hitbox.id, defender.id)) return;
+    if (
+      attacker.isBeingGrabbed
+      || defender.isBeingGrabbed
+      || !attacker.canRegisterHit(hitbox.id, defender.id)
+    ) return;
     const blocked = defender.isBlocking(hitbox.level, hitbox.kind);
     const comboDepth = defender.state === 'hitStun' ? this.comboHits[attackerIndex] + 1 : 1;
+
+    if (hitbox.kind === 'throw' && move?.grab) {
+      attacker.registerHit(hitbox.id, defender.id, 'hit');
+      attacker.addHitStop(hitbox.hitStop);
+      defender.addHitStop(hitbox.hitStop);
+      this.activeGrab = {
+        attacker,
+        defender,
+        hitbox,
+        move,
+        definition: move.grab,
+        attackerIndex,
+        comboDepth,
+      };
+      this.positionGrabVictim(this.activeGrab);
+      return;
+    }
+
     const result = defender.applyHit(hitbox, attacker.facing, blocked, comboDepth, this.mode === 'training');
     attacker.registerHit(hitbox.id, defender.id, blocked ? 'block' : 'hit');
     attacker.addHitStop(hitbox.hitStop);
+    this.resolveContactResult(contact, attackerIndex, blocked, comboDepth, result);
+  }
 
+  private resolveContactResult(
+    contact: Contact,
+    attackerIndex: 0 | 1,
+    blocked: boolean,
+    comboDepth: number,
+    result: AppliedHit,
+  ): void {
+    const { attacker, defender, hitbox, move } = contact;
     if (result.armored) {
       this.comboHits[attackerIndex] = 0;
       this.comboTimers[attackerIndex] = 0;
@@ -428,6 +518,84 @@ export class CombatWorld {
     if (result.passiveActivated) {
       this.emit({ type: 'passive', frame: this.frame, attacker: defender.id, text: defender.definition.passive?.label ?? 'PASSIVA' });
     }
+  }
+
+  private updateActiveGrab(): void {
+    const grab = this.activeGrab;
+    if (!grab) return;
+
+    if (grab.attacker.currentMove !== grab.move || grab.attacker.state === 'knockout') {
+      grab.defender.cancelGrab();
+      this.activeGrab = null;
+      return;
+    }
+
+    if (grab.attacker.stateFrame >= grab.definition.releaseFrame) {
+      this.activeGrab = null;
+      const result = grab.defender.releaseGrab(
+        grab.hitbox,
+        grab.attacker.facing,
+        grab.comboDepth,
+        this.mode === 'training',
+        grab.definition.throwVelocityX,
+        grab.definition.throwVelocityY,
+      );
+      grab.attacker.addHitStop(grab.hitbox.hitStop);
+      this.resolveContactResult(
+        { attacker: grab.attacker, defender: grab.defender, hitbox: grab.hitbox, move: grab.move },
+        grab.attackerIndex,
+        false,
+        grab.comboDepth,
+        result,
+      );
+      return;
+    }
+
+    this.positionGrabVictim(grab);
+  }
+
+  private positionGrabVictim(grab: ActiveGrab): void {
+    const { attacker, defender, definition } = grab;
+    const frame = attacker.stateFrame;
+    const phase = definition.victimPhases?.find(({ range }) => frame >= range.from && frame <= range.to);
+    const state: HeldVictimState = phase?.state
+      ?? (frame < definition.holdStartFrame ? 'grabbedFront' : 'grabbedLifted');
+    const offset = definition.victimOffsets?.[defender.id];
+    const anchorX = (phase?.victimAnchorX ?? definition.victimAnchorX) + (offset?.anchorOffsetX ?? 0);
+    const anchorY = (phase?.victimAnchorY ?? definition.victimAnchorY) + (offset?.anchorOffsetY ?? 0);
+    const rotation = (phase?.victimRotation ?? definition.victimRotation) + (offset?.rotationOffset ?? 0);
+    const scale = Math.max(
+      0.01,
+      (phase?.victimScale ?? definition.victimScale) * (offset?.scaleMultiplier ?? 1),
+    );
+    const captureStart = Math.min(
+      ...grab.move.hitboxes.map(({ range }) => range.from),
+      definition.holdStartFrame,
+    );
+    const phaseStart = phase?.range.from
+      ?? (state === 'grabbedFront' ? captureStart : definition.holdStartFrame);
+    const phaseEnd = phase?.range.to
+      ?? (state === 'grabbedFront' ? definition.holdStartFrame - 1 : definition.releaseFrame - 1);
+
+    defender.setGrabbedPose(
+      attacker.id,
+      state,
+      attacker.x + attacker.facing * anchorX,
+      attacker.y + anchorY,
+      attacker.facing,
+      attacker.facing * rotation,
+      scale,
+      frame - phaseStart,
+      phaseEnd - phaseStart + 1,
+    );
+  }
+
+  private stepPresentationFrame(): void {
+    const [one, two] = this.fighters;
+    one.beginFrame(EMPTY_INPUT, this.frame, two.x);
+    two.beginFrame(EMPTY_INPUT, this.frame, one.x);
+    one.finishFrame();
+    two.finishFrame();
   }
 
   private resolveProjectileContacts(): void {
@@ -509,6 +677,12 @@ export class CombatWorld {
 
   private resolvePushboxes(): void {
     const [one, two] = this.fighters;
+    if (
+      one.isBeingGrabbed
+      || two.isBeingGrabbed
+      || one.state === 'thrown'
+      || two.state === 'thrown'
+    ) return;
     if (Math.abs(one.y - two.y) > 96) return;
     const oneBox = toWorldRect(one.definition.stats.pushbox, one);
     const twoBox = toWorldRect(two.definition.stats.pushbox, two);
@@ -528,7 +702,11 @@ export class CombatWorld {
   private tickCombos(): void {
     for (const index of [0, 1] as const) {
       const defender = this.fighters[index === 0 ? 1 : 0];
-      if (defender.state !== 'hitStun' && defender.state !== 'knockdown') {
+      if (
+        defender.state !== 'hitStun'
+        && defender.state !== 'thrown'
+        && defender.state !== 'knockdown'
+      ) {
         this.comboTimers[index] = 0;
         this.comboHits[index] = 0;
         continue;
@@ -540,6 +718,10 @@ export class CombatWorld {
 
   private finishRound(winner: 0 | 1 | null, knockout: boolean): void {
     if (this.phase !== 'active') return;
+    this.activeGrab = null;
+    // O round acabou: projéteis não continuam simulando e também não
+    // podem permanecer como efeitos congelados durante roundOver/matchOver.
+    this.projectiles = [];
     this.roundWinner = winner;
     this.roundDraw = winner === null;
     this.phase = 'roundOver';

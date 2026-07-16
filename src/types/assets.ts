@@ -1,4 +1,4 @@
-import type { FighterId, LocalRect } from './combat';
+import type { FighterId, FrameRange, LocalRect } from './combat';
 
 export interface AssetCrop {
   readonly x: number;
@@ -18,9 +18,23 @@ export interface PortraitAsset extends ImageAsset {
   readonly framedCrop: AssetCrop;
 }
 
-export type FighterAnimationId =
+export interface SpriteSheetAsset extends ImageAsset {
+  readonly frameWidth: number;
+  readonly frameHeight: number;
+  /** Quantidade exata de quadros, dispostos da esquerda para a direita. */
+  readonly frames: number;
+  readonly layout: 'horizontal';
+}
+
+export interface AnimatedSpriteSheetAsset extends SpriteSheetAsset {
+  readonly frameRate: number;
+  readonly repeat: number;
+}
+
+export type SharedFighterAnimationId =
   | 'idle'
   | 'walk'
+  | 'walkBackward'
   | 'jumpNeutral'
   | 'jumpForward'
   | 'jumpBackward'
@@ -29,6 +43,8 @@ export type FighterAnimationId =
   | 'crouch'
   | 'standingLight'
   | 'standingHeavy'
+  | 'forwardLight'
+  | 'forwardHeavy'
   | 'crouchLight'
   | 'crouchHeavy'
   | 'airLightNeutral'
@@ -37,23 +53,54 @@ export type FighterAnimationId =
   | 'airHeavyForward'
   | 'airLightBackward'
   | 'airHeavyBackward'
-  | 'special'
+  | 'special1'
+  | 'special2'
+  | 'special3'
+  | 'blockStanding'
+  | 'blockCrouching'
   | 'hit'
   | 'knockdown'
+  | 'wakeUp'
+  | 'grabbedFront'
+  | 'grabbedLifted'
+  | 'thrown'
+  | 'frozen'
+  | 'knockout'
   | 'victory';
 
+export type FighterAnimationId = SharedFighterAnimationId
+  | 'special2Grab'
+  | 'special2Hold'
+  | 'special2Throw'
+  | 'special2Recovery'
+  | 'special3Grab'
+  | 'special3Hold'
+  | 'special3Freeze'
+  | 'special3Finish';
 
-export interface FighterAnimationAsset extends ImageAsset {
+
+export interface FighterAnimationAsset extends AnimatedSpriteSheetAsset {
   readonly id: FighterAnimationId;
-  readonly frameWidth: number;
-  readonly frameHeight: number;
-  readonly frames: number;
-  readonly frameRate: number;
-  readonly repeat: number;
+}
+
+export interface FighterEffectAsset extends AnimatedSpriteSheetAsset {
+  readonly id: string;
+  readonly moveId: string;
+  readonly usage: 'attached' | 'projectile';
+  readonly activeRange?: FrameRange;
+  readonly origin: Readonly<{ x: number; y: number }>;
+  readonly offset: Readonly<{ x: number; y: number }>;
+  readonly scale: number;
+}
+
+export interface FighterMoveAnimationPhase {
+  readonly animation: FighterAnimationId;
+  readonly range: FrameRange;
 }
 
 export interface FighterSpriteAsset {
-  readonly fighterId: Extract<FighterId, 'rafa-mare' | 'guto-barba'>;
+  /** Todo lutador renderizável deve fornecer também os quatro estados de vítima compartilhados. */
+  readonly fighterId: FighterId;
   readonly frameWidth: number;
   readonly frameHeight: number;
   readonly origin: Readonly<{ x: number; y: number }>;
@@ -61,10 +108,11 @@ export interface FighterSpriteAsset {
   readonly visualOffset: Readonly<{ x: number; y: number }>;
   readonly hitboxGuide: readonly LocalRect[];
   readonly hurtboxGuide: readonly LocalRect[];
-  readonly animations: Readonly<Record<FighterAnimationId, FighterAnimationAsset>>;
-}
-
-export interface SpriteSheetAsset extends ImageAsset {
-  readonly frameWidth: number;
-  readonly frameHeight: number;
+  readonly animations: Readonly<
+    Record<SharedFighterAnimationId, FighterAnimationAsset>
+    & Partial<Record<FighterAnimationId, FighterAnimationAsset>>
+  >;
+  /** Efeitos continuam na pasta plana do lutador, mas em sprites separados do corpo. */
+  readonly effects: readonly FighterEffectAsset[];
+  readonly movePhases: Readonly<Record<string, readonly FighterMoveAnimationPhase[]>>;
 }

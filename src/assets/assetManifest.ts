@@ -38,7 +38,14 @@ const logo: ImageAsset = { key: 'ruaDeAcoLogo', path: 'assets/references/rua-de-
 const stage = {
   far: { key: 'caisFar', path: 'assets/stages/cais-da-cidade/far.png' },
   mid: { key: 'caisMid', path: 'assets/stages/cais-da-cidade/mid.png' },
-  water: { key: 'caisWater', path: 'assets/stages/cais-da-cidade/water.png', frameWidth: 320, frameHeight: 180 },
+  water: {
+    key: 'caisWater',
+    path: 'assets/stages/cais-da-cidade/water.png',
+    frameWidth: 320,
+    frameHeight: 180,
+    frames: 4,
+    layout: 'horizontal',
+  },
   foreground: { key: 'caisForeground', path: 'assets/stages/cais-da-cidade/foreground.png' },
 } satisfies Record<string, ImageAsset | SpriteSheetAsset>;
 
@@ -50,11 +57,6 @@ const ui = {
   missingAsset: { key: 'uiMissingAsset', path: 'assets/ui/missing-asset.png' },
 } satisfies Record<string, ImageAsset>;
 
-const effects = {
-  wave: { key: 'effectWave', path: 'assets/effects/wave.png', frameWidth: 32, frameHeight: 16 },
-  ice: { key: 'effectIce', path: 'assets/effects/ice.png', frameWidth: 32, frameHeight: 32 },
-} satisfies Record<string, SpriteSheetAsset>;
-
 export const ASSET_MANIFEST = {
   concepts: CONCEPT_ASSETS,
   logo,
@@ -65,7 +67,6 @@ export const ASSET_MANIFEST = {
   },
   stage,
   ui,
-  effects,
 } as const;
 
 export const IMAGE_ASSETS: readonly ImageAsset[] = [
@@ -77,7 +78,7 @@ export const IMAGE_ASSETS: readonly ImageAsset[] = [
   ...Object.values(ui),
 ];
 
-export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [stage.water, effects.wave, effects.ice];
+export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [stage.water];
 
 export const REQUIRED_TEXTURE_KEYS: readonly string[] = [
   ...IMAGE_ASSETS.map((asset) => asset.key),

@@ -1,5 +1,5 @@
 import type { FighterId } from '../../types/combat';
-import type { FighterSpriteAsset } from '../../types/assets';
+import type { FighterEffectAsset, FighterSpriteAsset } from '../../types/assets';
 import { gutoBarbaSpriteAsset } from './gutoBarbaSprite';
 import { rafaMareSpriteAsset } from './rafaMareSprite';
 
@@ -12,4 +12,13 @@ export const FIGHTER_SPRITE_ASSETS: readonly FighterSpriteAsset[] = [
 
 export function getFighterSpriteAsset(id: FighterId): FighterSpriteAsset | null {
   return FIGHTER_SPRITE_ASSETS.find((asset) => asset.fighterId === id) ?? null;
+}
+
+export function getFighterEffectAsset(
+  fighterId: FighterId,
+  moveId: string,
+  usage: FighterEffectAsset['usage'],
+): FighterEffectAsset | null {
+  return getFighterSpriteAsset(fighterId)?.effects
+    .find((effect) => effect.moveId === moveId && effect.usage === usage) ?? null;
 }

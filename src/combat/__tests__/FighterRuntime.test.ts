@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GROUND_Y } from '../../config/gameConfig';
+import { GROUND_Y, LANDING_FRAMES } from '../../config/gameConfig';
 import { gutoBarba } from '../../fighters/gutoBarba';
 import { rafaMare } from '../../fighters/rafaMare';
 import type { HitboxDefinition, InputAction, InputFrame } from '../../types/combat';
@@ -74,7 +74,7 @@ describe('pulo e agachamento', () => {
     }
   });
 
-  it('completa o arco do pulo e volta ao idle sem travar no ar', () => {
+  it('completa o arco, exibe o pouso e volta ao idle sem travar', () => {
     const fighter = new FighterRuntime(rafaMare, 200, 1);
     fighter.beginFrame(input(['up'], ['up']), 1, 400);
     fighter.finishFrame();
@@ -94,7 +94,29 @@ describe('pulo e agachamento', () => {
     expect(frameNumber).toBeGreaterThan(20);
     expect(frameNumber).toBeLessThan(60);
     expect(fighter.y).toBe(GROUND_Y);
+    expect(fighter.state).toBe('landing');
+    for (let landingFrame = 0; landingFrame < LANDING_FRAMES; landingFrame += 1) {
+      frameNumber += 1;
+      fighter.beginFrame(input(), frameNumber, 400);
+      fighter.finishFrame();
+    }
     expect(fighter.state).toBe('idle');
+  });
+
+  it('reinicia o contador visual ao cruzar o ápice para fall', () => {
+    const fighter = new FighterRuntime(rafaMare, 200, 1);
+    fighter.beginFrame(input([], ['up']), 1, 400);
+    fighter.finishFrame();
+
+    for (let frame = 2; frame < 80; frame += 1) {
+      fighter.beginFrame(input(), frame, 400);
+      if (fighter.state === 'fall') {
+        expect(fighter.stateFrame).toBe(0);
+        return;
+      }
+      fighter.finishFrame();
+    }
+    throw new Error('Rafa não entrou em fall');
   });
 
   it('não permite pulo duplo segurando ou reapertando para cima no ar', () => {
@@ -153,7 +175,7 @@ describe('pulo diagonal', () => {
     rideJump(fighter, 1);
     // Avança mesmo sem segurar direção durante o voo.
     expect(fighter.x).toBeGreaterThan(240);
-    expect(fighter.state).toBe('idle');
+    expect(fighter.state).toBe('landing');
   });
 
   it('pulo diagonal para trás afasta e é mais curto que para frente', () => {
@@ -187,6 +209,30 @@ describe('pulo diagonal', () => {
   it('Rafa tem pulo diagonal mais longo que Guto', () => {
     expect(rafaMare.stats.jumpForwardSpeed).toBeGreaterThan(gutoBarba.stats.jumpForwardSpeed);
     expect(rafaMare.stats.jumpBackwardSpeed).toBeGreaterThan(gutoBarba.stats.jumpBackwardSpeed);
+  });
+});
+
+describe('pouso', () => {
+  it('mantém o buffer de comando ativo durante os 6 frames de landing', () => {
+    const fighter = new FighterRuntime(rafaMare, 200, 1);
+    fighter.beginFrame(input(['up'], ['up']), 1, 400);
+    fighter.finishFrame();
+    let frameNumber = rideJump(fighter, 1);
+    expect(fighter.state).toBe('landing');
+
+    frameNumber += 1;
+    fighter.beginFrame(input(['light'], ['light']), frameNumber, 400);
+    fighter.finishFrame();
+    for (let landingFrame = 0; landingFrame < LANDING_FRAMES - 2; landingFrame += 1) {
+      frameNumber += 1;
+      fighter.beginFrame(input(), frameNumber, 400);
+      fighter.finishFrame();
+    }
+    expect(fighter.state).toBe('idle');
+
+    frameNumber += 1;
+    fighter.beginFrame(input(), frameNumber, 400);
+    expect(fighter.currentMove?.id).toBe('lightPunch');
   });
 });
 

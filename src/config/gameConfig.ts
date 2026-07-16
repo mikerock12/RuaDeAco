@@ -18,6 +18,8 @@ export const MAX_CATCH_UP_STEPS = 5;
 export const ROUND_TIME_FRAMES = 99 * 60;
 export const ROUNDS_TO_WIN = 2;
 export const MAX_METER = 100;
+export const LANDING_FRAMES = 6;
+export const WAKE_UP_FRAMES = 22;
 
 export const COLORS = {
   ink: 0x050711,

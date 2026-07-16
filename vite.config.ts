@@ -4,6 +4,9 @@ import { join, relative, resolve, sep } from 'node:path';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
+const publicRoot = resolve(process.cwd(), 'public');
+const fighterAssetPattern = /^assets\/fighters\/(?:rafa-mare|guto-barba)\/[^/]+\.png$/;
+
 function listPublicFiles(root: string): string[] {
   if (!existsSync(root)) return [];
 
@@ -25,8 +28,24 @@ function listPublicFiles(root: string): string[] {
   return files;
 }
 
+function contentRevision(root: string, files: readonly string[]): string {
+  const hash = createHash('sha256');
+  for (const file of [...files].sort()) {
+    hash.update(file);
+    const absolute = join(root, file);
+    if (existsSync(absolute)) hash.update(readFileSync(absolute));
+  }
+  return hash.digest('hex').slice(0, 12);
+}
+
+// Faz parte do bundle e muda sempre que um PNG de Rafa/Guto muda. Assim o
+// bundle novo nunca pede a mesma URL que um service worker antigo tem em cache.
+const fighterAssetRevision = contentRevision(
+  publicRoot,
+  listPublicFiles(publicRoot).filter((file) => fighterAssetPattern.test(file)),
+);
+
 function precacheManifestPlugin(): Plugin {
-  const publicRoot = resolve(process.cwd(), 'public');
   return {
     name: 'rua-de-aco-precache',
     apply: 'build',
@@ -56,6 +75,9 @@ function precacheManifestPlugin(): Plugin {
 export default defineConfig({
   base: './',
   plugins: [precacheManifestPlugin()],
+  define: {
+    __FIGHTER_ASSET_REVISION__: JSON.stringify(fighterAssetRevision),
+  },
   build: {
     target: 'es2022',
     sourcemap: false,

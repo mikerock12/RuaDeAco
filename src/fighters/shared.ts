@@ -10,11 +10,11 @@ import type {
 export const STANDARD_ANIMATIONS: readonly AnimationDefinition[] = [
   { key: 'idle', frames: 4, frameDuration: 10, loop: true },
   { key: 'walk', frames: 4, frameDuration: 6, loop: true },
-  { key: 'jump', frames: 2, frameDuration: 8, loop: false },
-  { key: 'crouch', frames: 1, frameDuration: 1, loop: false },
+  { key: 'jump', frames: 4, frameDuration: 8, loop: false },
+  { key: 'crouch', frames: 4, frameDuration: 1, loop: false },
   { key: 'attack', frames: 4, frameDuration: 4, loop: false },
-  { key: 'hit', frames: 2, frameDuration: 5, loop: false },
-  { key: 'knockdown', frames: 3, frameDuration: 8, loop: false },
+  { key: 'hit', frames: 4, frameDuration: 5, loop: false },
+  { key: 'knockdown', frames: 4, frameDuration: 8, loop: false },
   { key: 'victory', frames: 4, frameDuration: 8, loop: true },
 ];
 

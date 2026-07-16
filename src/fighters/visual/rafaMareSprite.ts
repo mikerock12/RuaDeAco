@@ -1,8 +1,14 @@
-import type { FighterAnimationAsset, FighterAnimationId, FighterSpriteAsset } from '../../types/assets';
+import type {
+  FighterAnimationAsset,
+  FighterEffectAsset,
+  FighterSpriteAsset,
+  SharedFighterAnimationId,
+} from '../../types/assets';
 
-const files: Readonly<Record<FighterAnimationId, string>> = {
+const files: Readonly<Record<SharedFighterAnimationId, string>> = {
   idle: 'idle.png',
-  walk: 'walk.png',
+  walk: 'corrida.png',
+  walkBackward: 'walk-backward.png',
   jumpNeutral: 'jump-neutral.png',
   jumpForward: 'jump-forward.png',
   jumpBackward: 'jump-backward.png',
@@ -11,6 +17,8 @@ const files: Readonly<Record<FighterAnimationId, string>> = {
   crouch: 'crouch.png',
   standingLight: 'standing-light.png',
   standingHeavy: 'standing-heavy.png',
+  forwardLight: 'forward-light.png',
+  forwardHeavy: 'forward-heavy.png',
   crouchLight: 'crouch-light.png',
   crouchHeavy: 'crouch-heavy.png',
   airLightNeutral: 'air-light-neutral.png',
@@ -19,24 +27,62 @@ const files: Readonly<Record<FighterAnimationId, string>> = {
   airHeavyForward: 'air-heavy-forward.png',
   airLightBackward: 'air-light-backward.png',
   airHeavyBackward: 'air-heavy-backward.png',
-  special: 'special.png',
+  special1: 'mao-da-mare.png',
+  special2: 'chute-da-ressaca.png',
+  special3: 'eco-tatuado.png',
+  blockStanding: 'block-standing.png',
+  blockCrouching: 'block-crouching.png',
   hit: 'hit.png',
   knockdown: 'knockdown.png',
+  wakeUp: 'wake-up.png',
+  grabbedFront: 'grabbed-front.png',
+  grabbedLifted: 'grabbed-lifted.png',
+  thrown: 'thrown.png',
+  frozen: 'frozen.png',
+  knockout: 'knockout.png',
   victory: 'victory.png',
 };
 
 const FRAME_SIZE = 192;
 
-function animation(id: FighterAnimationId, frameRate: number, repeat: number, customFrames?: number): FighterAnimationAsset {
+function animation(id: SharedFighterAnimationId, frameRate: number, repeat: number): FighterAnimationAsset {
   return {
     id,
     key: `rafa-mare-${id}`,
     path: `assets/fighters/rafa-mare/${files[id]}`,
     frameWidth: FRAME_SIZE,
     frameHeight: FRAME_SIZE,
-    frames: customFrames ?? 4,
+    frames: 4,
+    layout: 'horizontal',
     frameRate,
     repeat,
+  };
+}
+
+function effect(
+  id: string,
+  file: string,
+  moveId: string,
+  usage: FighterEffectAsset['usage'],
+  activeRange?: FighterEffectAsset['activeRange'],
+  offset: FighterEffectAsset['offset'] = { x: 0, y: 0 },
+): FighterEffectAsset {
+  return {
+    id,
+    key: `rafa-mare-effect-${id}`,
+    path: `assets/fighters/rafa-mare/${file}`,
+    moveId,
+    usage,
+    ...(activeRange ? { activeRange } : {}),
+    origin: { x: 0.5, y: 0.5 },
+    offset,
+    scale: 1,
+    frameWidth: FRAME_SIZE,
+    frameHeight: FRAME_SIZE,
+    frames: 4,
+    layout: 'horizontal',
+    frameRate: 12,
+    repeat: usage === 'projectile' ? -1 : 0,
   };
 }
 
@@ -53,17 +99,26 @@ export const rafaMareSpriteAsset: FighterSpriteAsset = {
     { x: -22, y: -136, width: 44, height: 44 },
     { x: -30, y: -94, width: 60, height: 94 },
   ],
+  effects: [
+    effect('mao-da-mare', 'mao-da-mare-effect.png', 'maoDaMare', 'projectile'),
+    effect('chute-da-ressaca', 'chute-da-ressaca-effect.png', 'chuteRessaca', 'attached', { from: 8, to: 24 }, { x: 38, y: -86 }),
+    effect('eco-tatuado', 'eco-tatuado-effect.png', 'ecoTatuado', 'attached', { from: 8, to: 28 }, { x: 0, y: -92 }),
+  ],
+  movePhases: {},
   animations: {
     idle: animation('idle', 6, -1),
     walk: animation('walk', 10, -1),
-    jumpNeutral: animation('jumpNeutral', 8, 0, 2),
-    jumpForward: animation('jumpForward', 8, 0, 2),
-    jumpBackward: animation('jumpBackward', 8, 0, 2),
-    fall: animation('fall', 8, 0, 2),
-    landing: animation('landing', 8, 0, 2),
+    walkBackward: animation('walkBackward', 8, -1),
+    jumpNeutral: animation('jumpNeutral', 8, 0),
+    jumpForward: animation('jumpForward', 8, 0),
+    jumpBackward: animation('jumpBackward', 8, 0),
+    fall: animation('fall', 8, 0),
+    landing: animation('landing', 12, 0),
     crouch: animation('crouch', 6, 0),
     standingLight: animation('standingLight', 12, 0),
     standingHeavy: animation('standingHeavy', 9, 0),
+    forwardLight: animation('forwardLight', 12, 0),
+    forwardHeavy: animation('forwardHeavy', 9, 0),
     crouchLight: animation('crouchLight', 12, 0),
     crouchHeavy: animation('crouchHeavy', 9, 0),
     airLightNeutral: animation('airLightNeutral', 12, 0),
@@ -72,9 +127,19 @@ export const rafaMareSpriteAsset: FighterSpriteAsset = {
     airHeavyForward: animation('airHeavyForward', 9, 0),
     airLightBackward: animation('airLightBackward', 12, 0),
     airHeavyBackward: animation('airHeavyBackward', 9, 0),
-    special: animation('special', 10, 0),
+    special1: animation('special1', 10, 0),
+    special2: animation('special2', 10, 0),
+    special3: animation('special3', 10, 0),
+    blockStanding: animation('blockStanding', 8, 0),
+    blockCrouching: animation('blockCrouching', 8, 0),
     hit: animation('hit', 10, 0),
     knockdown: animation('knockdown', 7, 0),
+    wakeUp: animation('wakeUp', 9, 0),
+    grabbedFront: animation('grabbedFront', 10, -1),
+    grabbedLifted: animation('grabbedLifted', 10, -1),
+    thrown: animation('thrown', 10, 0),
+    frozen: animation('frozen', 8, -1),
+    knockout: animation('knockout', 6, 0),
     victory: animation('victory', 7, -1),
   },
 };

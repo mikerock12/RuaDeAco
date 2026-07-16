@@ -1,16 +1,19 @@
 import Phaser from 'phaser';
 import { CpuController } from '../ai/CpuController';
 import { audioManager } from '../audio/AudioManager';
+import { phaserAnimationKey, spriteSheetFrameIndex } from '../assets/spriteSheetContract';
 import { CombatWorld } from '../combat/CombatWorld';
 import { FixedStepRunner } from '../combat/FixedStepRunner';
 import { toWorldRect } from '../combat/geometry';
 import { gameSession } from '../config/session';
 import { settingsStore } from '../config/settings';
-import { RASTER_ASSET_SCALE, worldRectToScreen, worldToScreen } from '../config/pixelArtConfig';
+import { worldRectToScreen, worldToScreen } from '../config/pixelArtConfig';
 import { getFighterDefinition } from '../fighters';
+import { getFighterEffectAsset } from '../fighters/visual';
 import { inputManager } from '../input/InputManager';
 import { touchControls } from '../input/TouchControls';
 import type { CombatEvent, InputFrame } from '../types/combat';
+import type { FighterEffectAsset } from '../types/assets';
 import { CaisStageView } from '../ui/CaisStageView';
 import { createFighterView, type FighterView } from '../ui/FighterSpriteView';
 import { pixelText } from '../utils/text';
@@ -29,7 +32,7 @@ export class FightScene extends Phaser.Scene {
   private world!: CombatWorld;
   private readonly runner = new FixedStepRunner();
   private cpu: CpuController | null = null;
-  private views!: readonly [FighterView, FighterView];
+  private views: readonly [FighterView, FighterView] | null = null;
   private stageView!: CaisStageView;
   private projectileSprites: Phaser.GameObjects.Sprite[] = [];
   private debugGraphics!: Phaser.GameObjects.Graphics;
@@ -43,6 +46,7 @@ export class FightScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.destroyFightSprites();
     this.resultScheduled = false;
     this.cpu = null;
     this.runner.reset();
@@ -59,6 +63,7 @@ export class FightScene extends Phaser.Scene {
       createFighterView(this, playerOne),
       createFighterView(this, playerTwo),
     ];
+    this.assertMainBodySpriteCount();
     this.projectileSprites = [];
     this.debugGraphics = this.add.graphics().setDepth(80);
 
@@ -89,8 +94,8 @@ export class FightScene extends Phaser.Scene {
     this.stageView.update(delta);
     this.runner.update(delta, () => this.simulateStep());
     const snapshot = this.world.snapshot();
-    this.views[0].sync(snapshot.fighters[0], this.runner.alpha);
-    this.views[1].sync(snapshot.fighters[1], this.runner.alpha);
+    this.views?.[0].sync(snapshot.fighters[0], this.runner.alpha);
+    this.views?.[1].sync(snapshot.fighters[1], this.runner.alpha);
     this.drawProjectiles(snapshot);
     this.drawDebug(snapshot);
     this.drawDebugOverlay();
@@ -192,25 +197,63 @@ export class FightScene extends Phaser.Scene {
 
   private drawProjectiles(snapshot: ReturnType<CombatWorld['snapshot']>): void {
     while (this.projectileSprites.length < snapshot.projectiles.length) {
+      const projectile = snapshot.projectiles[this.projectileSprites.length];
+      if (!projectile) break;
+      const effect = this.projectileEffect(projectile);
       this.projectileSprites.push(
-        this.add.sprite(0, 0, 'effectWave', 0).setScale(RASTER_ASSET_SCALE).setDepth(18),
+        this.add.sprite(0, 0, effect.key, 0).setDepth(18),
       );
+    }
+    while (this.projectileSprites.length > snapshot.projectiles.length) {
+      this.projectileSprites.pop()?.destroy();
     }
     this.projectileSprites.forEach((sprite, index) => {
       const projectile = snapshot.projectiles[index];
-      if (!projectile) {
-        sprite.setVisible(false);
-        return;
-      }
+      if (!projectile) return;
+      const effect = this.projectileEffect(projectile);
+      this.syncProjectileEffect(sprite, effect, projectile.ageFrames);
       sprite
         .setVisible(true)
-        .setPosition(worldToScreen(projectile.x), worldToScreen(projectile.y))
-        .setFrame(Math.floor(snapshot.frame / 4) % 4)
+        .setPosition(
+          worldToScreen(projectile.x) + projectile.facing * effect.offset.x,
+          worldToScreen(projectile.y) + effect.offset.y,
+        )
         .setFlipX(projectile.facing < 0);
     });
-    for (let index = snapshot.projectiles.length; index < this.projectileSprites.length; index += 1) {
-      this.projectileSprites[index]?.setVisible(false);
+  }
+
+  private projectileEffect(
+    projectile: ReturnType<CombatWorld['snapshot']>['projectiles'][number],
+  ): FighterEffectAsset {
+    const effect = getFighterEffectAsset(
+      projectile.ownerId,
+      projectile.sourceMoveId,
+      'projectile',
+    );
+    if (effect) return effect;
+
+    const message = `[Rua de Aço] Efeito de projétil ausente: fighter=${projectile.ownerId} move=${projectile.sourceMoveId} projectile=${projectile.projectileId}`;
+    console.error(message);
+    throw new Error(message);
+  }
+
+  private syncProjectileEffect(
+    sprite: Phaser.GameObjects.Sprite,
+    effect: FighterEffectAsset,
+    projectileAgeFrames: number,
+  ): void {
+    const animationKey = phaserAnimationKey(effect.key);
+    if (sprite.anims.getName() !== animationKey) {
+      sprite.play(animationKey);
+      sprite.anims.pause();
     }
+    const frameIndex = spriteSheetFrameIndex(effect, projectileAgeFrames);
+    const frame = sprite.anims.currentAnim?.frames[frameIndex];
+    if (!frame) return;
+    sprite.anims.setCurrentFrame(frame);
+    sprite
+      .setOrigin(effect.origin.x, effect.origin.y)
+      .setScale(effect.scale);
   }
 
   private drawDebug(snapshot: ReturnType<CombatWorld['snapshot']>): void {
@@ -293,6 +336,7 @@ export class FightScene extends Phaser.Scene {
   };
 
   private shutdown(): void {
+    this.destroyFightSprites();
     touchControls.setGameplayActive(false);
     inputManager.clear();
     this.runner.reset();
@@ -308,5 +352,21 @@ export class FightScene extends Phaser.Scene {
     globalThis.document?.removeEventListener('visibilitychange', this.handleVisibility);
     this.orientationQuery?.removeEventListener('change', this.handleOrientation);
     this.orientationQuery = null;
+  }
+
+  private destroyFightSprites(): void {
+    this.views?.forEach((view) => view.destroy());
+    this.views = null;
+    for (const sprite of this.projectileSprites) sprite.destroy();
+    this.projectileSprites = [];
+  }
+
+  private assertMainBodySpriteCount(): void {
+    const bodySprites = this.children.list.filter(({ name }) => name.endsWith('-fighter-sprite'));
+    if (bodySprites.length === 2) return;
+
+    const message = `[Rua de Aço] Contagem inválida de sprites corporais: ${bodySprites.length} (esperado 2)`;
+    console.error(message);
+    throw new Error(message);
   }
 }

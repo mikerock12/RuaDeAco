@@ -46,10 +46,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(caches.open(cacheName).then((cache) =>
-    cache.match(request).then((cached) => cached || fetch(request).then((response) => {
+  // Online sempre consulta a origem. O fallback ignora somente a query dentro
+  // do cache da revisão atual, permitindo usar o PNG precacheado sem reabrir a
+  // porta para arquivos de revisões antigas.
+  event.respondWith(caches.open(cacheName).then(async (cache) => {
+    try {
+      const response = await fetch(request);
       if (response.ok) void cache.put(request, response.clone());
       return response;
-    })),
-  ));
+    } catch {
+      const cached = await cache.match(request)
+        ?? await cache.match(request, { ignoreSearch: true });
+      return cached ?? new Response('Asset indisponível offline.', {
+        status: 503,
+        headers: { 'content-type': 'text/plain; charset=utf-8' },
+      });
+    }
+  }));
 });

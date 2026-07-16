@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CpuController } from '../../ai/CpuController';
 import { gutoBarba } from '../../fighters/gutoBarba';
 import { rafaMare } from '../../fighters/rafaMare';
-import type { InputAction, InputFrame } from '../../types/combat';
+import type { FighterDefinition, InputAction, InputFrame } from '../../types/combat';
 import { CombatWorld } from '../CombatWorld';
 
 const input = (held: readonly InputAction[] = [], pressed: readonly InputAction[] = []): InputFrame => ({
@@ -37,6 +37,18 @@ const quarterCircleBack = (world: CombatWorld, buttons: readonly InputAction[]):
   world.step(input(['left', ...buttons], buttons), empty);
 };
 
+const snapshotAtAttackerFrame = (
+  world: CombatWorld,
+  targetFrame: number,
+): ReturnType<CombatWorld['snapshot']> => {
+  for (let step = 0; step < 600; step += 1) {
+    const snapshot = world.snapshot();
+    if (snapshot.fighters[0].stateFrame === targetFrame) return snapshot;
+    world.step(empty, empty);
+  }
+  throw new Error(`Atacante não alcançou o frame ${targetFrame}`);
+};
+
 describe('integração do mundo de combate', () => {
   it('resolve dano e defesa com caixas próprias', () => {
     const strikeWorld = new CombatWorld(rafaMare, gutoBarba, 'cpu');
@@ -64,13 +76,36 @@ describe('integração do mundo de combate', () => {
     enterFight(specialWorld);
     quarterCircle(specialWorld, ['special']);
     for (let frame = 0; frame < 14; frame += 1) specialWorld.step(empty, empty);
-    expect(specialWorld.snapshot().projectiles.length > 0).toBe(true);
+    const projectile = specialWorld.snapshot().projectiles[0];
+    expect(projectile).toMatchObject({
+      projectileId: 'onda-curta',
+      sourceMoveId: 'maoDaMare',
+    });
+    expect(projectile?.ageFrames).toBeGreaterThan(0);
 
     const superWorld = new CombatWorld(rafaMare, gutoBarba, 'training');
     enterFight(superWorld);
     quarterCircle(superWorld, ['heavy']);
     expect(superWorld.fighters[0].currentMove?.id).toBe('chuteRessaca');
     expect(superWorld.fighters[0].meter).toBe(100);
+  });
+
+  it('remove projéteis imediatamente ao entrar em roundOver', () => {
+    const world = new CombatWorld(rafaMare, gutoBarba, 'versus');
+    enterFight(world);
+    quarterCircle(world, ['special']);
+    for (let frame = 0; frame < 14; frame += 1) world.step(empty, empty);
+    expect(world.snapshot().projectiles).toHaveLength(1);
+
+    world.timeFrames = 1;
+    world.step(empty, empty);
+
+    expect(world.snapshot()).toMatchObject({
+      phase: 'roundOver',
+      projectiles: [],
+    });
+    world.step(empty, empty);
+    expect(world.snapshot().projectiles).toEqual([]);
   });
 
   it('reconhece quarto de círculo para trás nos especiais', () => {
@@ -102,6 +137,175 @@ describe('integração do mundo de combate', () => {
     for (let frame = 0; frame < 45; frame += 1) nearWorld.step(empty, empty);
     const events = nearWorld.drainEvents();
     expect(events.some((event) => event.type === 'hit' && event.moveId === 'ganchoUrso')).toBe(true);
+  });
+
+  it('mantém atacante e vítima separados durante todo o Gancho do Urso', () => {
+    const world = new CombatWorld(gutoBarba, rafaMare, 'versus');
+    enterFight(world);
+    world.fighters[0].x = 300;
+    world.fighters[1].x = 330;
+    const victimHealth = world.fighters[1].health;
+    const victimStates = new Set<string>();
+
+    world.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+    for (let frame = 0; frame < 90; frame += 1) {
+      world.step(empty, empty);
+      const snapshot = world.snapshot();
+      const attacker = snapshot.fighters[0];
+      const victim = snapshot.fighters[1];
+      victimStates.add(victim.state);
+
+      if (victim.grabbedBy) {
+        expect(victim.grabbedBy).toBe(attacker.id);
+        expect(attacker.grabbedBy).toBeNull();
+        expect(attacker.state).toBe('specialAttack');
+        expect(snapshot.activeGrab).toMatchObject({
+          attackerId: 'guto-barba',
+          victimId: 'rafa-mare',
+          moveId: 'ganchoUrso',
+        });
+      }
+
+      if (victim.state === 'thrown') {
+        expect(victim.grabbedBy).toBeNull();
+        expect(world.fighters[1].velocityX).toBeCloseTo(
+          gutoBarba.moves.ganchoUrso!.grab?.throwVelocityX ?? 0,
+        );
+        expect(world.fighters[1].velocityY).toBeCloseTo(
+          gutoBarba.moves.ganchoUrso!.grab?.throwVelocityY ?? 0,
+        );
+        break;
+      }
+    }
+
+    expect(victimStates).toContain('grabbedFront');
+    expect(victimStates).toContain('grabbedLifted');
+    expect(victimStates).toContain('thrown');
+    expect(world.fighters[1].health).toBeLessThan(victimHealth);
+    expect(world.snapshot().activeGrab).toBeNull();
+  });
+
+  it('sincroniza hold e release do Gancho com o stateFrame apresentado', () => {
+    const world = new CombatWorld(gutoBarba, rafaMare, 'versus');
+    enterFight(world);
+    world.fighters[0].x = 300;
+    world.fighters[1].x = 330;
+    world.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+
+    const hold = snapshotAtAttackerFrame(world, 13);
+    expect(hold.activeGrab?.attackerFrame).toBe(13);
+    expect(hold.fighters[1]).toMatchObject({
+      state: 'grabbedLifted',
+      grabbedBy: 'guto-barba',
+      victimPhaseFrame: 0,
+      victimPhaseFrames: 14,
+    });
+
+    const release = snapshotAtAttackerFrame(world, 27);
+    expect(release.activeGrab).toBeNull();
+    expect(release.fighters[1]).toMatchObject({
+      state: 'thrown',
+      grabbedBy: null,
+      victimPhaseFrame: 0,
+      victimPhaseFrames: 0,
+    });
+  });
+
+  it('usa a animação frozen da própria vítima no Abraço Glacial', () => {
+    const world = new CombatWorld(gutoBarba, rafaMare, 'training');
+    enterFight(world);
+    world.fighters[0].x = 300;
+    world.fighters[1].x = 332;
+    const victimStates = new Set<string>();
+
+    quarterCircleBack(world, ['special']);
+    for (let frame = 0; frame < 180; frame += 1) {
+      world.step(empty, empty);
+      victimStates.add(world.snapshot().fighters[1].state);
+    }
+
+    expect(victimStates).toContain('grabbedFront');
+    expect(victimStates).toContain('grabbedLifted');
+    expect(victimStates).toContain('frozen');
+    expect(victimStates).toContain('thrown');
+  });
+
+  it('sincroniza hold, freeze e release do Abraço com o stateFrame apresentado', () => {
+    const world = new CombatWorld(gutoBarba, rafaMare, 'versus');
+    enterFight(world);
+    world.fighters[0].forceMeter(100);
+    world.fighters[0].x = 300;
+    world.fighters[1].x = 332;
+    quarterCircleBack(world, ['special']);
+
+    const hold = snapshotAtAttackerFrame(world, 20);
+    expect(hold.activeGrab?.attackerFrame).toBe(20);
+    expect(hold.fighters[1]).toMatchObject({
+      state: 'grabbedLifted',
+      victimPhaseFrame: 0,
+      victimPhaseFrames: 15,
+    });
+
+    const freeze = snapshotAtAttackerFrame(world, 35);
+    expect(freeze.activeGrab?.attackerFrame).toBe(35);
+    expect(freeze.fighters[1]).toMatchObject({
+      state: 'frozen',
+      grabbedBy: 'guto-barba',
+      victimPhaseFrame: 0,
+      victimPhaseFrames: 15,
+    });
+
+    const release = snapshotAtAttackerFrame(world, 50);
+    expect(release.activeGrab).toBeNull();
+    expect(release.fighters[1]).toMatchObject({
+      state: 'thrown',
+      grabbedBy: null,
+      victimPhaseFrame: 0,
+      victimPhaseFrames: 0,
+    });
+  });
+
+  it('aplica pequenos offsets específicos da vítima sem trocar os sprites do atacante', () => {
+    const gancho = gutoBarba.moves.ganchoUrso!;
+    const configuredGuto: FighterDefinition = {
+      ...gutoBarba,
+      moves: {
+        ...gutoBarba.moves,
+        ganchoUrso: {
+          ...gancho,
+          grab: {
+            ...gancho.grab!,
+            victimOffsets: {
+              'rafa-mare': {
+                anchorOffsetX: 7,
+                anchorOffsetY: -3,
+                rotationOffset: 0.1,
+                scaleMultiplier: 0.9,
+              },
+            },
+          },
+        },
+      },
+    };
+    const world = new CombatWorld(configuredGuto, rafaMare, 'versus');
+    enterFight(world);
+    world.fighters[0].x = 300;
+    world.fighters[1].x = 330;
+    world.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+
+    let captured = false;
+    for (let frame = 0; frame < 30; frame += 1) {
+      world.step(empty, empty);
+      const [attacker, victim] = world.snapshot().fighters;
+      if (victim.state !== 'grabbedFront') continue;
+      captured = true;
+      expect(victim.x).toBeCloseTo(attacker.x + 32);
+      expect(victim.y).toBeCloseTo(attacker.y - 3);
+      expect(victim.victimRotation).toBeCloseTo(0.1);
+      expect(victim.victimScale).toBeCloseTo(0.9);
+      break;
+    }
+    expect(captured).toBe(true);
   });
 
   it('concede a armadura configurada da Muralha Norte', () => {

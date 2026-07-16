@@ -12,6 +12,7 @@ export type FighterState =
   | 'walkBackward'
   | 'jump'
   | 'fall'
+  | 'landing'
   | 'crouch'
   | 'blockStanding'
   | 'blockCrouching'
@@ -22,8 +23,20 @@ export type FighterState =
   | 'hitStun'
   | 'knockdown'
   | 'wakeUp'
+  | 'grabbedFront'
+  | 'grabbedLifted'
+  | 'thrown'
+  | 'frozen'
   | 'victory'
   | 'knockout';
+
+/** Estados visuais genéricos da vítima; pertencem ao lutador agarrado, não ao atacante. */
+export type GrabVictimState = Extract<
+  FighterState,
+  'grabbedFront' | 'grabbedLifted' | 'thrown' | 'frozen'
+>;
+
+export type HeldVictimState = Exclude<GrabVictimState, 'thrown'>;
 
 export type InputAction =
   | 'left'
@@ -105,6 +118,49 @@ export interface MovementFrame {
   readonly velocityY?: number;
 }
 
+/** Transformação base da vítima, relativa à origem e direção do atacante. */
+export interface GrabVictimTransform {
+  readonly victimAnchorX: number;
+  readonly victimAnchorY: number;
+  /** Rotação em radianos; o sinal acompanha a direção do atacante. */
+  readonly victimRotation: number;
+  readonly victimScale: number;
+}
+
+/**
+ * Ajuste aditivo por personagem. `scaleMultiplier` é multiplicativo para
+ * permitir pequenas correções de proporção sem criar sprites do oponente no atacante.
+ */
+export interface GrabVictimOffset {
+  readonly anchorOffsetX?: number;
+  readonly anchorOffsetY?: number;
+  readonly rotationOffset?: number;
+  readonly scaleMultiplier?: number;
+}
+
+/** Pose/âncora opcional para um trecho específico da animação do atacante. */
+export interface GrabVictimPhase {
+  readonly range: FrameRange;
+  readonly state: HeldVictimState;
+  readonly victimAnchorX?: number;
+  readonly victimAnchorY?: number;
+  readonly victimRotation?: number;
+  readonly victimScale?: number;
+}
+
+/**
+ * Contrato genérico de agarrão. O atacante fornece apenas timing e âncoras;
+ * a vítima continua uma entidade separada e usa suas próprias animações.
+ */
+export interface GrabDefinition extends GrabVictimTransform {
+  readonly holdStartFrame: number;
+  readonly releaseFrame: number;
+  readonly throwVelocityX: number;
+  readonly throwVelocityY: number;
+  readonly victimPhases?: readonly GrabVictimPhase[];
+  readonly victimOffsets?: Partial<Readonly<Record<FighterId, GrabVictimOffset>>>;
+}
+
 export type MoveEvent =
   | { readonly frame: number; readonly type: 'spawnProjectile'; readonly projectileId: string }
   | { readonly frame: number; readonly type: 'grantArmor'; readonly hits: number }
@@ -131,6 +187,7 @@ export interface MoveDefinition {
   readonly hitboxes: readonly TimedHitbox[];
   readonly hurtboxes?: readonly TimedHurtbox[];
   readonly movement?: readonly MovementFrame[];
+  readonly grab?: GrabDefinition;
   readonly events?: readonly MoveEvent[];
   readonly cancels?: readonly CancelWindow[];
   readonly meterCost: number;

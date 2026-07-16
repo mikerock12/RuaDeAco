@@ -1,10 +1,19 @@
 import Phaser from 'phaser';
 // Adaptador raster: as fichas conceituais nunca são usadas como corpos de luta.
+import {
+  phaserAnimationKey,
+  spriteSheetFrameIndex,
+} from '../assets/spriteSheetContract';
 import type { FighterSnapshot } from '../combat/FighterRuntime';
-import { RASTER_ASSET_SCALE, roundPixel, worldToScreen } from '../config/pixelArtConfig';
+import { roundPixel, worldToScreen } from '../config/pixelArtConfig';
 import { getFighterSpriteAsset } from '../fighters/visual';
-import type { FighterDefinition, FighterState, MoveDefinition } from '../types/combat';
-import type { FighterAnimationAsset, FighterAnimationId, FighterSpriteAsset } from '../types/assets';
+import type { FighterDefinition } from '../types/combat';
+import type {
+  AnimatedSpriteSheetAsset,
+  FighterAnimationId,
+  FighterSpriteAsset,
+} from '../types/assets';
+import { resolveAttachedEffect, resolveFighterAnimation } from './fighterAnimationResolver';
 
 export interface FighterView {
   sync(snapshot: FighterSnapshot, alpha: number): void;
@@ -12,29 +21,15 @@ export interface FighterView {
   destroy(): void;
 }
 
-function animationForState(state: FighterState, activeMove: MoveDefinition | null): FighterAnimationId {
-  if (activeMove) return activeMove.animation as FighterAnimationId;
-  
-  if (state === 'lightAttack') return 'standingLight';
-  if (state === 'heavyAttack' || state === 'kickAttack') return 'standingHeavy';
-  if (state === 'specialAttack') return 'special';
-  if (state === 'walkForward' || state === 'walkBackward') return 'walk';
-  if (state === 'jump') return 'jumpNeutral';
-  if (state === 'fall') return 'fall';
-  if (state === 'crouch' || state === 'blockCrouching') return 'crouch';
-  if (state === 'hitStun' || state === 'blockStanding') return 'hit';
-  if (state === 'knockdown' || state === 'wakeUp' || state === 'knockout') return 'knockdown';
-  if (state === 'victory') return 'victory';
-  
-  return 'idle';
-}
-
 class SpriteFighterView implements FighterView {
   private readonly definition: FighterDefinition;
   private readonly sprite: Phaser.GameObjects.Sprite;
-  private readonly effect: Phaser.GameObjects.Sprite;
+  private readonly moveEffect: Phaser.GameObjects.Sprite | null;
   private readonly asset: FighterSpriteAsset;
-  private currentAnimation: FighterAnimationId = 'idle';
+  private currentAnimation: FighterAnimationId | null = null;
+  private viewVisible = true;
+  private moveEffectActive = false;
+  private destroyed = false;
 
   constructor(scene: Phaser.Scene, definition: FighterDefinition, asset: FighterSpriteAsset) {
     this.definition = definition;
@@ -45,43 +40,56 @@ class SpriteFighterView implements FighterView {
       .setOrigin(asset.origin.x, asset.origin.y)
       .setScale(asset.scale)
       .setDepth(20);
-    this.effect = scene.add.sprite(0, 0, 'effectIce', 0)
-      .setOrigin(0.5)
-      .setScale(RASTER_ASSET_SCALE)
-      .setVisible(false)
-      .setDepth(21);
+    const firstAttachedEffect = asset.effects.find((effect) => effect.usage === 'attached');
+    this.moveEffect = firstAttachedEffect
+      ? scene.add.sprite(0, 0, firstAttachedEffect.key, 0)
+        .setOrigin(firstAttachedEffect.origin.x, firstAttachedEffect.origin.y)
+        .setVisible(false)
+        .setDepth(21)
+      : null;
 
     for (const animation of Object.values(asset.animations)) this.assertTexture(scene, animation);
+    for (const effect of asset.effects) this.assertTexture(scene, effect);
     this.sprite.setName(`${definition.id}-fighter-sprite`);
+    this.moveEffect?.setName(`${definition.id}-move-effect`);
   }
 
   sync(snapshot: FighterSnapshot, alpha: number): void {
+    if (this.destroyed) return;
+
     const worldX = Phaser.Math.Linear(snapshot.previousX, snapshot.x, alpha);
     const worldY = Phaser.Math.Linear(snapshot.previousY, snapshot.y, alpha);
     const x = worldToScreen(worldX) + this.asset.visualOffset.x;
     const y = worldToScreen(worldY) + this.asset.visualOffset.y;
+    const presentationScale = this.asset.scale * snapshot.victimScale;
     this.sprite
       .setPosition(roundPixel(x), roundPixel(y))
-      .setScale(snapshot.facing * this.asset.scale, this.asset.scale);
+      .setScale(snapshot.facing * presentationScale, presentationScale)
+      .setRotation(snapshot.victimRotation)
+      // A vítima continua sendo seu próprio sprite, apenas atrás da camada
+      // corporal do grappler durante a sustentação.
+      .setDepth(snapshot.grabbedBy === null ? 20 : 19);
 
     const activeMove = snapshot.activeMoveId ? this.definition.moves[snapshot.activeMoveId] ?? null : null;
-    this.currentAnimation = animationForState(snapshot.state, activeMove);
+    const resolved = resolveFighterAnimation(snapshot, activeMove, this.asset, this.definition);
+    this.currentAnimation = resolved.id;
     const animation = this.asset.animations[this.currentAnimation];
-    
+
     if (!animation) {
       console.error(`[Rua de Aço] Animação ausente: key=${this.currentAnimation} fighter=${this.definition.id} state=${snapshot.state} move=${snapshot.activeMoveId}`);
       const fallback = this.asset.animations['idle'];
-      const ticksPerFrame = Math.max(1, Math.round(60 / fallback.frameRate));
-      const elapsed = Math.floor(snapshot.stateFrame / ticksPerFrame);
-      const frame = fallback.repeat === -1 ? elapsed % fallback.frames : Math.min(fallback.frames - 1, elapsed);
-      this.sprite.setTexture(fallback.key, frame);
+      this.applyAnimationFrame(
+        this.sprite,
+        fallback,
+        spriteSheetFrameIndex(fallback, snapshot.stateFrame),
+      );
     } else {
-      const ticksPerFrame = Math.max(1, Math.round(60 / animation.frameRate));
-      const elapsed = Math.floor(snapshot.stateFrame / ticksPerFrame);
-      const frame = animation.repeat === -1
-        ? elapsed % animation.frames
-        : Math.min(animation.frames - 1, elapsed);
-      this.sprite.setTexture(animation.key, frame);
+      this.applyAnimationFrame(
+        this.sprite,
+        animation,
+        resolved.explicitFrame
+          ?? spriteSheetFrameIndex(animation, resolved.localFrame, resolved.phaseFrames),
+      );
     }
 
     if (snapshot.freezeEffectFrames > 0) this.sprite.setTint(0xa8e9ff);
@@ -89,29 +97,83 @@ class SpriteFighterView implements FighterView {
     else if (snapshot.passiveFrames > 0) this.sprite.setTint(0x9af7ff);
     else this.sprite.clearTint();
 
-    const showIce = snapshot.freezeEffectFrames > 0 || snapshot.armorHits > 0;
-    this.effect
-      .setVisible(showIce)
-      .setPosition(roundPixel(x), roundPixel(y - 96))
-      .setFrame(Math.floor(snapshot.stateFrame / 4) % 4)
-      .setFlipX(snapshot.facing < 0);
+    const attachedEffect = resolveAttachedEffect(snapshot, activeMove, this.asset);
+    this.moveEffectActive = attachedEffect !== undefined;
+    if (this.moveEffect && attachedEffect) {
+      const effectFrame = snapshot.stateFrame - (attachedEffect.activeRange?.from ?? 0);
+      this.applyAnimationFrame(
+        this.moveEffect,
+        attachedEffect,
+        spriteSheetFrameIndex(
+          attachedEffect,
+          effectFrame,
+          attachedEffect.activeRange
+            ? attachedEffect.activeRange.to - attachedEffect.activeRange.from + 1
+            : undefined,
+        ),
+      );
+      this.moveEffect
+        .setVisible(this.viewVisible)
+        .setOrigin(attachedEffect.origin.x, attachedEffect.origin.y)
+        .setPosition(
+          roundPixel(x + snapshot.facing * attachedEffect.offset.x),
+          roundPixel(y + attachedEffect.offset.y),
+        )
+        .setScale(snapshot.facing * attachedEffect.scale, attachedEffect.scale)
+        .setRotation(snapshot.victimRotation);
+    } else {
+      this.moveEffect?.setVisible(false);
+    }
   }
 
   setVisible(visible: boolean): void {
+    if (this.destroyed) return;
+    this.viewVisible = visible;
     this.sprite.setVisible(visible);
-    this.effect.setVisible(visible && this.effect.visible);
+    this.moveEffect?.setVisible(visible && this.moveEffectActive);
   }
 
   destroy(): void {
+    if (this.destroyed) return;
+    this.destroyed = true;
     this.sprite.destroy();
-    this.effect.destroy();
+    this.moveEffect?.destroy();
   }
 
-  private assertTexture(scene: Phaser.Scene, animation: FighterAnimationAsset): void {
-    if (scene.textures.exists(animation.key)) return;
-    const message = `[Rua de Aço] Spritesheet de luta ausente: ${animation.key}`;
+  private assertTexture(scene: Phaser.Scene, animation: AnimatedSpriteSheetAsset): void {
+    const textureReady = scene.textures.exists(animation.key);
+    const animationReady = scene.anims.exists(phaserAnimationKey(animation.key));
+    if (textureReady && animationReady) return;
+    const missing = [
+      ...(!textureReady ? ['textura'] : []),
+      ...(!animationReady ? ['animação Phaser'] : []),
+    ].join(' e ');
+    const message = `[Rua de Aço] ${missing} ausente para spritesheet: ${animation.key}`;
     console.error(message);
     throw new Error(message);
+  }
+
+  private applyAnimationFrame(
+    sprite: Phaser.GameObjects.Sprite,
+    animation: AnimatedSpriteSheetAsset,
+    frameIndex: number,
+  ): void {
+    const animationKey = phaserAnimationKey(animation.key);
+    if (sprite.anims.getName() !== animationKey) {
+      sprite.play(animationKey);
+      // O estado de combate é a fonte de tempo. Pausar evita que o relógio
+      // visual avance durante hit-stop ou deixe frames antigos sob o novo.
+      sprite.anims.pause();
+    }
+
+    const phaserAnimation = sprite.anims.currentAnim;
+    const phaserFrame = phaserAnimation?.frames[frameIndex];
+    if (!phaserFrame) {
+      const message = `[Rua de Aço] Frame ${frameIndex} ausente em ${animation.key}`;
+      console.error(message);
+      throw new Error(message);
+    }
+    sprite.anims.setCurrentFrame(phaserFrame);
   }
 }
 

@@ -1,9 +1,17 @@
-import { GROUND_Y, MAX_METER, STAGE_LEFT, STAGE_RIGHT } from '../config/gameConfig';
+import {
+  GROUND_Y,
+  LANDING_FRAMES,
+  MAX_METER,
+  STAGE_LEFT,
+  STAGE_RIGHT,
+  WAKE_UP_FRAMES,
+} from '../config/gameConfig';
 import type {
   DirectionToken,
   FighterDefinition,
   FighterId,
   FighterState,
+  HeldVictimState,
   HitboxDefinition,
   HurtboxDefinition,
   InputFrame,
@@ -18,6 +26,9 @@ const EMPTY_INPUT: InputFrame = {
   pressed: new Set(),
   released: new Set(),
 };
+
+const isHeldVictimState = (state: FighterState): state is HeldVictimState =>
+  state === 'grabbedFront' || state === 'grabbedLifted' || state === 'frozen';
 
 export interface AppliedHit {
   readonly damage: number;
@@ -34,6 +45,7 @@ export interface FighterSnapshot {
   readonly y: number;
   readonly previousX: number;
   readonly previousY: number;
+  readonly airDriftX: number;
   readonly facing: 1 | -1;
   readonly state: FighterState;
   readonly stateFrame: number;
@@ -44,6 +56,12 @@ export interface FighterSnapshot {
   readonly passiveFrames: number;
   readonly freezeEffectFrames: number;
   readonly activeMoveId: string | null;
+  readonly moveConnected: 'none' | 'hit' | 'block';
+  readonly grabbedBy: FighterId | null;
+  readonly victimRotation: number;
+  readonly victimScale: number;
+  readonly victimPhaseFrame: number;
+  readonly victimPhaseFrames: number;
 }
 
 export class FighterRuntime {
@@ -65,6 +83,11 @@ export class FighterRuntime {
   invulnerableFrames = 0;
   passiveFrames = 0;
   freezeEffectFrames = 0;
+  grabbedBy: FighterId | null = null;
+  victimRotation = 0;
+  victimScale = 1;
+  victimPhaseFrame = 0;
+  victimPhaseFrames = 0;
   /** Último golpe iniciado (inspeção/debug). */
   lastMoveId: string | null = null;
 
@@ -111,7 +134,16 @@ export class FighterRuntime {
 
     if (this.state === 'knockout' || this.state === 'victory') return;
 
-    if (this.state === 'hitStun') {
+    // O mundo de combate posiciona a vítima pela âncora do atacante. Enquanto
+    // presa, ela não processa input, movimento, física ou golpes próprios.
+    if (this.grabbedBy !== null || isHeldVictimState(this.state)) return;
+
+    // A entrada já foi registrada no CommandBuffer acima. Durante estes
+    // poucos frames o corpo conclui o pouso, e comandos feitos no fim da
+    // janela continuam disponíveis ao voltar para idle.
+    if (this.state === 'landing') return;
+
+    if (this.state === 'hitStun' || this.state === 'thrown') {
       this.x += this.velocityX;
       this.velocityX *= 0.88;
       this.updateVertical();
@@ -159,9 +191,9 @@ export class FighterRuntime {
       this.updateVertical();
       if (this.y >= GROUND_Y) {
         this.airDriftX = 0;
-        this.transition('idle');
+        this.transition('landing');
       } else {
-        this.state = this.velocityY < 0 ? 'jump' : 'fall';
+        this.transition(this.velocityY < 0 ? 'jump' : 'fall');
       }
       return;
     }
@@ -216,9 +248,18 @@ export class FighterRuntime {
 
   finishFrame(): void {
     this.x = Math.max(STAGE_LEFT, Math.min(STAGE_RIGHT, this.x));
-    if (this.frozen || this.state === 'knockout' || this.state === 'victory') return;
+    if (this.frozen) return;
+    if (this.state === 'knockout' || this.state === 'victory') {
+      this.stateFrame += 1;
+      return;
+    }
 
-    if (this.state === 'hitStun') {
+    if (isHeldVictimState(this.state)) {
+      this.stateFrame += 1;
+      return;
+    }
+
+    if (this.state === 'hitStun' || this.state === 'thrown') {
       this.hitStunFrames = Math.max(0, this.hitStunFrames - 1);
       this.stateFrame += 1;
       if (this.hitStunFrames === 0) {
@@ -251,7 +292,13 @@ export class FighterRuntime {
 
     if (this.state === 'wakeUp') {
       this.stateFrame += 1;
-      if (this.stateFrame >= 22) this.transition('idle');
+      if (this.stateFrame >= WAKE_UP_FRAMES) this.transition('idle');
+      return;
+    }
+
+    if (this.state === 'landing') {
+      this.stateFrame += 1;
+      if (this.stateFrame >= LANDING_FRAMES) this.transition('idle');
       return;
     }
 
@@ -288,7 +335,13 @@ export class FighterRuntime {
   }
 
   getHurtboxes(): readonly HurtboxDefinition[] {
-    if (this.invulnerableFrames > 0 || this.state === 'knockdown' || this.state === 'knockout') return [];
+    if (
+      this.invulnerableFrames > 0
+      || this.state === 'knockdown'
+      || this.state === 'knockout'
+      || this.state === 'thrown'
+      || isHeldVictimState(this.state)
+    ) return [];
     const timed = this.activeMove?.hurtboxes?.find(({ range }) => this.stateFrame >= range.from && this.stateFrame <= range.to);
     if (timed) return timed.boxes;
     const crouching = this.state === 'crouch' || this.state === 'blockCrouching';
@@ -353,6 +406,7 @@ export class FighterRuntime {
       this.velocityX = attackerFacing * hitbox.knockbackX * 0.35;
     } else {
       const counterHit = this.isAttacking;
+      this.clearGrabPresentation();
       this.activeMove = null;
       this.armorHits = 0;
       this.hitStunFrames = calculateHitStun(hitbox.hitStun, counterHit, comboHits);
@@ -368,6 +422,62 @@ export class FighterRuntime {
     return { damage, blocked, armored: false, knockout: this.health <= 0, passiveActivated };
   }
 
+  setGrabbedPose(
+    attackerId: FighterId,
+    state: HeldVictimState,
+    x: number,
+    y: number,
+    attackerFacing: 1 | -1,
+    rotation: number,
+    scale: number,
+    phaseFrame: number,
+    phaseFrames: number,
+  ): void {
+    this.activeMove = null;
+    this.armorHits = 0;
+    this.blockStunFrames = 0;
+    this.hitStunFrames = 0;
+    this.knockdownPending = false;
+    this.airDriftX = 0;
+    this.velocityX = 0;
+    this.velocityY = 0;
+    this.grabbedBy = attackerId;
+    this.x = x;
+    this.y = y;
+    this.facing = attackerFacing === 1 ? -1 : 1;
+    this.victimRotation = rotation;
+    this.victimScale = scale;
+    this.victimPhaseFrame = Math.max(0, phaseFrame);
+    this.victimPhaseFrames = Math.max(1, phaseFrames);
+    this.transition(state);
+  }
+
+  releaseGrab(
+    hitbox: HitboxDefinition,
+    attackerFacing: 1 | -1,
+    comboHits: number,
+    infiniteHealth: boolean,
+    throwVelocityX: number,
+    throwVelocityY: number,
+  ): AppliedHit {
+    this.grabbedBy = null;
+    const result = this.applyHit(hitbox, attackerFacing, false, comboHits, infiniteHealth);
+    this.velocityX = attackerFacing * throwVelocityX;
+    this.velocityY = throwVelocityY;
+    this.victimRotation = 0;
+    this.victimScale = 1;
+    if (!result.knockout) this.transition('thrown');
+    return result;
+  }
+
+  cancelGrab(): void {
+    if (this.grabbedBy === null && !isHeldVictimState(this.state)) return;
+    this.clearGrabPresentation();
+    this.velocityX = 0;
+    this.velocityY = 0;
+    this.transition(this.y < GROUND_Y ? 'fall' : 'idle');
+  }
+
   addHitStop(frames: number): void {
     this.hitStopFrames = Math.max(this.hitStopFrames, frames);
   }
@@ -381,14 +491,12 @@ export class FighterRuntime {
   }
 
   setMatchState(state: 'victory' | 'knockout'): void {
-    this.activeMove = null;
-    this.armorHits = 0;
+    this.settleMatchPresentation();
     this.transition(state);
   }
 
   setRoundDraw(knockout: boolean): void {
-    this.activeMove = null;
-    this.armorHits = 0;
+    this.settleMatchPresentation();
     this.transition(knockout ? 'knockout' : 'idle');
   }
 
@@ -406,6 +514,11 @@ export class FighterRuntime {
     this.invulnerableFrames = 0;
     this.passiveFrames = 0;
     this.freezeEffectFrames = 0;
+    this.grabbedBy = null;
+    this.victimRotation = 0;
+    this.victimScale = 1;
+    this.victimPhaseFrame = 0;
+    this.victimPhaseFrames = 0;
     this.damageTowardPassive = 0;
     this.activeMove = null;
     this.commandBuffer.clear();
@@ -439,6 +552,10 @@ export class FighterRuntime {
     return this.frozen;
   }
 
+  get isBeingGrabbed(): boolean {
+    return this.grabbedBy !== null;
+  }
+
   get grounded(): boolean {
     return this.y >= GROUND_Y;
   }
@@ -460,6 +577,7 @@ export class FighterRuntime {
       y: this.y,
       previousX: this.previousX,
       previousY: this.previousY,
+      airDriftX: this.airDriftX,
       facing: this.facing,
       state: this.state,
       stateFrame: this.stateFrame,
@@ -470,6 +588,12 @@ export class FighterRuntime {
       passiveFrames: this.passiveFrames,
       freezeEffectFrames: this.freezeEffectFrames,
       activeMoveId: this.activeMove?.id ?? null,
+      moveConnected: this.moveConnected,
+      grabbedBy: this.grabbedBy,
+      victimRotation: this.victimRotation,
+      victimScale: this.victimScale,
+      victimPhaseFrame: this.victimPhaseFrame,
+      victimPhaseFrames: this.victimPhaseFrames,
     };
   }
 
@@ -497,7 +621,7 @@ export class FighterRuntime {
       // Aterrissou: encerra o ataque aéreo e desliga a hitbox.
       this.activeMove = null;
       this.airDriftX = 0;
-      this.transition('idle');
+      this.transition('landing');
     }
   }
 
@@ -508,6 +632,33 @@ export class FighterRuntime {
       this.y = GROUND_Y;
       this.velocityY = 0;
     }
+  }
+
+  private clearGrabPresentation(): void {
+    this.grabbedBy = null;
+    this.victimRotation = 0;
+    this.victimScale = 1;
+    this.victimPhaseFrame = 0;
+    this.victimPhaseFrames = 0;
+  }
+
+  private settleMatchPresentation(): void {
+    this.activeMove = null;
+    this.armorHits = 0;
+    this.clearGrabPresentation();
+    this.x = Math.max(STAGE_LEFT, Math.min(STAGE_RIGHT, this.x));
+    this.previousX = this.x;
+    this.y = GROUND_Y;
+    this.previousY = GROUND_Y;
+    this.velocityX = 0;
+    this.velocityY = 0;
+    this.airDriftX = 0;
+    this.hitStopFrames = 0;
+    this.hitStunFrames = 0;
+    this.blockStunFrames = 0;
+    this.knockdownPending = false;
+    this.frozen = false;
+    this.moveConnected = 'none';
   }
 
   private transition(next: FighterState): void {

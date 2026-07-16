@@ -90,7 +90,7 @@ src/
   ui/          arena raster, retratos e sprites de luta
 public/
   assets/
-    fighters/  strips provisórios 96 × 96 de Rafa e Guto
+    fighters/  spritesheets planos de Rafa (192) e Guto (256)
     fonts/     fonte bitmap e fonte web local licenciada
     references/ seis conceitos e logo fornecidos
     stages/    camadas raster do Cais da Cidade
@@ -98,14 +98,12 @@ public/
   icons/
   manifest.webmanifest
   service-worker.js
-art-source/
-  fighters/    fontes direcionais dos sprites provisórios
 scripts/
   generate-pixel-assets.mjs
-  prepare-generated-fighter-sprites.py
+  audit-fighter-sprites.mjs
 ```
 
-`src/assets/assetManifest.ts` é a fonte única das chaves e caminhos. A `PreloadScene` carrega todas as imagens, valida cada textura com `textures.exists` e interrompe a navegação com um painel de diagnóstico se um recurso obrigatório estiver ausente.
+`src/assets/assetManifest.ts` e `src/fighters/visual/` são as fontes das chaves, caminhos e dimensões. A `PreloadScene` carrega os strips como spritesheets, valida largura, altura, quantidade de frames e layout horizontal, e interrompe a navegação com um painel de diagnóstico se um recurso obrigatório estiver ausente ou mal recortado.
 
 Os conceitos são tratados como `PortraitAsset` e aparecem no menu, seleção, ficha, apresentação versus, HUD e resultado. Eles nunca são usados como corpos durante a luta. Os corpos usam `FighterSpriteAsset` separado.
 
@@ -121,32 +119,41 @@ Os conceitos são tratados como `PortraitAsset` e aparecem no menu, seleção, f
 
 Não ajuste tempos ou caixas com base no tamanho visual do PNG. A origem lógica permanece nos pés e as regras ficam no núcleo de combate.
 
-## Como substituir os sprites provisórios
+## Contrato dos sprites de Rafa e Guto
 
-Rafa e Guto usam dez strips separados:
+Todos os PNGs ficam diretamente em `public/assets/fighters/rafa-mare/` ou `public/assets/fighters/guto-barba/`. Não crie subpastas `sprites`, `specials`, `effects` ou `portraits`.
+
+Os dois lutadores compartilham estes nomes:
 
 ```text
 idle.png
-walk.png
-jump.png
+corrida.png
+walk-backward.png
 crouch.png
-light-attack.png
-heavy-attack.png
-special.png
-hit.png
-knockdown.png
-victory.png
+jump-neutral.png, jump-forward.png, jump-backward.png
+fall.png, landing.png
+standing-light.png, standing-heavy.png
+forward-light.png, forward-heavy.png
+crouch-light.png, crouch-heavy.png
+air-light-neutral.png, air-heavy-neutral.png
+air-light-forward.png, air-heavy-forward.png
+air-light-backward.png, air-heavy-backward.png
+block-standing.png, block-crouching.png
+hit.png, knockdown.png, wake-up.png
+grabbed-front.png, grabbed-lifted.png, thrown.png, frozen.png
+victory.png, knockout.png
 ```
 
-Cada strip atual tem quatro frames de 96 × 96. Para trocar por arte definitiva:
+Rafa acrescenta `mao-da-mare`, `chute-da-ressaca` e `eco-tatuado`, cada qual com seu PNG de efeito. Guto acrescenta `muralha-norte` e seu efeito; Gancho do Urso usa os strips `startup`, `grab`, `hold`, `throw` e `recovery`; Abraço Glacial usa `startup`, `grab`, `hold`, `freeze`, `finish` e seu efeito. Guto nunca inclui a vítima dentro do próprio PNG.
 
-1. substitua os PNGs mantendo o nome e a transparência;
-2. mantenha dimensões consistentes por frame;
-3. atualize `frameWidth`, `frameHeight`, origem, escala e offset no arquivo em `src/fighters/visual/` se necessário;
-4. não altere as imagens em `public/assets/references/`;
-5. rode typecheck, testes e build.
+Cada strip tem quatro frames horizontais: 192 × 192 por frame para Rafa e 256 × 256 para Guto. Ao substituir uma arte:
 
-Os scripts de geração existem para reproduzir os placeholders do vertical slice. As imagens já geradas estão versionáveis e o jogo não executa geração em tempo de execução.
+1. mantenha nome, transparência e quatro quadros realmente distintos;
+2. preserve a referência conceitual em `public/assets/references/` sem alterá-la;
+3. ajuste dimensões, origem, escala, offsets, efeitos e fases em `src/fighters/visual/`;
+4. rode `node scripts/audit-fighter-sprites.mjs`, typecheck, testes e build.
+
+`scripts/generate-pixel-assets.mjs` gera somente recursos compartilhados (fonte, cenário e UI); ele não escreve nas pastas de Rafa ou Guto. O jogo não executa geração de arte em tempo de execução.
 
 ## PWA e publicação
 
@@ -161,7 +168,7 @@ Para publicar:
 
 ## Testes
 
-Os testes cobrem dano, energia, hit stun, comandos, passo fixo, defesa, armadura, projéteis, rounds, preferências, projeção 320 × 180, manifesto de assets e dimensões 96 × 96 dos frames.
+Os testes cobrem dano, energia, hit stun, comandos, passo fixo, defesa, agarrões genéricos, projéteis, rounds, preferências, projeção 320 × 180, manifesto plano e dimensões reais dos spritesheets.
 
 ## Estado dos recursos
 
@@ -170,12 +177,12 @@ Definitivos nesta etapa:
 - arquitetura de combate, entrada, CPU, persistência e PWA;
 - resolução e pipeline de renderização 320 × 180;
 - manifesto, validação e separação entre conceitos e sprites;
+- sprites animados e estados de vítima separados de Rafa e Guto;
 - uso correto dos seis conceitos e do logo fornecido;
 - fluxo das oito cenas e integração visual.
 
 Ainda provisórios:
 
-- sprites animados de Rafa e Guto;
 - camadas raster do Cais da Cidade e tiles da interface;
 - ícones PWA e áudio;
 - balanceamento fino e animações cinematográficas.
