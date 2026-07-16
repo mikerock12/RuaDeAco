@@ -7,6 +7,7 @@ horizontal frames.  Effects are reframed without resizing their visible art.
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -61,7 +62,11 @@ RAFA_SOURCES: dict[str, tuple[str, bool]] = {
 
 GUTO_SOURCE_OVERRIDES: dict[str, Path] = {
     "abraco-glacial-grab.png": IMAGEGEN / "guto-barba" / "keyed" / "abraco-glacial-grab-fix-v2.png",
-    "crouch-heavy.png": IMAGEGEN / "guto-barba" / "keyed-clean" / "crouch-heavy.png",
+    "air-heavy-forward.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "air-heavy-forward.png",
+    "air-heavy-neutral.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "air-heavy-neutral.png",
+    "crouch-heavy.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "crouch-heavy.png",
+    "crouch-light.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "crouch-light.png",
+    "forward-heavy.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "forward-heavy.png",
     "gancho-do-urso-hold.png": IMAGEGEN / "guto-barba" / "keyed" / "gancho-do-urso-hold-hard-contract.png",
     "jump-backward.png": IMAGEGEN / "guto-barba" / "jump-backward-alpha-v5.png",
     "jump-forward.png": IMAGEGEN / "guto-barba" / "jump-forward-alpha-v5.png",
@@ -223,7 +228,7 @@ def save(sheet: Image.Image, output: Path) -> None:
     print(f"{output.relative_to(ROOT)}: {sheet.width}x{sheet.height}")
 
 
-def rebuild_rafa() -> None:
+def rebuild_rafa(only_assets: set[str] | None = None) -> None:
     directory = PUBLIC / "rafa-mare"
     source_directory = IMAGEGEN / "rafa-mare"
     idle_source, idle_isolate = RAFA_SOURCES["idle.png"]
@@ -236,6 +241,8 @@ def rebuild_rafa() -> None:
     )
     target_area = median_opaque_area(idle_sheet, RAFA_FRAME)
     for output in sorted(directory.glob("*.png")):
+        if only_assets is not None and output.name not in only_assets:
+            continue
         normalize_mass = True
         if output.name.endswith("-effect.png"):
             sheet = reframe_effect(output, RAFA_FRAME)
@@ -275,7 +282,7 @@ def rebuild_rafa() -> None:
         save(sheet, output)
 
 
-def rebuild_guto() -> None:
+def rebuild_guto(only_assets: set[str] | None = None) -> None:
     directory = PUBLIC / "guto-barba"
     keyed_directory = IMAGEGEN / "guto-barba" / "keyed"
     idle_sheet = body_from_contact_source(
@@ -287,6 +294,8 @@ def rebuild_guto() -> None:
     )
     target_area = median_opaque_area(idle_sheet, GUTO_FRAME)
     for output in sorted(directory.glob("*.png")):
+        if only_assets is not None and output.name not in only_assets:
+            continue
         if output.name.endswith("-effect.png"):
             # Guto already uses the final effect canvas. Reframing is
             # intentionally lossless and leaves its visible size untouched.
@@ -309,9 +318,48 @@ def rebuild_guto() -> None:
         save(sheet, output)
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Rebuild all fighter sprites or a safe, explicit subset."
+    )
+    parser.add_argument(
+        "--fighter",
+        choices=("all", "rafa", "guto"),
+        default="all",
+        help="fighter whose public sprites will be rewritten (default: all)",
+    )
+    parser.add_argument(
+        "--asset",
+        action="append",
+        dest="assets",
+        metavar="FILENAME",
+        help="rewrite only this PNG; repeat for multiple assets",
+    )
+    return parser.parse_args()
+
+
+def validate_requested_assets(fighter: str, assets: set[str] | None) -> None:
+    if assets is None:
+        return
+    directories = []
+    if fighter in ("all", "rafa"):
+        directories.append(PUBLIC / "rafa-mare")
+    if fighter in ("all", "guto"):
+        directories.append(PUBLIC / "guto-barba")
+    available = {path.name for directory in directories for path in directory.glob("*.png")}
+    missing = sorted(assets - available)
+    if missing:
+        raise ValueError(f"unknown requested assets: {', '.join(missing)}")
+
+
 def main() -> None:
-    rebuild_rafa()
-    rebuild_guto()
+    args = parse_args()
+    assets = set(args.assets) if args.assets else None
+    validate_requested_assets(args.fighter, assets)
+    if args.fighter in ("all", "rafa"):
+        rebuild_rafa(assets)
+    if args.fighter in ("all", "guto"):
+        rebuild_guto(assets)
 
 
 if __name__ == "__main__":

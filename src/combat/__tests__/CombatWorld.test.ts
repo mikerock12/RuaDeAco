@@ -23,20 +23,6 @@ const approach = (world: CombatWorld): void => {
   for (let frame = 0; frame < 4; frame += 1) world.step(empty, empty);
 };
 
-const quarterCircle = (world: CombatWorld, buttons: readonly InputAction[]): void => {
-  for (let frame = 0; frame < 3; frame += 1) world.step(input(['down']), empty);
-  for (let frame = 0; frame < 3; frame += 1) world.step(input(['down', 'right']), empty);
-  for (let frame = 0; frame < 3; frame += 1) world.step(input(['right']), empty);
-  world.step(input(['right', ...buttons], buttons), empty);
-};
-
-const quarterCircleBack = (world: CombatWorld, buttons: readonly InputAction[]): void => {
-  for (let frame = 0; frame < 3; frame += 1) world.step(input(['down']), empty);
-  for (let frame = 0; frame < 3; frame += 1) world.step(input(['down', 'left']), empty);
-  for (let frame = 0; frame < 3; frame += 1) world.step(input(['left']), empty);
-  world.step(input(['left', ...buttons], buttons), empty);
-};
-
 const snapshotAtAttackerFrame = (
   world: CombatWorld,
   targetFrame: number,
@@ -74,7 +60,7 @@ describe('integração do mundo de combate', () => {
   it('executa projétil e super a partir do command buffer', () => {
     const specialWorld = new CombatWorld(rafaMare, gutoBarba, 'training');
     enterFight(specialWorld);
-    quarterCircle(specialWorld, ['special']);
+    specialWorld.step(input(['special'], ['special']), empty);
     for (let frame = 0; frame < 14; frame += 1) specialWorld.step(empty, empty);
     const projectile = specialWorld.snapshot().projectiles[0];
     expect(projectile).toMatchObject({
@@ -85,7 +71,7 @@ describe('integração do mundo de combate', () => {
 
     const superWorld = new CombatWorld(rafaMare, gutoBarba, 'training');
     enterFight(superWorld);
-    quarterCircle(superWorld, ['heavy']);
+    superWorld.step(input(['right', 'special'], ['special']), empty);
     expect(superWorld.fighters[0].currentMove?.id).toBe('chuteRessaca');
     expect(superWorld.fighters[0].meter).toBe(100);
   });
@@ -93,7 +79,7 @@ describe('integração do mundo de combate', () => {
   it('remove projéteis imediatamente ao entrar em roundOver', () => {
     const world = new CombatWorld(rafaMare, gutoBarba, 'versus');
     enterFight(world);
-    quarterCircle(world, ['special']);
+    world.step(input(['special'], ['special']), empty);
     for (let frame = 0; frame < 14; frame += 1) world.step(empty, empty);
     expect(world.snapshot().projectiles).toHaveLength(1);
 
@@ -108,15 +94,15 @@ describe('integração do mundo de combate', () => {
     expect(world.snapshot().projectiles).toEqual([]);
   });
 
-  it('reconhece quarto de círculo para trás nos especiais', () => {
+  it('reconhece baixo + especial nos golpes de energia', () => {
     const ecoWorld = new CombatWorld(rafaMare, gutoBarba, 'training');
     enterFight(ecoWorld);
-    quarterCircleBack(ecoWorld, ['special']);
+    ecoWorld.step(input(['down', 'special'], ['special']), empty);
     expect(ecoWorld.fighters[0].currentMove?.id).toBe('ecoTatuado');
 
     const abracoWorld = new CombatWorld(gutoBarba, rafaMare, 'training');
     enterFight(abracoWorld);
-    quarterCircleBack(abracoWorld, ['special']);
+    abracoWorld.step(input(['down', 'special'], ['special']), empty);
     expect(abracoWorld.fighters[0].currentMove?.id).toBe('abracoGlacial');
   });
 
@@ -124,7 +110,7 @@ describe('integração do mundo de combate', () => {
     const farWorld = new CombatWorld(gutoBarba, rafaMare, 'versus');
     enterFight(farWorld);
     farWorld.drainEvents();
-    farWorld.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+    farWorld.step(input(['right', 'special'], ['special']), empty);
     for (let frame = 0; frame < 45; frame += 1) farWorld.step(empty, empty);
     expect(farWorld.drainEvents().some((event) => event.type === 'hit')).toBe(false);
 
@@ -133,7 +119,7 @@ describe('integração do mundo de combate', () => {
     nearWorld.fighters[0].x = 300;
     nearWorld.fighters[1].x = 330;
     nearWorld.drainEvents();
-    nearWorld.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+    nearWorld.step(input(['right', 'special'], ['special']), empty);
     for (let frame = 0; frame < 45; frame += 1) nearWorld.step(empty, empty);
     const events = nearWorld.drainEvents();
     expect(events.some((event) => event.type === 'hit' && event.moveId === 'ganchoUrso')).toBe(true);
@@ -147,7 +133,7 @@ describe('integração do mundo de combate', () => {
     const victimHealth = world.fighters[1].health;
     const victimStates = new Set<string>();
 
-    world.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+    world.step(input(['right', 'special'], ['special']), empty);
     for (let frame = 0; frame < 90; frame += 1) {
       world.step(empty, empty);
       const snapshot = world.snapshot();
@@ -190,7 +176,7 @@ describe('integração do mundo de combate', () => {
     enterFight(world);
     world.fighters[0].x = 300;
     world.fighters[1].x = 330;
-    world.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+    world.step(input(['right', 'special'], ['special']), empty);
 
     const hold = snapshotAtAttackerFrame(world, 13);
     expect(hold.activeGrab?.attackerFrame).toBe(13);
@@ -218,7 +204,7 @@ describe('integração do mundo de combate', () => {
     world.fighters[1].x = 332;
     const victimStates = new Set<string>();
 
-    quarterCircleBack(world, ['special']);
+    world.step(input(['down', 'special'], ['special']), empty);
     for (let frame = 0; frame < 180; frame += 1) {
       world.step(empty, empty);
       victimStates.add(world.snapshot().fighters[1].state);
@@ -236,7 +222,7 @@ describe('integração do mundo de combate', () => {
     world.fighters[0].forceMeter(100);
     world.fighters[0].x = 300;
     world.fighters[1].x = 332;
-    quarterCircleBack(world, ['special']);
+    world.step(input(['down', 'special'], ['special']), empty);
 
     const hold = snapshotAtAttackerFrame(world, 20);
     expect(hold.activeGrab?.attackerFrame).toBe(20);
@@ -290,7 +276,7 @@ describe('integração do mundo de combate', () => {
     enterFight(world);
     world.fighters[0].x = 300;
     world.fighters[1].x = 330;
-    world.step(input(['right', 'light', 'heavy'], ['light', 'heavy']), empty);
+    world.step(input(['right', 'special'], ['special']), empty);
 
     let captured = false;
     for (let frame = 0; frame < 30; frame += 1) {

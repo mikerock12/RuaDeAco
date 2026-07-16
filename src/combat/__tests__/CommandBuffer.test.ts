@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { gutoBarba } from '../../fighters/gutoBarba';
 import { rafaMare } from '../../fighters/rafaMare';
 import type { InputAction, InputCommand, InputFrame } from '../../types/combat';
 import {
@@ -100,5 +101,32 @@ describe('leitura de comandos', () => {
     const moves = { lightPunch: rafaMare.moves.lightPunch!, jumpLightNeutral: rafaMare.moves.jumpLightNeutral! };
     expect(buffer.findMove(moves, frame(['light'], ['light']), 1, 0)?.id).toBe('lightPunch');
     expect(buffer.findMove(moves, frame(['light'], ['light']), 1, 0, true)?.id).toBe('jumpLightNeutral');
+  });
+
+  it('prioriza especiais simples neutro, frente e baixo', () => {
+    const neutral = new CommandBuffer();
+    neutral.push(1, frame(['special'], ['special']), 1);
+    expect(neutral.findMove(rafaMare.moves, frame(['special'], ['special']), 1, 100)?.id)
+      .toBe('maoDaMare');
+
+    const forward = new CommandBuffer();
+    forward.push(1, frame(['right', 'special'], ['special']), 1);
+    expect(forward.findMove(rafaMare.moves, frame(['right', 'special'], ['special']), 1, 100)?.id)
+      .toBe('chuteRessaca');
+
+    const down = new CommandBuffer();
+    down.push(1, frame(['down', 'special'], ['special']), 1);
+    expect(down.findMove(rafaMare.moves, frame(['down', 'special'], ['special']), 1, 50)?.id)
+      .toBe('ecoTatuado');
+  });
+
+  it('não cai no especial neutro quando falta energia para o direcional pretendido', () => {
+    const rafa = new CommandBuffer();
+    rafa.push(1, frame(['down', 'special'], ['special']), 1);
+    expect(rafa.findMove(rafaMare.moves, frame(['down', 'special'], ['special']), 1, 0)).toBeNull();
+
+    const guto = new CommandBuffer();
+    guto.push(1, frame(['down', 'special'], ['special']), 1);
+    expect(guto.findMove(gutoBarba.moves, frame(['down', 'special'], ['special']), 1, 0)).toBeNull();
   });
 });

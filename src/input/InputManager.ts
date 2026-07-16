@@ -1,11 +1,11 @@
 import type { InputAction, InputFrame } from '../types/combat';
 import type { GameSettings } from '../types/game';
 
-type PlayerIndex = 0 | 1;
+export type PlayerIndex = 0 | 1;
 
 const EMPTY_SET = (): Set<InputAction> => new Set<InputAction>();
 
-const PLAYER_ONE_KEYS: Readonly<Record<string, readonly InputAction[]>> = {
+export const PLAYER_ONE_KEYS: Readonly<Record<string, readonly InputAction[]>> = {
   KeyA: ['left'],
   KeyD: ['right'],
   KeyW: ['up'],
@@ -18,7 +18,7 @@ const PLAYER_ONE_KEYS: Readonly<Record<string, readonly InputAction[]>> = {
   Escape: ['pause', 'cancel'],
 };
 
-const PLAYER_TWO_KEYS: Readonly<Record<string, readonly InputAction[]>> = {
+export const PLAYER_TWO_KEYS: Readonly<Record<string, readonly InputAction[]>> = {
   ArrowLeft: ['left'],
   ArrowRight: ['right'],
   ArrowUp: ['up'],
@@ -28,6 +28,12 @@ const PLAYER_TWO_KEYS: Readonly<Record<string, readonly InputAction[]>> = {
   KeyL: ['special'],
   KeyU: ['block'],
 };
+
+const PLAYER_KEY_BINDINGS = [PLAYER_ONE_KEYS, PLAYER_TWO_KEYS] as const;
+
+export function keyboardActionsForPlayer(player: PlayerIndex, code: string): readonly InputAction[] {
+  return PLAYER_KEY_BINDINGS[player][code] ?? [];
+}
 
 export class InputManager {
   private readonly held: [Set<InputAction>, Set<InputAction>] = [EMPTY_SET(), EMPTY_SET()];
@@ -120,9 +126,9 @@ export class InputManager {
 
   private applyKey(code: string, active: boolean, repeat: boolean): boolean {
     let handled = false;
-    for (const [player, bindings] of [[0, PLAYER_ONE_KEYS], [1, PLAYER_TWO_KEYS]] as const) {
-      const actions = bindings[code];
-      if (!actions) continue;
+    for (const player of [0, 1] as const) {
+      const actions = keyboardActionsForPlayer(player, code);
+      if (actions.length === 0) continue;
       handled = true;
       for (const action of actions) {
         if (active && !this.held[player].has(action)) {

@@ -196,22 +196,14 @@ export class FighterRuntime {
       return;
     }
 
-    const requestedMove = this.commandBuffer.findMove(this.definition.moves, input, simulationFrame, this.meter);
-    if (!input.held.has('block') && requestedMove) {
-      this.startMove(requestedMove);
-      return;
-    }
-
     if (input.held.has('block')) {
       this.transition(input.held.has('down') ? 'blockCrouching' : 'blockStanding');
       return;
     }
 
-    if (input.held.has('down')) {
-      this.transition('crouch');
-      return;
-    }
-
+    // Pulo tem prioridade sobre golpes terrestres no frame da decolagem. O
+    // botão de ataque já foi registrado no CommandBuffer e será consumido no
+    // primeiro frame aéreo, tornando W+F/W+G e equivalentes responsivos.
     if (input.pressed.has('up')) {
       const horizontal = Number(input.held.has('right')) - Number(input.held.has('left'));
       const movingForward = horizontal === this.facing;
@@ -225,6 +217,17 @@ export class FighterRuntime {
       // próximo beginFrame trata o lutador como se estivesse no chão,
       // cancelando o salto para idle/walk.
       this.updateVertical();
+      return;
+    }
+
+    const requestedMove = this.commandBuffer.findMove(this.definition.moves, input, simulationFrame, this.meter);
+    if (requestedMove) {
+      this.startMove(requestedMove);
+      return;
+    }
+
+    if (input.held.has('down')) {
+      this.transition('crouch');
       return;
     }
 

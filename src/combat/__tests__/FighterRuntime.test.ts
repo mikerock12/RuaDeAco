@@ -257,6 +257,20 @@ describe('golpes direcionais e agachados', () => {
     fighter.beginFrame(input(['down', 'right', 'light'], ['light']), 1, 400);
     expect(fighter.currentMove?.id).toBe('frontKick');
   });
+
+  it('Guto executa chute frontal e rasteira com baixo + ataque', () => {
+    const frontKick = new FighterRuntime(gutoBarba, 200, 1);
+    frontKick.beginFrame(input(['down', 'light'], ['light']), 1, 400);
+    expect(frontKick.currentMove?.id).toBe('frontKick');
+    expect(frontKick.currentMove?.animation).toBe('crouchLight');
+    expect(frontKick.currentMove?.hitboxes.length).toBeGreaterThan(0);
+
+    const sweep = new FighterRuntime(gutoBarba, 200, 1);
+    sweep.beginFrame(input(['down', 'heavy'], ['heavy']), 1, 400);
+    expect(sweep.currentMove?.id).toBe('rasteiraUrso');
+    expect(sweep.currentMove?.animation).toBe('crouchHeavy');
+    expect(sweep.currentMove?.hitboxes.length).toBeGreaterThan(0);
+  });
 });
 
 describe('ataques aéreos', () => {
@@ -300,51 +314,77 @@ describe('ataques aéreos', () => {
     expect(fighter.isAttacking).toBe(false);
     expect(fighter.getActiveHitboxes().length).toBe(0);
   });
+
+  it.each([
+    [[], 'jumpHeavyNeutral'],
+    [['right'], 'jumpHeavyForward'],
+    [['left'], 'jumpHeavyBackward'],
+  ] as const)('pulo %j + forte usa o chute aéreo correspondente', (directions, moveId) => {
+    const fighter = new FighterRuntime(gutoBarba, 200, 1);
+    fighter.beginFrame(input([...directions, 'heavy'], ['up', 'heavy']), 1, 400);
+    expect(fighter.state).toBe('jump');
+    expect(fighter.currentMove).toBeNull();
+    fighter.finishFrame();
+
+    fighter.beginFrame(input(), 2, 400);
+    expect(fighter.currentMove?.id).toBe(moveId);
+    expect(fighter.currentMove?.animation).toMatch(/^airHeavy/);
+    expect(fighter.currentMove?.hitboxes.length).toBeGreaterThan(0);
+  });
+
+  it('pulo + fraco entra no ar antes de consumir o soco aéreo', () => {
+    const fighter = new FighterRuntime(gutoBarba, 200, 1);
+    fighter.beginFrame(input(['light'], ['up', 'light']), 1, 400);
+    expect(fighter.state).toBe('jump');
+    fighter.finishFrame();
+    fighter.beginFrame(input(), 2, 400);
+    expect(fighter.currentMove?.id).toBe('jumpLightNeutral');
+  });
 });
 
 describe('especiais e energia', () => {
-  const quarterCircleForward = (fighter: FighterRuntime, button: InputAction): void => {
-    fighter.beginFrame(input(['down']), 1, 400);
-    fighter.finishFrame();
-    fighter.beginFrame(input(['down', 'right']), 2, 400);
-    fighter.finishFrame();
-    fighter.beginFrame(input(['right']), 3, 400);
-    fighter.finishFrame();
-    fighter.beginFrame(input(['right', button], [button]), 4, 400);
-  };
-
   it('super exige e consome energia', () => {
     const semEnergia = new FighterRuntime(rafaMare, 200, 1);
-    quarterCircleForward(semEnergia, 'heavy');
-    expect(semEnergia.currentMove?.id).not.toBe('chuteRessaca');
+    semEnergia.beginFrame(input(['right', 'special'], ['special']), 1, 400);
+    expect(semEnergia.currentMove).toBeNull();
 
     const comEnergia = new FighterRuntime(rafaMare, 200, 1);
     comEnergia.forceMeter(100);
-    quarterCircleForward(comEnergia, 'heavy');
+    comEnergia.beginFrame(input(['right', 'special'], ['special']), 1, 400);
     expect(comEnergia.currentMove?.id).toBe('chuteRessaca');
     expect(comEnergia.meter).toBe(0);
   });
 
-  it('quarto de círculo para trás ativa o Eco Tatuado com custo de energia', () => {
+  it('baixo + especial ativa o Eco Tatuado com custo de energia', () => {
     const fighter = new FighterRuntime(rafaMare, 200, 1);
     fighter.forceMeter(60);
-    fighter.beginFrame(input(['down']), 1, 400);
-    fighter.finishFrame();
-    fighter.beginFrame(input(['down', 'left']), 2, 400);
-    fighter.finishFrame();
-    fighter.beginFrame(input(['left']), 3, 400);
-    fighter.finishFrame();
-    fighter.beginFrame(input(['left', 'special'], ['special']), 4, 400);
+    fighter.beginFrame(input(['down', 'special'], ['special']), 1, 400);
     fighter.finishFrame();
     expect(fighter.currentMove?.id).toBe('ecoTatuado');
     expect(fighter.meter).toBe(10);
 
-    for (let frameNumber = 5; frameNumber <= 18; frameNumber += 1) {
+    for (let frameNumber = 2; frameNumber <= 14; frameNumber += 1) {
       fighter.beginFrame(input(), frameNumber, 400);
       fighter.consumeMoveEvents();
       fighter.finishFrame();
     }
     expect(fighter.passiveFrames).toBeGreaterThan(0);
+  });
+
+  it('Guto usa especial neutro, frente + especial e baixo + especial', () => {
+    const muralha = new FighterRuntime(gutoBarba, 200, 1);
+    muralha.beginFrame(input(['special'], ['special']), 1, 400);
+    expect(muralha.currentMove?.id).toBe('muralhaNorte');
+
+    const gancho = new FighterRuntime(gutoBarba, 200, 1);
+    gancho.beginFrame(input(['right', 'special'], ['special']), 1, 400);
+    expect(gancho.currentMove?.id).toBe('ganchoUrso');
+
+    const abraco = new FighterRuntime(gutoBarba, 200, 1);
+    abraco.forceMeter(100);
+    abraco.beginFrame(input(['down', 'special'], ['special']), 1, 400);
+    expect(abraco.currentMove?.id).toBe('abracoGlacial');
+    expect(abraco.meter).toBe(0);
   });
 });
 

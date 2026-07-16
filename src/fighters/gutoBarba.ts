@@ -75,7 +75,7 @@ export const gutoBarba: FighterDefinition = {
       totalFrames: 29,
       hitboxes: [{
         range: { from: 10, to: 14 },
-        boxes: [{ id: 'guto-front-kick', x: 8, y: -35, width: 48, height: 22, kind: 'strike', level: 'low', damage: 82, chipDamage: 4, hitStun: 17, blockStun: 12, hitStop: 8, priority: 3, knockbackX: 3.3, knockbackY: 0 }],
+        boxes: [{ id: 'guto-front-kick', x: 10, y: -118, width: 90, height: 46, kind: 'strike', level: 'low', damage: 82, chipDamage: 4, hitStun: 17, blockStun: 12, hitStop: 8, priority: 3, knockbackX: 3.3, knockbackY: 0 }],
       }],
       hurtboxes: [{ range: { from: 0, to: 29 }, boxes: CROUCHING_HURTBOXES }],
       meterCost: 0,
@@ -107,7 +107,7 @@ export const gutoBarba: FighterDefinition = {
       totalFrames: 36,
       hitboxes: [{
         range: { from: 14, to: 18 },
-        boxes: [{ id: 'guto-sweep', x: 6, y: -18, width: 50, height: 18, kind: 'strike', level: 'low', damage: 118, chipDamage: 7, hitStun: 24, blockStun: 15, hitStop: 10, priority: 3, knockbackX: 3.4, knockbackY: -3.4, knockdown: true }],
+        boxes: [{ id: 'guto-sweep', x: 10, y: -82, width: 104, height: 36, kind: 'strike', level: 'low', damage: 118, chipDamage: 7, hitStun: 24, blockStun: 15, hitStop: 10, priority: 3, knockbackX: 3.4, knockbackY: -3.4, knockdown: true }],
       }],
       hurtboxes: [{ range: { from: 0, to: 36 }, boxes: CROUCHING_HURTBOXES }],
       meterCost: 0,
@@ -142,7 +142,7 @@ export const gutoBarba: FighterDefinition = {
       totalFrames: 28,
       hitboxes: [{
         range: { from: 8, to: 17 },
-        boxes: [{ id: 'guto-air-kick', x: 4, y: -54, width: 48, height: 34, kind: 'strike', level: 'overhead', damage: 120, chipDamage: 8, hitStun: 20, blockStun: 13, hitStop: 9, priority: 3, knockbackX: 3.6, knockbackY: -2.5 }],
+        boxes: [{ id: 'guto-air-kick', x: 8, y: -140, width: 100, height: 48, kind: 'strike', level: 'overhead', damage: 120, chipDamage: 8, hitStun: 20, blockStun: 13, hitStop: 9, priority: 3, knockbackX: 3.6, knockbackY: -2.5 }],
       }],
       meterCost: 0,
       meterGainOnHit: 14,
@@ -176,7 +176,7 @@ export const gutoBarba: FighterDefinition = {
       totalFrames: 28,
       hitboxes: [{
         range: { from: 8, to: 17 },
-        boxes: [{ id: 'guto-air-kick-fwd', x: 10, y: -50, width: 48, height: 34, kind: 'strike', level: 'overhead', damage: 125, chipDamage: 8, hitStun: 20, blockStun: 13, hitStop: 9, priority: 3, knockbackX: 4.5, knockbackY: -2.5 }],
+        boxes: [{ id: 'guto-air-kick-fwd', x: 8, y: -142, width: 104, height: 50, kind: 'strike', level: 'overhead', damage: 125, chipDamage: 8, hitStun: 20, blockStun: 13, hitStop: 9, priority: 3, knockbackX: 4.5, knockbackY: -2.5 }],
       }],
       meterCost: 0,
       meterGainOnHit: 14,
@@ -218,14 +218,14 @@ export const gutoBarba: FighterDefinition = {
     },
     descendingBlow: {
       id: 'descendingBlow',
-      label: 'Golpe descendente',
+      label: 'Chute pesado',
       state: 'kickAttack',
       animation: 'forwardHeavy',
       command: { directions: ['forward'], buttons: ['heavy'], maxGapFrames: 2, bufferFrames: 5, priority: 15 },
       totalFrames: 40,
       hitboxes: [{
         range: { from: 17, to: 21 },
-        boxes: [{ id: 'guto-overhead', x: 1, y: -85, width: 48, height: 55, kind: 'strike', level: 'overhead', damage: 138, chipDamage: 9, hitStun: 25, blockStun: 17, hitStop: 12, priority: 5, knockbackX: 5.5, knockbackY: -6.4, knockdown: true }],
+        boxes: [{ id: 'guto-overhead', x: 12, y: -170, width: 98, height: 50, kind: 'strike', level: 'overhead', damage: 138, chipDamage: 9, hitStun: 25, blockStun: 17, hitStop: 12, priority: 5, knockbackX: 5.5, knockbackY: -6.4, knockdown: true }],
       }],
       meterCost: 0,
       meterGainOnHit: 16,
@@ -254,7 +254,7 @@ export const gutoBarba: FighterDefinition = {
       label: 'Gancho do Urso',
       state: 'specialAttack',
       animation: 'special2',
-      command: { directions: ['forward'], buttons: ['light', 'heavy'], maxGapFrames: 3, bufferFrames: 6, priority: 40 },
+      command: { directions: ['forward'], buttons: ['special'], maxGapFrames: 2, bufferFrames: 7, priority: 50 },
       totalFrames: 43,
       hitboxes: [{
         range: { from: 9, to: 11 },
@@ -283,7 +283,7 @@ export const gutoBarba: FighterDefinition = {
       label: 'Abraço Glacial',
       state: 'specialAttack',
       animation: 'special3',
-      command: { directions: ['down', 'downBack', 'back'], buttons: ['special'], maxGapFrames: 9, bufferFrames: 8, priority: 60 },
+      command: { directions: ['down'], buttons: ['special'], maxGapFrames: 2, bufferFrames: 7, priority: 60 },
       totalFrames: 64,
       movement: [{ range: { from: 7, to: 14 }, velocityX: 2.5 }],
       hitboxes: [{

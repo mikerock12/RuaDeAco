@@ -14,3 +14,7 @@ android/capacitor.build.gradle
 
 # Contexto local de conversas e prompts dos assistentes
 /RuaDeAco_Contexto_GPTWork/
+
+# Fontes brutas e auditoria local dos novos chutes do Guto
+/tmp/imagegen/guto-barba/kicks-v2/raw/
+/tmp/imagegen/guto-barba/audit/kicks-v2.png

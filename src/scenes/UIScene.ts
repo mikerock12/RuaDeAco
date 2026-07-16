@@ -5,8 +5,8 @@ import type { CombatWorld, CombatWorldSnapshot } from '../combat/CombatWorld';
 import { MAX_METER } from '../config/gameConfig';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { getFighterDefinition } from '../fighters';
-import type { CombatButton, DirectionToken, MoveDefinition } from '../types/combat';
 import { createConceptPortrait } from '../ui/PortraitView';
+import { buildPauseMoveList, type MoveListLineTone } from '../ui/moveListPresenter';
 import { pixelText, toPixelFontText } from '../utils/text';
 
 export interface UISceneData {
@@ -177,77 +177,50 @@ export class UIScene extends Phaser.Scene {
       PALETTE.black,
       0.78,
     ).setVisible(false).setDepth(90);
-    this.pausePanel = this.add.rectangle(INTERNAL_WIDTH / 2, 202, 608, 268, PALETTE.panel, 1)
+    this.pausePanel = this.add.rectangle(INTERNAL_WIDTH / 2, 200, 608, 280, PALETTE.panel, 1)
       .setStrokeStyle(4, PALETTE.steelLight)
       .setVisible(false)
       .setDepth(91);
-    this.pauseTitle = pixelText(this, INTERNAL_WIDTH / 2, 86, 'PAUSA', { size: 32, align: 'center' })
+    this.pauseTitle = pixelText(this, INTERNAL_WIDTH / 2, 74, 'PAUSA', { size: 24, align: 'center' })
       .setTint(PALETTE.gold)
       .setVisible(false)
       .setDepth(92);
-    this.pauseHint = pixelText(this, INTERNAL_WIDTH / 2, 322, 'ESC OU II PARA CONTINUAR', {
+    this.pauseHint = pixelText(this, INTERNAL_WIDTH / 2, 328, 'ESC OU II PARA CONTINUAR', {
       size: 16,
       align: 'center',
     }).setTint(PALETTE.ivory).setVisible(false).setDepth(92);
     this.createPauseMoveList();
   }
 
-  // Lista de golpes exibida no menu de pausa. Notacao: B/F/T = baixo/
-  // frente/tras relativos ao lutador, AR = golpe executado no ar,
-  // * = usa energia.
   private createPauseMoveList(): void {
     if (!this.world) return;
-    const legendLines = [
-      'PULO: CIMA  PULO DIAGONAL: CIMA+ESQ/DIR',
-      'B=BAIXO F=FRENTE T=TRAS AR=NO AR %=ENERGIA',
-    ];
-    const legend = pixelText(this, INTERNAL_WIDTH / 2, 104, legendLines.join('\n'), {
-      size: 16,
+    const legend = pixelText(this, INTERNAL_WIDTH / 2, 96, 'FRENTE = EM DIRECAO AO ADVERSARIO', {
+      size: 8,
       align: 'center',
     }).setTint(PALETTE.cyanLight).setVisible(false).setDepth(92);
     legend.setOrigin(0.5, 0).setCenterAlign();
     this.pauseMoveTexts.push(legend);
 
-    const keys: readonly [string, string] = ['TECLAS F G H R / TOUCH A B S', 'TECLAS J K L U'];
     for (const index of [0, 1] as const) {
       const definition = this.world.fighters[index].definition;
-      const lines = [
-        `P${index + 1} ${definition.name} (${keys[index]})`,
-        ...Object.values(definition.moves).map((move) => this.describeMove(move)),
-      ];
-      const column = pixelText(this, index === 0 ? 32 : 328, 146, lines.join('\n'), { size: 8 })
-        .setTint(index === 0 ? PALETTE.cyan : PALETTE.pink)
-        .setVisible(false)
-        .setDepth(92);
-      column.setOrigin(0, 0).setLineSpacing(5);
-      this.pauseMoveTexts.push(column);
+      const model = buildPauseMoveList(definition, index);
+      const playerTint = index === 0 ? PALETTE.cyan : PALETTE.pink;
+      model.lines.forEach((line, lineIndex) => {
+        const text = pixelText(this, index === 0 ? 24 : 328, 110 + lineIndex * 10, line.text, { size: 8 })
+          .setTint(this.pauseLineTint(line.tone, playerTint))
+          .setVisible(false)
+          .setDepth(92);
+        text.setOrigin(0, 0);
+        this.pauseMoveTexts.push(text);
+      });
     }
   }
 
-  private describeMove(move: MoveDefinition): string {
-    const directionLabels: Readonly<Record<DirectionToken, string>> = {
-      neutral: '',
-      down: 'B',
-      downForward: 'BF',
-      downBack: 'BT',
-      forward: 'F',
-      back: 'T',
-      up: 'C',
-    };
-    const buttonLabels: Readonly<Record<CombatButton, string>> = {
-      light: 'FRACO',
-      heavy: 'FORTE',
-      special: 'ESP',
-      block: 'DEF',
-    };
-    const directions = (move.command.directions ?? [])
-      .map((token) => directionLabels[token])
-      .filter(Boolean)
-      .join(',');
-    const buttons = move.command.buttons.map((button) => buttonLabels[button]).join('+');
-    const prefix = move.air ? 'AR ' : '';
-    const cost = move.meterCost > 0 ? '%' : '';
-    return `${toPixelFontText(move.label).toUpperCase()}: ${prefix}${directions ? directions + '+' : ''}${buttons}${cost}`;
+  private pauseLineTint(tone: MoveListLineTone, playerTint: number): number {
+    if (tone === 'section') return PALETTE.gold;
+    if (tone === 'controls') return PALETTE.cyanLight;
+    if (tone === 'note') return PALETTE.steelLight;
+    return playerTint;
   }
 
   private createButtons(snapshot: CombatWorldSnapshot): void {
