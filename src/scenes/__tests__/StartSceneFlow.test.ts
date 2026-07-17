@@ -12,8 +12,20 @@ describe('fluxo da StartScene', () => {
     const start = source('src/scenes/StartScene.ts');
 
     expect(preload).toContain("this.scene.start('StartScene')");
-    expect(start).toContain('await audioManager.unlock()');
+    expect(start).toContain('unlockAudio: audioManager.unlock');
+    expect(start).not.toContain('await audioManager.unlock()');
     expect(start).toContain("this.scene.start('MainMenuScene')");
+  });
+
+  it('escuta Phaser, canvas e fallback DOM sem bloquear a navegação pelo áudio', () => {
+    const start = source('src/scenes/StartScene.ts');
+    const transition = source('src/scenes/startTransition.ts');
+
+    expect(start).toContain('this.add.zone(');
+    expect(start).toContain('this.input.on(Phaser.Input.Events.POINTER_DOWN');
+    expect(start).toContain('[globalThis.window, canvas]');
+    expect(transition).toContain('this.dependencies.unlockAudio()');
+    expect(transition).toContain('this.dependencies.openMainMenu()');
   });
 
   it('pré-carrega sem solicitar reprodução antes da interação', () => {

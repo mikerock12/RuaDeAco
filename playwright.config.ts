@@ -8,6 +8,17 @@ const chromeVisible = {
   screen: { width: 1280, height: 720 },
 };
 
+const chromeMobileLandscape = {
+  ...devices['Desktop Chrome'],
+  channel: 'chrome' as const,
+  headless: false,
+  viewport: { width: 720, height: 405 },
+  screen: { width: 720, height: 405 },
+  hasTouch: true,
+  isMobile: true,
+  deviceScaleFactor: 2,
+};
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
@@ -36,6 +47,10 @@ export default defineConfig({
     {
       name: 'chrome-visible-real-policy',
       use: chromeVisible,
+    },
+    {
+      name: 'chrome-mobile-landscape',
+      use: chromeMobileLandscape,
     },
   ],
 });

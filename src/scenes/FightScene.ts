@@ -17,6 +17,7 @@ import type { CombatEvent, InputFrame } from '../types/combat';
 import type { FighterEffectAsset } from '../types/assets';
 import { CaisStageView } from '../ui/CaisStageView';
 import { createFighterView, type FighterView } from '../ui/FighterSpriteView';
+import { PauseMenuModel, type PauseMenuAction, type PauseNavigationTarget } from '../ui/pauseMenu';
 import { pixelText } from '../utils/text';
 
 const EMPTY_INPUT: InputFrame = {
@@ -41,6 +42,8 @@ export class FightScene extends Phaser.Scene {
   private debugOverlayText: Phaser.GameObjects.BitmapText | null = null;
   private resultScheduled = false;
   private orientationQuery: MediaQueryList | null = null;
+  private readonly pauseMenu = new PauseMenuModel();
+  private transitionLocked = false;
 
   constructor() {
     super('FightScene');
@@ -50,6 +53,8 @@ export class FightScene extends Phaser.Scene {
     void audioManager.playMusic(MUSIC_TRACK_BY_SCENE.FightScene);
     this.destroyFightSprites();
     this.resultScheduled = false;
+    this.transitionLocked = false;
+    this.pauseMenu.reset();
     this.cpu = null;
     this.runner.reset();
     const selection = gameSession.selection;
@@ -58,7 +63,15 @@ export class FightScene extends Phaser.Scene {
     this.world = new CombatWorld(playerOne, playerTwo, selection.mode);
     // Gancho de inspeção para testes instrumentados (apenas em dev).
     if (import.meta.env.DEV) {
-      (globalThis as { __ruaWorld?: CombatWorld }).__ruaWorld = this.world;
+      const debugGlobal = globalThis as typeof globalThis & {
+        __ruaWorld?: CombatWorld;
+        __RUA_PAUSE_DEBUG__?: () => { paused: boolean; selectedAction: PauseMenuAction };
+      };
+      debugGlobal.__ruaWorld = this.world;
+      debugGlobal.__RUA_PAUSE_DEBUG__ = () => ({
+        paused: this.world.paused,
+        selectedAction: this.pauseMenu.selected,
+      });
     }
     this.stageView = new CaisStageView(this);
     this.views = [
@@ -78,6 +91,7 @@ export class FightScene extends Phaser.Scene {
     touchControls.setGameplayActive(true);
 
     this.game.events.on('fight:pause', this.togglePause, this);
+    this.game.events.on('fight:pause-action', this.handlePauseAction, this);
     this.game.events.on('training:reset', this.resetTraining, this);
     this.game.events.on('training:debug', this.toggleTrainingDebug, this);
     this.game.events.on('training:cpu', this.toggleTrainingCpu, this);
@@ -111,11 +125,30 @@ export class FightScene extends Phaser.Scene {
       || keyboardTwo.pressed.has('pause')
       || keyboardTwo.pressed.has('cancel');
 
-    if (pausePressed || this.world.paused && playerOneInput.pressed.has('confirm')) {
+    if (this.world.paused) {
+      if (pausePressed) {
+        this.handlePauseAction('continue');
+        return;
+      }
+      const horizontal = Number(
+        playerOneInput.pressed.has('right') || keyboardTwo.pressed.has('right'),
+      ) - Number(
+        playerOneInput.pressed.has('left') || keyboardTwo.pressed.has('left'),
+      );
+      if (horizontal !== 0) {
+        const selected = this.pauseMenu.move(horizontal > 0 ? 1 : -1);
+        this.game.events.emit('fight:pause-selection', selected);
+      }
+      if (playerOneInput.pressed.has('confirm')) {
+        this.handlePauseAction(this.pauseMenu.selected);
+      }
+      return;
+    }
+
+    if (pausePressed) {
       this.togglePause();
       return;
     }
-    if (this.world.paused) return;
 
     let playerTwoInput = keyboardTwo;
     if (gameSession.selection.mode === 'cpu') {
@@ -175,9 +208,44 @@ export class FightScene extends Phaser.Scene {
   }
 
   private togglePause(): void {
-    this.world.togglePause();
+    const paused = this.world.togglePause();
+    if (paused) {
+      this.pauseMenu.reset();
+      this.game.events.emit('fight:pause-selection', this.pauseMenu.selected);
+    }
+    inputManager.clear();
+    touchControls.releaseAll();
+    touchControls.setGameplayActive(!paused);
+    this.runner.reset();
+  }
+
+  private readonly handlePauseAction = (action: PauseMenuAction): void => {
+    if (!this.world.paused || this.transitionLocked) return;
+    const command = this.pauseMenu.activate(action);
+    if (!command) return;
+    if (command.type === 'continue') {
+      this.world.setPaused(false);
+      inputManager.clear();
+      touchControls.releaseAll();
+      touchControls.setGameplayActive(true);
+      this.runner.reset();
+      return;
+    }
+    this.exitFight(command.target);
+  };
+
+  private exitFight(target: PauseNavigationTarget): void {
+    if (this.transitionLocked) return;
+    this.transitionLocked = true;
+    this.resultScheduled = true;
+    this.world.setPaused(false);
+    gameSession.result = null;
+    touchControls.releaseAll();
+    touchControls.setGameplayActive(false);
     inputManager.clear();
     this.runner.reset();
+    this.scene.stop('UIScene');
+    this.scene.start(target);
   }
 
   private resetTraining(): void {
@@ -322,20 +390,24 @@ export class FightScene extends Phaser.Scene {
 
   private handleVisibility = (): void => {
     if (document.hidden) {
-      this.world.setPaused(true);
-      this.runner.reset();
-      touchControls.releaseAll();
-      inputManager.clear();
+      this.pauseForInterruption();
     }
   };
 
   private handleOrientation = (): void => {
     if (!this.orientationQuery?.matches) return;
+    this.pauseForInterruption();
+  };
+
+  private pauseForInterruption(): void {
     this.world.setPaused(true);
+    this.pauseMenu.reset();
+    this.game.events.emit('fight:pause-selection', this.pauseMenu.selected);
     this.runner.reset();
     touchControls.releaseAll();
+    touchControls.setGameplayActive(false);
     inputManager.clear();
-  };
+  }
 
   private shutdown(): void {
     this.destroyFightSprites();
@@ -343,6 +415,7 @@ export class FightScene extends Phaser.Scene {
     inputManager.clear();
     this.runner.reset();
     this.game.events.off('fight:pause', this.togglePause, this);
+    this.game.events.off('fight:pause-action', this.handlePauseAction, this);
     this.game.events.off('training:reset', this.resetTraining, this);
     this.game.events.off('training:debug', this.toggleTrainingDebug, this);
     this.game.events.off('training:cpu', this.toggleTrainingCpu, this);
@@ -354,6 +427,14 @@ export class FightScene extends Phaser.Scene {
     globalThis.document?.removeEventListener('visibilitychange', this.handleVisibility);
     this.orientationQuery?.removeEventListener('change', this.handleOrientation);
     this.orientationQuery = null;
+    if (import.meta.env.DEV) {
+      const debugGlobal = globalThis as typeof globalThis & {
+        __ruaWorld?: CombatWorld;
+        __RUA_PAUSE_DEBUG__?: () => unknown;
+      };
+      if (debugGlobal.__ruaWorld === this.world) delete debugGlobal.__ruaWorld;
+      delete debugGlobal.__RUA_PAUSE_DEBUG__;
+    }
   }
 
   private destroyFightSprites(): void {

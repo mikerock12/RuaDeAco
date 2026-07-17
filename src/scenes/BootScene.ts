@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { audioManager, type AudioDebugState } from '../audio/AudioManager';
+import { gameSession } from '../config/session';
 import { settingsStore } from '../config/settings';
 import { inputManager } from '../input/InputManager';
 import { touchControls } from '../input/TouchControls';
@@ -20,11 +21,16 @@ export class BootScene extends Phaser.Scene {
       const debugGlobal = globalThis as typeof globalThis & {
         __RUA_AUDIO_DEBUG__?: () => AudioDebugState;
         __RUA_SCENE_DEBUG__?: () => readonly string[];
+        __RUA_SESSION_DEBUG__?: () => { mode: typeof gameSession.selection.mode; hasResult: boolean };
       };
       debugGlobal.__RUA_AUDIO_DEBUG__ = () => audioManager.getDebugState();
       debugGlobal.__RUA_SCENE_DEBUG__ = () => this.scene.manager
         .getScenes(true)
         .map((scene) => scene.scene.key);
+      debugGlobal.__RUA_SESSION_DEBUG__ = () => ({
+        mode: gameSession.selection.mode,
+        hasResult: gameSession.result !== null,
+      });
     }
     // O fluxo de instalação PWA foi removido do menu; o service worker
     // continua ativo para manter a compatibilidade web offline.
@@ -40,9 +46,11 @@ export class BootScene extends Phaser.Scene {
         const debugGlobal = globalThis as typeof globalThis & {
           __RUA_AUDIO_DEBUG__?: () => AudioDebugState;
           __RUA_SCENE_DEBUG__?: () => readonly string[];
+          __RUA_SESSION_DEBUG__?: () => unknown;
         };
         delete debugGlobal.__RUA_AUDIO_DEBUG__;
         delete debugGlobal.__RUA_SCENE_DEBUG__;
+        delete debugGlobal.__RUA_SESSION_DEBUG__;
       }
       globalThis.document?.removeEventListener('fullscreenchange', this.syncFullscreenPreference);
     });

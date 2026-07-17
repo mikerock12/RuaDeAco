@@ -5,8 +5,10 @@ import type { CombatWorld, CombatWorldSnapshot } from '../combat/CombatWorld';
 import { MAX_METER } from '../config/gameConfig';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { getFighterDefinition } from '../fighters';
+import { InputManager } from '../input/InputManager';
 import { createConceptPortrait } from '../ui/PortraitView';
 import { buildPauseMoveList, type MoveListLineTone } from '../ui/moveListPresenter';
+import { PAUSE_MENU_OPTIONS, type PauseMenuAction } from '../ui/pauseMenu';
 import { pixelText, toPixelFontText } from '../utils/text';
 
 export interface UISceneData {
@@ -17,6 +19,10 @@ interface HudButton {
   readonly container: Phaser.GameObjects.Container;
   readonly background: Phaser.GameObjects.Rectangle;
   readonly label: Phaser.GameObjects.BitmapText;
+}
+
+interface PauseOptionButton extends HudButton {
+  readonly action: PauseMenuAction;
 }
 
 interface BannerState {
@@ -42,6 +48,8 @@ export class UIScene extends Phaser.Scene {
   private pauseTitle: Phaser.GameObjects.BitmapText | null = null;
   private pauseHint: Phaser.GameObjects.BitmapText | null = null;
   private pauseMoveTexts: Phaser.GameObjects.BitmapText[] = [];
+  private pauseOptions: PauseOptionButton[] = [];
+  private selectedPauseAction: PauseMenuAction = 'continue';
   private pauseButton: HudButton | null = null;
   private trainingButtons: HudButton[] = [];
   private previousBanner = '';
@@ -60,9 +68,11 @@ export class UIScene extends Phaser.Scene {
     this.createFighterHud(1, snapshot.fighters[1].id);
     this.createAnnouncements();
     this.createButtons(snapshot);
+    this.game.events.on('fight:pause-selection', this.handlePauseSelection, this);
     this.render(snapshot);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.game.events.off('fight:pause-selection', this.handlePauseSelection, this);
       this.world = null;
       this.resetReferences();
     });
@@ -81,6 +91,8 @@ export class UIScene extends Phaser.Scene {
     this.roundMarkers[1].length = 0;
     this.trainingButtons = [];
     this.pauseMoveTexts = [];
+    this.pauseOptions = [];
+    this.selectedPauseAction = 'continue';
     this.infoText = null;
     this.previousBanner = '';
   }
@@ -181,20 +193,29 @@ export class UIScene extends Phaser.Scene {
       .setStrokeStyle(4, PALETTE.steelLight)
       .setVisible(false)
       .setDepth(91);
-    this.pauseTitle = pixelText(this, INTERNAL_WIDTH / 2, 74, 'PAUSA', { size: 24, align: 'center' })
+    this.pauseTitle = pixelText(this, INTERNAL_WIDTH / 2, 72, 'PAUSA', { size: 24, align: 'center' })
       .setTint(PALETTE.gold)
       .setVisible(false)
       .setDepth(92);
-    this.pauseHint = pixelText(this, INTERNAL_WIDTH / 2, 328, 'ESC OU II PARA CONTINUAR', {
-      size: 16,
+    this.pauseHint = pixelText(
+      this,
+      INTERNAL_WIDTH / 2,
+      328,
+      InputManager.isTouchCapable()
+        ? 'TOQUE EM UMA OPCAO  OU USE > PARA CONTINUAR'
+        : 'A/D OU SETAS ESCOLHE  ENTER CONFIRMA  ESC CONTINUA',
+      {
+      size: 8,
       align: 'center',
-    }).setTint(PALETTE.ivory).setVisible(false).setDepth(92);
+      },
+    ).setTint(PALETTE.ivory).setVisible(false).setDepth(92);
     this.createPauseMoveList();
+    this.createPauseMenu();
   }
 
   private createPauseMoveList(): void {
     if (!this.world) return;
-    const legend = pixelText(this, INTERNAL_WIDTH / 2, 96, 'FRENTE = EM DIRECAO AO ADVERSARIO', {
+    const legend = pixelText(this, INTERNAL_WIDTH / 2, 94, 'FRENTE = EM DIRECAO AO ADVERSARIO', {
       size: 8,
       align: 'center',
     }).setTint(PALETTE.cyanLight).setVisible(false).setDepth(92);
@@ -206,7 +227,7 @@ export class UIScene extends Phaser.Scene {
       const model = buildPauseMoveList(definition, index);
       const playerTint = index === 0 ? PALETTE.cyan : PALETTE.pink;
       model.lines.forEach((line, lineIndex) => {
-        const text = pixelText(this, index === 0 ? 24 : 328, 110 + lineIndex * 10, line.text, { size: 8 })
+        const text = pixelText(this, index === 0 ? 24 : 328, 104 + lineIndex * 9, line.text, { size: 8 })
           .setTint(this.pauseLineTint(line.tone, playerTint))
           .setVisible(false)
           .setDepth(92);
@@ -214,6 +235,29 @@ export class UIScene extends Phaser.Scene {
         this.pauseMoveTexts.push(text);
       });
     }
+  }
+
+  private createPauseMenu(): void {
+    const layout: ReadonlyArray<readonly [PauseMenuAction, number, number]> = [
+      ['continue', 84, 128],
+      ['character-select', 320, 224],
+      ['main-menu', 548, 160],
+    ];
+    this.pauseOptions = layout.map(([action, x, width]) => {
+      const option = PAUSE_MENU_OPTIONS.find((candidate) => candidate.action === action)!;
+      const button = this.createButton(x, 295, width, 22, option.label, () => {
+        this.selectedPauseAction = action;
+        this.refreshPauseOptions();
+        this.game.events.emit('fight:pause-action', action);
+      });
+      const pauseButton: PauseOptionButton = { ...button, action };
+      pauseButton.container.setVisible(false).setDepth(96);
+      pauseButton.container.on('pointerdown', () => {
+        this.selectedPauseAction = action;
+        this.refreshPauseOptions();
+      });
+      return pauseButton;
+    });
   }
 
   private pauseLineTint(tone: MoveListLineTone, playerTint: number): number {
@@ -343,7 +387,24 @@ export class UIScene extends Phaser.Scene {
     this.pauseTitle?.setVisible(paused);
     this.pauseHint?.setVisible(paused);
     for (const text of this.pauseMoveTexts) text.setVisible(paused);
+    for (const option of this.pauseOptions) option.container.setVisible(paused);
+    if (paused) this.refreshPauseOptions();
     this.pauseButton?.label.setText(paused ? '>' : 'II');
+  }
+
+  private readonly handlePauseSelection = (action: PauseMenuAction): void => {
+    this.selectedPauseAction = action;
+    this.refreshPauseOptions();
+  };
+
+  private refreshPauseOptions(): void {
+    for (const option of this.pauseOptions) {
+      const selected = option.action === this.selectedPauseAction;
+      option.background
+        .setFillStyle(selected ? PALETTE.panelLight : PALETTE.metalDark, 0.98)
+        .setStrokeStyle(selected ? 4 : 2, selected ? PALETTE.gold : PALETTE.steelLight);
+      option.label.setTint(selected ? PALETTE.gold : PALETTE.ivory);
+    }
   }
 
   private updateTrainingLabels(snapshot: CombatWorldSnapshot): void {

@@ -40,6 +40,31 @@ describe('StartGate', () => {
     expect(onStart).toHaveBeenCalledTimes(1);
   });
 
+  it('recebe o toque diretamente no canvas mesmo sem propagação até o window', () => {
+    const windowTarget = new EventTarget();
+    const canvasTarget = new EventTarget();
+    const onStart = vi.fn();
+    const gate = new StartGate(windowTarget, onStart, [windowTarget, canvasTarget]);
+    gate.attach();
+
+    canvasTarget.dispatchEvent(new Event('pointerdown'));
+
+    expect(onStart).toHaveBeenCalledOnce();
+  });
+
+  it('aceita o disparo do input do Phaser e deduplica com os eventos DOM', () => {
+    const target = new EventTarget();
+    const onStart = vi.fn();
+    const gate = new StartGate(target, onStart);
+    gate.attach();
+
+    gate.trigger();
+    target.dispatchEvent(new Event('pointerdown'));
+    gate.trigger();
+
+    expect(onStart).toHaveBeenCalledOnce();
+  });
+
   it('aceita Espaço, ignora repetição e outras teclas', () => {
     const target = new EventTarget();
     const onStart = vi.fn();

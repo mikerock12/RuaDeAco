@@ -6,19 +6,20 @@ import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConf
 import { InputManager, inputManager } from '../input/InputManager';
 import { pixelText } from '../utils/text';
 import { StartGate } from './startGate';
+import { StartTransition } from './startTransition';
 
 const STAGE_LAYER_SCALE = 2;
 
 export class StartScene extends Phaser.Scene {
   private gate: StartGate | null = null;
-  private transitionLocked = false;
+  private transition: StartTransition | null = null;
+  private startZone: Phaser.GameObjects.Zone | null = null;
 
   constructor() {
     super('StartScene');
   }
 
   create(): void {
-    this.transitionLocked = false;
     inputManager.clear();
     this.drawBackdrop();
     this.drawPrompt();
@@ -26,14 +27,34 @@ export class StartScene extends Phaser.Scene {
     // Baixa e decodifica a faixa sem solicitá-la nem tentar reproduzi-la.
     void audioManager.preloadMusic(MUSIC_TRACK_BY_SCENE.MainMenuScene);
 
-    this.gate = new StartGate(globalThis.window, () => {
-      void this.enterGame();
+    this.transition = new StartTransition({
+      unlockAudio: audioManager.unlock,
+      openMainMenu: () => this.scene.start('MainMenuScene'),
+      reportUnlockFailure: (error) => console.warn(
+        '[Audio] Não foi possível liberar o contexto na tela inicial; o jogo continuará e tentará novamente.',
+        error ?? 'policy',
+      ),
     });
+
+    const canvas = this.game.canvas;
+    this.gate = new StartGate(globalThis.window, this.enterGame, [globalThis.window, canvas]);
     this.gate.attach();
+    this.startZone = this.add.zone(
+      INTERNAL_WIDTH / 2,
+      INTERNAL_HEIGHT / 2,
+      INTERNAL_WIDTH,
+      INTERNAL_HEIGHT,
+    ).setInteractive().setDepth(1_000);
+    this.startZone.on(Phaser.Input.Events.POINTER_DOWN, this.handlePhaserPointer);
+    this.input.on(Phaser.Input.Events.POINTER_DOWN, this.handlePhaserPointer);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.input.off(Phaser.Input.Events.POINTER_DOWN, this.handlePhaserPointer);
+      this.startZone?.off(Phaser.Input.Events.POINTER_DOWN, this.handlePhaserPointer);
+      this.startZone = null;
       this.gate?.dispose();
       this.gate = null;
+      this.transition = null;
     });
   }
 
@@ -111,14 +132,11 @@ export class StartScene extends Phaser.Scene {
     });
   }
 
-  private async enterGame(): Promise<void> {
-    if (this.transitionLocked) return;
-    this.transitionLocked = true;
+  private readonly handlePhaserPointer = (): void => {
+    this.gate?.trigger();
+  };
 
-    const unlocked = await audioManager.unlock();
-    if (!unlocked) {
-      console.warn('[Audio] Não foi possível liberar o contexto na tela inicial; o jogo tentará novamente.');
-    }
-    this.scene.start('MainMenuScene');
-  }
+  private readonly enterGame = (): void => {
+    this.transition?.start();
+  };
 }

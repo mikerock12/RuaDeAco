@@ -5,7 +5,7 @@ import {
   spriteSheetFrameIndex,
 } from '../assets/spriteSheetContract';
 import type { FighterSnapshot } from '../combat/FighterRuntime';
-import { roundPixel, worldToScreen } from '../config/pixelArtConfig';
+import { PALETTE, roundPixel, worldToScreen } from '../config/pixelArtConfig';
 import { getFighterSpriteAsset } from '../fighters/visual';
 import type { FighterDefinition } from '../types/combat';
 import type {
@@ -14,6 +14,10 @@ import type {
   FighterSpriteAsset,
 } from '../types/assets';
 import { resolveAttachedEffect, resolveFighterAnimation } from './fighterAnimationResolver';
+import {
+  FighterStatusPresentation,
+  keepFighterBodyColorsNeutral,
+} from './fighterStatusPresentation';
 
 export interface FighterView {
   sync(snapshot: FighterSnapshot, alpha: number): void;
@@ -25,6 +29,7 @@ class SpriteFighterView implements FighterView {
   private readonly definition: FighterDefinition;
   private readonly sprite: Phaser.GameObjects.Sprite;
   private readonly moveEffect: Phaser.GameObjects.Sprite | null;
+  private readonly statusPresentation: FighterStatusPresentation;
   private readonly asset: FighterSpriteAsset;
   private currentAnimation: FighterAnimationId | null = null;
   private viewVisible = true;
@@ -40,6 +45,7 @@ class SpriteFighterView implements FighterView {
       .setOrigin(asset.origin.x, asset.origin.y)
       .setScale(asset.scale)
       .setDepth(20);
+    this.statusPresentation = this.createStatusPresentation(scene, definition.id);
     const firstAttachedEffect = asset.effects.find((effect) => effect.usage === 'attached');
     this.moveEffect = firstAttachedEffect
       ? scene.add.sprite(0, 0, firstAttachedEffect.key, 0)
@@ -91,10 +97,8 @@ class SpriteFighterView implements FighterView {
       );
     }
 
-    if (snapshot.freezeEffectFrames > 0) this.sprite.setTint(0xa8e9ff);
-    else if (snapshot.armorHits > 0) this.sprite.setTint(0xd8f8ff);
-    else if (snapshot.passiveFrames > 0) this.sprite.setTint(0x9af7ff);
-    else this.sprite.clearTint();
+    keepFighterBodyColorsNeutral(this.sprite, snapshot);
+    this.statusPresentation.sync(snapshot, roundPixel(x), roundPixel(y), 18);
 
     const attachedEffect = resolveAttachedEffect(snapshot, activeMove, this.asset);
     this.moveEffectActive = attachedEffect !== undefined;
@@ -130,6 +134,7 @@ class SpriteFighterView implements FighterView {
     this.viewVisible = visible;
     this.sprite.setVisible(visible);
     this.moveEffect?.setVisible(visible && this.moveEffectActive);
+    this.statusPresentation.setVisible(visible);
   }
 
   destroy(): void {
@@ -137,6 +142,30 @@ class SpriteFighterView implements FighterView {
     this.destroyed = true;
     this.sprite.destroy();
     this.moveEffect?.destroy();
+    this.statusPresentation.destroy();
+  }
+
+  private createStatusPresentation(scene: Phaser.Scene, fighterId: string): FighterStatusPresentation {
+    const passive = scene.add.ellipse(0, -3, 58, 11, PALETTE.cyan, 0.08)
+      .setStrokeStyle(2, PALETTE.cyan, 0.95)
+      .setName(`${fighterId}-passive-indicator`);
+    const armor = scene.add.ellipse(0, -43, 52, 84, PALETTE.steelLight, 0.035)
+      .setStrokeStyle(2, PALETTE.silver, 0.8)
+      .setName(`${fighterId}-armor-indicator`);
+    const freeze = [
+      scene.add.rectangle(-70, -72, 4, 10, PALETTE.cyanLight, 0.9).setRotation(-0.55),
+      scene.add.rectangle(69, -58, 4, 12, PALETTE.cyanLight, 0.9).setRotation(0.48),
+      scene.add.rectangle(-62, -34, 3, 8, PALETTE.cyan, 0.9).setRotation(0.62),
+      scene.add.rectangle(66, -88, 3, 9, PALETTE.cyan, 0.9).setRotation(-0.48),
+      scene.add.rectangle(-78, -14, 3, 7, PALETTE.cyanLight, 0.85).setRotation(0.4),
+      scene.add.rectangle(74, -22, 3, 8, PALETTE.cyanLight, 0.85).setRotation(-0.42),
+    ];
+    freeze.forEach((particle, index) => particle.setName(`${fighterId}-freeze-indicator-${index}`));
+    const root = scene.add.container(0, 0, [passive, armor, ...freeze])
+      .setDepth(18)
+      .setName(`${fighterId}-status-indicators`);
+
+    return new FighterStatusPresentation({ root, passive, armor, freeze });
   }
 
   private assertTexture(scene: Phaser.Scene, animation: AnimatedSpriteSheetAsset): void {
