@@ -180,6 +180,18 @@ function frameBounds(sheet, frameIndex) {
       };
 }
 
+function countUnexpectedGreen(image) {
+  let count = 0;
+  for (let index = 0; index < image.pixels.length; index += 4) {
+    const red = image.pixels[index];
+    const green = image.pixels[index + 1];
+    const blue = image.pixels[index + 2];
+    const alpha = image.pixels[index + 3];
+    if (alpha > 0 && green >= 80 && green > red * 1.35 && green > blue * 1.15) count += 1;
+  }
+  return count;
+}
+
 function auditFrameAlpha(image, frameIndex, sheet) {
   const bounds = frameBounds(sheet, frameIndex);
   let transparent = 0;
@@ -403,6 +415,13 @@ for (const fighter of FIGHTERS) {
     entry.opaquePixels = alpha.opaque;
     entry.intermediatePixels = alpha.intermediate;
     entry.hasTransparency = alpha.transparent > 0 || alpha.intermediate > 0;
+
+    if (fighter.id === 'guto-barba' && sheet.rasterKind === 'body') {
+      entry.unexpectedGreenPixels = countUnexpectedGreen(image);
+      if (entry.unexpectedGreenPixels > 0) {
+        entry.issues.push(`RESÍDUO VERDE: ${entry.unexpectedGreenPixels} pixels`);
+      }
+    }
 
     if (!entry.hasTransparency) entry.issues.push('PNG SEM TRANSPARÊNCIA');
 

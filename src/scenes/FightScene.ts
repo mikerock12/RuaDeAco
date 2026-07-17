@@ -69,6 +69,7 @@ export class FightScene extends Phaser.Scene {
         __RUA_FIGHTER_DEBUG__?: () => {
           fighterIds: readonly string[];
           bodySprites: readonly { name: string; texture: string; visible: boolean; active: boolean }[];
+          moveEffects: readonly { name: string; texture: string; visible: boolean; active: boolean }[];
         };
       };
       debugGlobal.__ruaWorld = this.world;
@@ -81,6 +82,15 @@ export class FightScene extends Phaser.Scene {
         bodySprites: this.children.list
           .filter((child): child is Phaser.GameObjects.Sprite =>
             child instanceof Phaser.GameObjects.Sprite && child.name.endsWith('-fighter-sprite'))
+          .map((sprite) => ({
+            name: sprite.name,
+            texture: sprite.texture.key,
+            visible: sprite.visible,
+            active: sprite.active,
+          })),
+        moveEffects: this.children.list
+          .filter((child): child is Phaser.GameObjects.Sprite =>
+            child instanceof Phaser.GameObjects.Sprite && child.name.endsWith('-move-effect'))
           .map((sprite) => ({
             name: sprite.name,
             texture: sprite.texture.key,
@@ -345,9 +355,16 @@ export class FightScene extends Phaser.Scene {
   private drawDebug(snapshot: ReturnType<CombatWorld['snapshot']>): void {
     this.debugGraphics.clear();
     if (!this.world.debugBoxes) return;
-    for (const fighter of this.world.fighters) {
+    this.world.fighters.forEach((fighter, index) => {
+      const opponent = this.world.fighters[index === 0 ? 1 : 0];
+      const combatHurtboxes = fighter.getHurtboxes();
+      const shownHurtboxes = combatHurtboxes.length > 0
+        && opponent.currentMove?.usesVisualHurtboxes
+        && fighter.definition.visualHurtboxes
+        ? fighter.definition.visualHurtboxes
+        : combatHurtboxes;
       this.debugGraphics.lineStyle(1, 0x38ff80, 0.95);
-      for (const hurtbox of fighter.getHurtboxes()) {
+      for (const hurtbox of shownHurtboxes) {
         const rect = worldRectToScreen(toWorldRect(hurtbox, fighter));
         this.debugGraphics.strokeRect(rect.x, rect.y, rect.width, rect.height);
       }
@@ -359,7 +376,7 @@ export class FightScene extends Phaser.Scene {
       this.debugGraphics.lineStyle(1, 0xffd55c, 0.9);
       const pushbox = worldRectToScreen(toWorldRect(fighter.definition.stats.pushbox, fighter));
       this.debugGraphics.strokeRect(pushbox.x, pushbox.y, pushbox.width, pushbox.height);
-    }
+    });
     this.debugGraphics.lineStyle(2, 0x29d9ff, 0.95);
     for (const projectile of snapshot.projectiles) {
       const rect = worldRectToScreen(projectile.hitbox);

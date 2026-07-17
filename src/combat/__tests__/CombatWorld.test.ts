@@ -184,7 +184,7 @@ describe('integração do mundo de combate', () => {
       state: 'grabbedLifted',
       grabbedBy: 'guto-barba',
       victimPhaseFrame: 0,
-      victimPhaseFrames: 14,
+      victimPhaseFrames: 4,
     });
 
     const release = snapshotAtAttackerFrame(world, 27);
@@ -229,7 +229,7 @@ describe('integração do mundo de combate', () => {
     expect(hold.fighters[1]).toMatchObject({
       state: 'grabbedLifted',
       victimPhaseFrame: 0,
-      victimPhaseFrames: 15,
+      victimPhaseFrames: 4,
     });
 
     const freeze = snapshotAtAttackerFrame(world, 35);
@@ -238,10 +238,10 @@ describe('integração do mundo de combate', () => {
       state: 'frozen',
       grabbedBy: 'guto-barba',
       victimPhaseFrame: 0,
-      victimPhaseFrames: 15,
+      victimPhaseFrames: 4,
     });
 
-    const release = snapshotAtAttackerFrame(world, 50);
+    const release = snapshotAtAttackerFrame(world, 80);
     expect(release.activeGrab).toBeNull();
     expect(release.fighters[1]).toMatchObject({
       state: 'thrown',
@@ -284,7 +284,7 @@ describe('integração do mundo de combate', () => {
       const [attacker, victim] = world.snapshot().fighters;
       if (victim.state !== 'grabbedFront') continue;
       captured = true;
-      expect(victim.x).toBeCloseTo(attacker.x + 32);
+      expect(victim.x).toBeCloseTo(attacker.x + 49);
       expect(victim.y).toBeCloseTo(attacker.y - 3);
       expect(victim.victimRotation).toBeCloseTo(0.1);
       break;

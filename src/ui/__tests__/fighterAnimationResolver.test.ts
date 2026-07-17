@@ -169,6 +169,20 @@ describe('fighterAnimationResolver', () => {
     }
   });
 
+  it('mantém o corpo congelado na paleta neutra enquanto o efeito separado anima', () => {
+    const resolved = resolveFighterAnimation(
+      snapshot(rafaMare, 'frozen', 22, {
+        grabbedBy: 'guto-barba',
+        victimPhaseFrame: 22,
+        victimPhaseFrames: 45,
+      }),
+      null,
+      rafaMareSpriteAsset,
+      rafaMare,
+    );
+    expect(resolved).toMatchObject({ id: 'frozen', explicitFrame: 0 });
+  });
+
   it('alinha o frame visual de impacto dos três especiais do Astro', () => {
     for (const move of [
       astroRiso.moves.sorrisoRelampago!,

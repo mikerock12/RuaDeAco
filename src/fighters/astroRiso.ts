@@ -26,6 +26,10 @@ export const astroRiso: FighterDefinition = {
   },
   standingHurtboxes: STANDING_HURTBOXES,
   crouchingHurtboxes: CROUCHING_HURTBOXES,
+  visualHurtboxes: [
+    { x: -21, y: -134, width: 42, height: 42, region: 'head' },
+    { x: -28, y: -92, width: 56, height: 92, region: 'body' },
+  ],
   animations: STANDARD_ANIMATIONS,
   visual: {
     body: 0x356fd1,

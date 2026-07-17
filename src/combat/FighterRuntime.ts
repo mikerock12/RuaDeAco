@@ -58,6 +58,8 @@ export interface FighterSnapshot {
   readonly activeMoveId: string | null;
   readonly moveConnected: 'none' | 'hit' | 'block';
   readonly grabbedBy: FighterId | null;
+  readonly grabbedVictimX: number;
+  readonly grabbedVictimY: number;
   readonly victimRotation: number;
   readonly victimPhaseFrame: number;
   readonly victimPhaseFrames: number;
@@ -83,6 +85,8 @@ export class FighterRuntime {
   passiveFrames = 0;
   freezeEffectFrames = 0;
   grabbedBy: FighterId | null = null;
+  grabbedVictimX = 0;
+  grabbedVictimY = 0;
   victimRotation = 0;
   victimPhaseFrame = 0;
   victimPhaseFrames = 0;
@@ -513,6 +517,8 @@ export class FighterRuntime {
     this.passiveFrames = 0;
     this.freezeEffectFrames = 0;
     this.grabbedBy = null;
+    this.grabbedVictimX = 0;
+    this.grabbedVictimY = 0;
     this.victimRotation = 0;
     this.victimPhaseFrame = 0;
     this.victimPhaseFrames = 0;
@@ -587,6 +593,8 @@ export class FighterRuntime {
       activeMoveId: this.activeMove?.id ?? null,
       moveConnected: this.moveConnected,
       grabbedBy: this.grabbedBy,
+      grabbedVictimX: this.grabbedVictimX,
+      grabbedVictimY: this.grabbedVictimY,
       victimRotation: this.victimRotation,
       victimPhaseFrame: this.victimPhaseFrame,
       victimPhaseFrames: this.victimPhaseFrames,

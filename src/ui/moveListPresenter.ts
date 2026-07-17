@@ -38,6 +38,13 @@ const PLAYER_CONTROLS: readonly [PlayerControlLabels, PlayerControlLabels] = [
   },
 ];
 
+const TOUCH_CONTROLS: PlayerControlLabels = {
+  movement: 'DIRECIONAL (DESLIZAR) MOVER/PULAR/AGACHAR',
+  buttons: 'A FRACO | B FORTE | S ESPECIAL | ▣ DEFESA',
+  down: 'BAIXO',
+  button: { light: 'A', heavy: 'B', special: 'S', block: '▣' },
+};
+
 function pixelSafeText(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/gu, '');
 }
@@ -96,8 +103,9 @@ function moveLine(move: MoveDefinition, controls: PlayerControlLabels, airborne 
 export function buildPauseMoveList(
   definition: FighterDefinition,
   player: 0 | 1,
+  touchMode: boolean = false,
 ): PauseMoveListModel {
-  const controls = PLAYER_CONTROLS[player];
+  const controls = touchMode ? TOUCH_CONTROLS : PLAYER_CONTROLS[player];
   const moves = Object.values(definition.moves);
   const ground = moves
     .filter((move) => !move.air && move.state !== 'specialAttack')

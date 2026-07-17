@@ -119,12 +119,20 @@ class SpriteFighterView implements FighterView {
             : undefined,
         ),
       );
+
+      const effectX = attachedEffect.attachTo === 'victim'
+        ? worldToScreen(snapshot.grabbedVictimX) + this.asset.visualOffset.x
+        : x;
+      const effectY = attachedEffect.attachTo === 'victim'
+        ? worldToScreen(snapshot.grabbedVictimY) + this.asset.visualOffset.y
+        : y;
+
       this.moveEffect
         .setVisible(this.viewVisible)
         .setOrigin(attachedEffect.origin.x, attachedEffect.origin.y)
         .setPosition(
-          roundPixel(x + snapshot.facing * attachedEffect.offset.x),
-          roundPixel(y + attachedEffect.offset.y),
+          roundPixel(effectX + snapshot.facing * attachedEffect.offset.x),
+          roundPixel(effectY + attachedEffect.offset.y),
         )
         .setScale(snapshot.facing * attachedEffect.scale, attachedEffect.scale)
         .setRotation(snapshot.victimRotation);

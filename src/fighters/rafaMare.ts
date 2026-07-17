@@ -24,6 +24,10 @@ export const rafaMare: FighterDefinition = {
   },
   standingHurtboxes: STANDING_HURTBOXES,
   crouchingHurtboxes: CROUCHING_HURTBOXES,
+  visualHurtboxes: [
+    { x: -22, y: -136, width: 44, height: 44, region: 'head' },
+    { x: -30, y: -94, width: 60, height: 94, region: 'body' },
+  ],
   animations: STANDARD_ANIMATIONS,
   passive: {
     id: 'eco-tatuado',

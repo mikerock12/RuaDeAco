@@ -67,15 +67,26 @@ RAFA_SOURCES: dict[str, tuple[str, bool]] = {
 }
 
 GUTO_SOURCE_OVERRIDES: dict[str, Path] = {
-    "abraco-glacial-grab.png": IMAGEGEN / "guto-barba" / "keyed" / "abraco-glacial-grab-fix-v2.png",
-    "air-heavy-forward.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "air-heavy-forward.png",
-    "air-heavy-neutral.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "air-heavy-neutral.png",
-    "crouch-heavy.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "crouch-heavy.png",
-    "crouch-light.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "crouch-light.png",
-    "forward-heavy.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "forward-heavy.png",
-    "gancho-do-urso-hold.png": IMAGEGEN / "guto-barba" / "keyed" / "gancho-do-urso-hold-hard-contract.png",
+    "abraco-glacial-grab.png": IMAGEGEN / "guto-barba" / "keyed" / "abraco-glacial-grab-fix-v3.png",
+    "abraco-glacial-hold.png": IMAGEGEN / "guto-barba" / "keyed" / "abraco-glacial-hold-clean-v2.png",
+    "air-heavy-forward.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "air-heavy-forward-clean-v2.png",
+    "air-heavy-neutral.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "air-heavy-neutral-clean-v2.png",
+    "air-light-neutral.png": IMAGEGEN / "guto-barba" / "keyed" / "air-light-neutral-clean-v2.png",
+    "crouch-heavy.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "crouch-heavy-clean-v2.png",
+    "crouch-light.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "crouch-light-clean-v2.png",
+    "forward-heavy.png": IMAGEGEN / "guto-barba" / "kicks-v2" / "keyed" / "forward-heavy-clean-v3.png",
+    "frozen.png": IMAGEGEN / "guto-barba" / "keyed" / "frozen-clean-v2.png",
+    "gancho-do-urso-startup.png": IMAGEGEN / "guto-barba" / "keyed" / "gancho-do-urso-startup-clean-v2.png",
+    "gancho-do-urso-grab.png": IMAGEGEN / "guto-barba" / "keyed" / "gancho-do-urso-grab-clean-v2.png",
+    "gancho-do-urso-hold.png": IMAGEGEN / "guto-barba" / "keyed" / "gancho-do-urso-hold-clean-v2.png",
+    "gancho-do-urso-throw.png": IMAGEGEN / "guto-barba" / "keyed" / "gancho-do-urso-throw-clean-v2.png",
+    "gancho-do-urso-recovery.png": IMAGEGEN / "guto-barba" / "keyed" / "gancho-do-urso-recovery-clean-v2.png",
+    "grabbed-front.png": IMAGEGEN / "guto-barba" / "keyed" / "grabbed-front-clean-v2.png",
+    "grabbed-lifted.png": IMAGEGEN / "guto-barba" / "keyed" / "grabbed-lifted-clean-v2.png",
     "jump-backward.png": IMAGEGEN / "guto-barba" / "jump-backward-alpha-v5.png",
     "jump-forward.png": IMAGEGEN / "guto-barba" / "jump-forward-alpha-v5.png",
+    "jump-neutral.png": IMAGEGEN / "guto-barba" / "keyed" / "jump-neutral-clean-v2.png",
+    "knockdown.png": IMAGEGEN / "guto-barba" / "keyed" / "knockdown-clean-v2.png",
     "victory.png": IMAGEGEN / "guto-barba" / "keyed-clean" / "victory.png",
 }
 

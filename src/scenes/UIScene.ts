@@ -222,12 +222,18 @@ export class UIScene extends Phaser.Scene {
     legend.setOrigin(0.5, 0).setCenterAlign();
     this.pauseMoveTexts.push(legend);
 
-    for (const index of [0, 1] as const) {
+    const touchMode = InputManager.isTouchCapable();
+    const playersToRender: readonly (0 | 1)[] = touchMode ? [0] : [0, 1];
+
+    for (const index of playersToRender) {
       const definition = this.world.fighters[index].definition;
-      const model = buildPauseMoveList(definition, index);
+      const model = buildPauseMoveList(definition, index, touchMode);
       const playerTint = index === 0 ? PALETTE.cyan : PALETTE.pink;
+
+      const xPos = touchMode ? 170 : (index === 0 ? 24 : 328);
+
       model.lines.forEach((line, lineIndex) => {
-        const text = pixelText(this, index === 0 ? 24 : 328, 104 + lineIndex * 9, line.text, { size: 8 })
+        const text = pixelText(this, xPos, 104 + lineIndex * 9, line.text, { size: 8 })
           .setTint(this.pauseLineTint(line.tone, playerTint))
           .setVisible(false)
           .setDepth(92);

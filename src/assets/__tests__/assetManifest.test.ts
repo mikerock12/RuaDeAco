@@ -158,8 +158,8 @@ describe('assetManifest', () => {
       { animation: 'special3', range: { from: 0, to: 14 } },
       { animation: 'special3Grab', range: { from: 15, to: 19 } },
       { animation: 'special3Hold', range: { from: 20, to: 34 } },
-      { animation: 'special3Freeze', range: { from: 35, to: 49 } },
-      { animation: 'special3Finish', range: { from: 50, to: 63 } },
+      { animation: 'special3Freeze', range: { from: 35, to: 79 } },
+      { animation: 'special3Finish', range: { from: 80, to: 93 } },
     ]);
   });
 });

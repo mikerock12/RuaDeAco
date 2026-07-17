@@ -74,6 +74,7 @@ function effect(
   moveId: string,
   activeRange: FighterEffectAsset['activeRange'],
   offset: FighterEffectAsset['offset'],
+  attachTo?: 'attacker' | 'victim',
 ): FighterEffectAsset {
   return {
     id,
@@ -81,6 +82,7 @@ function effect(
     path: `assets/fighters/guto-barba/${file}`,
     moveId,
     usage: 'attached',
+    attachTo: attachTo ?? 'attacker',
     ...(activeRange ? { activeRange } : {}),
     origin: { x: 0.5, y: 0.5 },
     offset,
@@ -109,7 +111,7 @@ export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
   ],
   effects: [
     effect('muralha-norte', 'muralha-norte-effect.png', 'muralhaNorte', { from: 4, to: 36 }, { x: 36, y: -112 }),
-    effect('abraco-glacial', 'abraco-glacial-effect.png', 'abracoGlacial', { from: 35, to: 49 }, { x: 0, y: -116 }),
+    effect('abraco-glacial', 'abraco-glacial-effect.png', 'abracoGlacial', { from: 35, to: 79 }, { x: 0, y: -116 }, 'victim'),
   ],
   movePhases: {
     ganchoUrso: [
@@ -123,8 +125,8 @@ export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
       { animation: 'special3', range: { from: 0, to: 14 } },
       { animation: 'special3Grab', range: { from: 15, to: 19 } },
       { animation: 'special3Hold', range: { from: 20, to: 34 } },
-      { animation: 'special3Freeze', range: { from: 35, to: 49 } },
-      { animation: 'special3Finish', range: { from: 50, to: 63 } },
+      { animation: 'special3Freeze', range: { from: 35, to: 79 } },
+      { animation: 'special3Finish', range: { from: 80, to: 93 } },
     ],
   },
   animations: {

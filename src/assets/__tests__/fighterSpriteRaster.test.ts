@@ -36,6 +36,7 @@ interface RasterAuditEntry {
   readonly frameAudits?: readonly FrameAudit[];
   readonly medianOpaquePixels?: number;
   readonly visualMassRatio?: number;
+  readonly unexpectedGreenPixels?: number;
   readonly issues: readonly string[];
 }
 
@@ -129,5 +130,13 @@ describe('fighter sprite raster audit', () => {
         expect(frame.bbox, `${effect.file} frame ${frame.frame}`).not.toBeNull();
       }
     }
+  });
+
+  it('não permite que o chroma verde volte ao Chute Pesado do Guto', () => {
+    const kick = entries.find(
+      ({ fighterId, file }) => fighterId === 'guto-barba' && file === 'forward-heavy.png',
+    );
+    expect(kick).toBeDefined();
+    expect(kick?.unexpectedGreenPixels).toBe(0);
   });
 });

@@ -137,7 +137,9 @@ export function resolveFighterAnimation(
     return {
       id: 'frozen',
       localFrame: snapshot.victimPhaseFrame,
-      ...(snapshot.victimPhaseFrames > 0 ? { phaseFrames: snapshot.victimPhaseFrames } : {}),
+      // O gelo é um efeito separado. O quadro corporal neutro evita que a
+      // arte baked-in aplique uma segunda tintura azul sobre a vítima.
+      explicitFrame: 0,
     };
   }
   if (state === 'thrown') return { id: 'thrown', localFrame: snapshot.stateFrame };

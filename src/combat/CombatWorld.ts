@@ -423,14 +423,21 @@ export class CombatWorld {
 
   private findContact(attacker: FighterRuntime, defender: FighterRuntime): Contact | null {
     if (attacker.isBeingGrabbed || defender.isBeingGrabbed) return null;
-    const hurtboxes = defender.getHurtboxes().map((box) => toWorldRect(box, defender));
+    const move = attacker.currentMove;
+    const combatHurtboxes = defender.getHurtboxes();
+    const targetHurtboxes = combatHurtboxes.length > 0
+      && move?.usesVisualHurtboxes
+      && defender.definition.visualHurtboxes
+      ? defender.definition.visualHurtboxes
+      : combatHurtboxes;
+    const hurtboxes = targetHurtboxes.map((box) => toWorldRect(box, defender));
     const hitboxes = attacker.getActiveHitboxes()
       .filter((box) => attacker.canRegisterHit(box.id, defender.id))
       .sort((a, b) => b.priority - a.priority);
     for (const hitbox of hitboxes) {
       const worldHitbox = toWorldRect(hitbox, attacker);
       if (hurtboxes.some((hurtbox) => intersects(worldHitbox, hurtbox))) {
-        return { attacker, defender, hitbox, move: attacker.currentMove };
+        return { attacker, defender, hitbox, move };
       }
     }
     return null;
@@ -573,11 +580,17 @@ export class CombatWorld {
     const phaseEnd = phase?.range.to
       ?? (state === 'grabbedFront' ? definition.holdStartFrame - 1 : definition.releaseFrame - 1);
 
+    const victimX = attacker.x + attacker.facing * anchorX;
+    const victimY = attacker.y + anchorY;
+
+    attacker.grabbedVictimX = victimX;
+    attacker.grabbedVictimY = victimY;
+
     defender.setGrabbedPose(
       attacker.id,
       state,
-      attacker.x + attacker.facing * anchorX,
-      attacker.y + anchorY,
+      victimX,
+      victimY,
       attacker.facing,
       attacker.facing * rotation,
       frame - phaseStart,

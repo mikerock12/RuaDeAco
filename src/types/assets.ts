@@ -87,6 +87,7 @@ export interface FighterEffectAsset extends AnimatedSpriteSheetAsset {
   readonly id: string;
   readonly moveId: string;
   readonly usage: 'attached' | 'projectile';
+  readonly attachTo?: 'attacker' | 'victim';
   readonly activeRange?: FrameRange;
   readonly origin: Readonly<{ x: number; y: number }>;
   readonly offset: Readonly<{ x: number; y: number }>;

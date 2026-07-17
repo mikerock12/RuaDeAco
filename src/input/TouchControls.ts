@@ -130,7 +130,8 @@ export class TouchControls {
     button.addEventListener('pointermove', (event) => {
       if (!this.pointers.has(event.pointerId)) return;
       const rect = button.getBoundingClientRect();
-      const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+      const margin = 40;
+      const inside = event.clientX >= rect.left - margin && event.clientX <= rect.right + margin && event.clientY >= rect.top - margin && event.clientY <= rect.bottom + margin;
       this.pointers.set(event.pointerId, inside ? new Set([spec.action]) : new Set());
       this.syncActions();
     });
