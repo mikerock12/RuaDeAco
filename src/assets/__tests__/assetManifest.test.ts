@@ -49,6 +49,7 @@ describe('assetManifest', () => {
   it('mantém todos os sheets horizontais no padrão real por lutador', () => {
     const expectedFrameSize: Record<string, number> = {
       'rafa-mare': 256,
+      'astro-riso': 256,
       'guto-barba': 288,
     };
     for (const fighter of FIGHTER_SPRITE_ASSETS) {
@@ -76,10 +77,12 @@ describe('assetManifest', () => {
     );
   });
 
-  it('registra a lista plana completa de Rafa e Guto sem agregados antigos', () => {
+  it('registra a lista plana completa dos lutadores disponíveis sem agregados antigos', () => {
     const rafa = FIGHTER_SPRITE_ASSETS.find(({ fighterId }) => fighterId === 'rafa-mare');
+    const astro = FIGHTER_SPRITE_ASSETS.find(({ fighterId }) => fighterId === 'astro-riso');
     const guto = FIGHTER_SPRITE_ASSETS.find(({ fighterId }) => fighterId === 'guto-barba');
     expect(rafa).toBeDefined();
+    expect(astro).toBeDefined();
     expect(guto).toBeDefined();
 
     const common = [
@@ -105,6 +108,12 @@ describe('assetManifest', () => {
       'chute-da-ressaca.png', 'chute-da-ressaca-effect.png',
       'eco-tatuado.png', 'eco-tatuado-effect.png',
     ].sort());
+    expect(names(astro!)).toEqual([
+      ...common,
+      'sorriso-relampago.png', 'sorriso-relampago-effect.png',
+      'rajada-neon.png', 'rajada-neon-effect.png',
+      'astro-giro.png', 'astro-giro-effect.png',
+    ].sort());
     expect(names(guto!)).toEqual([
       ...common,
       'muralha-norte.png', 'muralha-norte-effect.png',
@@ -127,6 +136,13 @@ describe('assetManifest', () => {
     ]);
     expect(new Set(sheets.map(({ key }) => key)).size).toBe(sheets.length);
     expect(new Set(sheets.map(({ path }) => path)).size).toBe(sheets.length);
+  });
+
+  it('inclui todos os lutadores raster no versionamento de cache do PWA', () => {
+    const viteConfig = readFileSync(resolve(process.cwd(), 'vite.config.ts'), 'utf8');
+    for (const fighter of FIGHTER_SPRITE_ASSETS) {
+      expect(viteConfig, fighter.fighterId).toContain(fighter.fighterId);
+    }
   });
 
   it('cobre Gancho e Abraço com fases contíguas sem sprites agregados', () => {

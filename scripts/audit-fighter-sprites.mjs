@@ -12,6 +12,7 @@ const ROOT = new URL('../', import.meta.url).pathname.replace(/^\/(?:([A-Za-z]:)
 const FIGHTER_NAMES = {
   'rafa-mare': 'Rafa Maré',
   'guto-barba': 'Guto Barba',
+  'astro-riso': 'Astro Riso',
 };
 
 // Contrato do raster final. O baseline é expresso nas coordenadas locais do
@@ -19,6 +20,7 @@ const FIGHTER_NAMES = {
 const FIGHTER_RASTER_CONTRACTS = {
   'rafa-mare': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
   'guto-barba': { frameWidth: 288, frameHeight: 288, baselineY: 281 },
+  'astro-riso': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
 };
 const BODY_MASS_RATIO_TOLERANCE = 0.08;
 

@@ -66,11 +66,27 @@ export class FightScene extends Phaser.Scene {
       const debugGlobal = globalThis as typeof globalThis & {
         __ruaWorld?: CombatWorld;
         __RUA_PAUSE_DEBUG__?: () => { paused: boolean; selectedAction: PauseMenuAction };
+        __RUA_FIGHTER_DEBUG__?: () => {
+          fighterIds: readonly string[];
+          bodySprites: readonly { name: string; texture: string; visible: boolean; active: boolean }[];
+        };
       };
       debugGlobal.__ruaWorld = this.world;
       debugGlobal.__RUA_PAUSE_DEBUG__ = () => ({
         paused: this.world.paused,
         selectedAction: this.pauseMenu.selected,
+      });
+      debugGlobal.__RUA_FIGHTER_DEBUG__ = () => ({
+        fighterIds: this.world.fighters.map(({ id }) => id),
+        bodySprites: this.children.list
+          .filter((child): child is Phaser.GameObjects.Sprite =>
+            child instanceof Phaser.GameObjects.Sprite && child.name.endsWith('-fighter-sprite'))
+          .map((sprite) => ({
+            name: sprite.name,
+            texture: sprite.texture.key,
+            visible: sprite.visible,
+            active: sprite.active,
+          })),
       });
     }
     this.stageView = new CaisStageView(this);
@@ -431,9 +447,11 @@ export class FightScene extends Phaser.Scene {
       const debugGlobal = globalThis as typeof globalThis & {
         __ruaWorld?: CombatWorld;
         __RUA_PAUSE_DEBUG__?: () => unknown;
+        __RUA_FIGHTER_DEBUG__?: () => unknown;
       };
       if (debugGlobal.__ruaWorld === this.world) delete debugGlobal.__ruaWorld;
       delete debugGlobal.__RUA_PAUSE_DEBUG__;
+      delete debugGlobal.__RUA_FIGHTER_DEBUG__;
     }
   }
 

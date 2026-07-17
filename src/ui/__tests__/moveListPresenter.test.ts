@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { astroRiso } from '../../fighters/astroRiso';
 import { gutoBarba } from '../../fighters/gutoBarba';
 import { rafaMare } from '../../fighters/rafaMare';
+import type { FighterDefinition } from '../../types/combat';
 import { buildPauseMoveList } from '../moveListPresenter';
 
-const texts = (fighter: typeof gutoBarba | typeof rafaMare, player: 0 | 1) =>
+const texts = (fighter: FighterDefinition, player: 0 | 1) =>
   buildPauseMoveList(fighter, player).lines.map(({ text }) => text);
 
 describe('lista de comandos da pausa', () => {
@@ -42,5 +44,21 @@ describe('lista de comandos da pausa', () => {
     expect(lines).toContain('BAIXO+L ABRACO GLACIAL [100 ENERGIA]');
     expect(lines.length).toBeLessThanOrEqual(19);
     expect(Math.max(...lines.map((line) => line.length))).toBeLessThanOrEqual(46);
+  });
+
+  it('mostra as três sequências do Astro em ordem legível e dentro do painel', () => {
+    const p1 = texts(astroRiso, 0);
+    expect(p1).toContain('FRENTE+S+S-FRENTE+H SORRISO RELAMPAGO');
+    expect(p1).toContain('S+S-FRENTE+FRENTE+H RAJADA NEON');
+    expect(p1).toContain('S+S-TRAS+TRAS+H ASTRO GIRO [100 ENERGIA]');
+    expect(p1.indexOf('FRENTE+S+S-FRENTE+H SORRISO RELAMPAGO'))
+      .toBeLessThan(p1.indexOf('S+S-FRENTE+FRENTE+H RAJADA NEON'));
+    expect(p1.length).toBeLessThanOrEqual(19);
+    expect(Math.max(...p1.map((line) => line.length))).toBeLessThanOrEqual(46);
+
+    const p2 = texts(astroRiso, 1);
+    expect(p2).toContain('FRENTE+BAIXO+BAIXO-FRENTE+L SORRISO RELAMPAGO');
+    expect(p2).toContain('BAIXO+BAIXO-FRENTE+FRENTE+L RAJADA NEON');
+    expect(p2).toContain('BAIXO+BAIXO-TRAS+TRAS+L ASTRO GIRO [100 ENERGIA]');
   });
 });

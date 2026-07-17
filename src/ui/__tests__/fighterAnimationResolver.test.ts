@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { spriteSheetFrameIndex } from '../../assets/spriteSheetContract';
 import { FighterRuntime, type FighterSnapshot } from '../../combat/FighterRuntime';
+import { astroRiso } from '../../fighters/astroRiso';
 import { gutoBarba } from '../../fighters/gutoBarba';
 import { rafaMare } from '../../fighters/rafaMare';
-import { gutoBarbaSpriteAsset, rafaMareSpriteAsset } from '../../fighters/visual';
+import {
+  astroRisoSpriteAsset,
+  gutoBarbaSpriteAsset,
+  rafaMareSpriteAsset,
+} from '../../fighters/visual';
 import type { FighterState, MoveDefinition } from '../../types/combat';
 import {
   resolveAttachedEffect,
@@ -11,7 +16,7 @@ import {
 } from '../fighterAnimationResolver';
 
 function snapshot(
-  fighter: typeof rafaMare | typeof gutoBarba,
+  fighter: typeof rafaMare | typeof astroRiso | typeof gutoBarba,
   state: FighterState,
   stateFrame: number,
   patch: Partial<FighterSnapshot> = {},
@@ -144,6 +149,7 @@ describe('fighterAnimationResolver', () => {
 
     for (const [fighter, asset] of [
       [rafaMare, rafaMareSpriteAsset],
+      [astroRiso, astroRisoSpriteAsset],
       [gutoBarba, gutoBarbaSpriteAsset],
     ] as const) {
       const reached = new Set(Array.from({ length: 22 }, (_, stateFrame) => {
@@ -160,6 +166,23 @@ describe('fighterAnimationResolver', () => {
         );
       }));
       expect(reached).toEqual(new Set([0, 1, 2, 3]));
+    }
+  });
+
+  it('alinha o frame visual de impacto dos três especiais do Astro', () => {
+    for (const move of [
+      astroRiso.moves.sorrisoRelampago!,
+      astroRiso.moves.rajadaNeon!,
+      astroRiso.moves.astroGiro!,
+    ]) {
+      const firstImpact = move.hitboxes[0]!.range.from;
+      const resolved = resolveFighterAnimation(
+        snapshot(astroRiso, 'specialAttack', firstImpact, { activeMoveId: move.id }),
+        move,
+        astroRisoSpriteAsset,
+        astroRiso,
+      );
+      expect(resolved.explicitFrame, move.id).toBe(2);
     }
   });
 });

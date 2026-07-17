@@ -5,7 +5,7 @@ import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 const publicRoot = resolve(process.cwd(), 'public');
-const fighterAssetPattern = /^assets\/fighters\/(?:rafa-mare|guto-barba)\/[^/]+\.png$/;
+const fighterAssetPattern = /^assets\/fighters\/(?:rafa-mare|astro-riso|guto-barba)\/[^/]+\.png$/;
 
 function listPublicFiles(root: string): string[] {
   if (!existsSync(root)) return [];
@@ -38,7 +38,7 @@ function contentRevision(root: string, files: readonly string[]): string {
   return hash.digest('hex').slice(0, 12);
 }
 
-// Faz parte do bundle e muda sempre que um PNG de Rafa/Guto muda. Assim o
+// Faz parte do bundle e muda sempre que um PNG de um lutador disponível muda. Assim o
 // bundle novo nunca pede a mesma URL que um service worker antigo tem em cache.
 const fighterAssetRevision = contentRevision(
   publicRoot,

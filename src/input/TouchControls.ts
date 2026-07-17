@@ -1,6 +1,7 @@
 import { settingsStore } from '../config/settings';
 import type { InputAction } from '../types/combat';
 import { InputManager, inputManager } from './InputManager';
+import { touchDpadActions } from './touchDirection';
 
 const DIRECTION_ACTIONS: readonly InputAction[] = ['left', 'right', 'up', 'down'];
 const COMBAT_ACTIONS: readonly InputAction[] = ['light', 'heavy', 'special', 'block'];
@@ -158,15 +159,7 @@ export class TouchControls {
     const centerY = rect.top + rect.height / 2;
     const dx = (event.clientX - centerX) / (rect.width / 2);
     const dy = (event.clientY - centerY) / (rect.height / 2);
-    const actions = new Set<InputAction>();
-    const outside = Math.abs(dx) > 1.18 || Math.abs(dy) > 1.18;
-    if (!outside) {
-      if (dx < -0.2) actions.add('left');
-      if (dx > 0.2) actions.add('right');
-      if (dy < -0.2) actions.add('up');
-      if (dy > 0.2) actions.add('down');
-    }
-    this.pointers.set(event.pointerId, actions);
+    this.pointers.set(event.pointerId, new Set(touchDpadActions(dx, dy)));
     this.syncActions();
   }
 

@@ -1,6 +1,7 @@
 export const FIGHTER_OPAQUE_BOTTOM_PADDING = {
   'rafa-mare': 6,
   'guto-barba': 6,
+  'astro-riso': 6,
 } as const;
 
 /**

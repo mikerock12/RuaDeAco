@@ -47,11 +47,12 @@ Este documento mapeia o status dos sprites de luta e especiais criados a partir 
 - **Pressão Violeta**: ✅ Concluído
 
 ## Astro Riso (Speed / Mix-up)
-- **Idle**: ✅ Concluído
-- **Corrida**: ✅ Concluído
-- **Sorriso Relâmpago**: ✅ Concluído
-- **Rajada Neon**: ✅ Concluído
-- **Astro Giro**: ✅ Concluído
+- **Pacote corporal compartilhado (35 folhas)**: 🚀 Validado no jogo
+- **Idle**: 🚀 Validado no jogo
+- **Corrida**: 🚀 Validado no jogo
+- **Sorriso Relâmpago + efeito separado**: 🚀 Validado no jogo
+- **Rajada Neon + efeito separado**: 🚀 Validado no jogo
+- **Astro Giro + efeito separado**: 🚀 Validado no jogo
 
 ---
 *(Estes status representam a extração automatizada de assets perfeitos diretamente das referências, evitando placeholders).*

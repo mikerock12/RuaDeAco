@@ -1,4 +1,4 @@
-"""Rebuild Rafa and Guto combat strips with stable visual scale and pivots.
+"""Rebuild Rafa, Guto and Astro combat strips with stable scale and pivots.
 
 The large reference-driven contact sheets stay under ``tmp/imagegen``.  This
 script only writes the public fighter PNGs, keeping their flat paths and four
@@ -31,6 +31,12 @@ RAFA_LEGACY_SCALE = 176 / 180
 GUTO_FRAME = 288
 GUTO_FOOTLINE = 281
 GUTO_SCALE = 210 / 561
+
+ASTRO_FRAME = 256
+ASTRO_FOOTLINE = 249
+# A maior pose do idle canônico mede 553 px; Astro compartilha a estatura
+# visual de 176 px do Rafa, mas mantém silhueta e massa mais leves.
+ASTRO_SCALE = 176 / 553
 
 MIN_MASS_SCALE = 0.75
 MAX_MASS_SCALE = 1.60
@@ -72,6 +78,50 @@ GUTO_SOURCE_OVERRIDES: dict[str, Path] = {
     "jump-forward.png": IMAGEGEN / "guto-barba" / "jump-forward-alpha-v5.png",
     "victory.png": IMAGEGEN / "guto-barba" / "keyed-clean" / "victory.png",
 }
+
+ASTRO_BODY_ASSETS: tuple[str, ...] = (
+    "idle.png",
+    "corrida.png",
+    "walk-backward.png",
+    "jump-neutral.png",
+    "jump-forward.png",
+    "jump-backward.png",
+    "fall.png",
+    "landing.png",
+    "crouch.png",
+    "standing-light.png",
+    "standing-heavy.png",
+    "forward-light.png",
+    "forward-heavy.png",
+    "crouch-light.png",
+    "crouch-heavy.png",
+    "air-light-neutral.png",
+    "air-heavy-neutral.png",
+    "air-light-forward.png",
+    "air-heavy-forward.png",
+    "air-light-backward.png",
+    "air-heavy-backward.png",
+    "block-standing.png",
+    "block-crouching.png",
+    "hit.png",
+    "knockdown.png",
+    "wake-up.png",
+    "grabbed-front.png",
+    "grabbed-lifted.png",
+    "thrown.png",
+    "frozen.png",
+    "knockout.png",
+    "victory.png",
+    "sorriso-relampago.png",
+    "rajada-neon.png",
+    "astro-giro.png",
+)
+
+ASTRO_EFFECT_ASSETS: tuple[str, ...] = (
+    "sorriso-relampago-effect.png",
+    "rajada-neon-effect.png",
+    "astro-giro-effect.png",
+)
 
 
 def split_contact_sheet(source: Image.Image, isolate: bool) -> list[Image.Image]:
@@ -222,6 +272,34 @@ def reframe_effect(source_path: Path, frame_size: int) -> Image.Image:
     return sheet
 
 
+def effect_from_contact_source(source_path: Path, frame_size: int) -> Image.Image:
+    """Preserve every disconnected spark while applying one scale per sheet."""
+
+    source = harden_alpha(Image.open(source_path).convert("RGBA"))
+    cells = split_contact_sheet(source, False)
+    boxes = [alpha_bbox(cell) for cell in cells]
+    max_width = max(box[2] - box[0] for box in boxes)
+    max_height = max(box[3] - box[1] for box in boxes)
+    usable = frame_size - 16
+    scale = min(usable / max_width, usable / max_height)
+    sheet = Image.new(
+        "RGBA",
+        (frame_size * FRAME_COUNT, frame_size),
+        (0, 0, 0, 0),
+    )
+    for index, (cell, box) in enumerate(zip(cells, boxes, strict=True)):
+        effect = cell.crop(box)
+        width = max(1, round(effect.width * scale))
+        height = max(1, round(effect.height * scale))
+        effect = harden_alpha(
+            effect.resize((width, height), Image.Resampling.NEAREST)
+        )
+        x = index * frame_size + (frame_size - width) // 2
+        y = (frame_size - height) // 2
+        sheet.alpha_composite(effect, (x, y))
+    return sheet
+
+
 def save(sheet: Image.Image, output: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(output, optimize=True)
@@ -318,13 +396,51 @@ def rebuild_guto(only_assets: set[str] | None = None) -> None:
         save(sheet, output)
 
 
+def rebuild_astro(only_assets: set[str] | None = None) -> None:
+    directory = PUBLIC / "astro-riso"
+    source_directory = IMAGEGEN / "astro-riso" / "keyed"
+    idle_sheet = body_from_contact_source(
+        source_directory / "idle.png",
+        ASTRO_FRAME,
+        ASTRO_FOOTLINE,
+        ASTRO_SCALE,
+        True,
+    )
+    target_area = median_opaque_area(idle_sheet, ASTRO_FRAME)
+
+    for name in (*ASTRO_BODY_ASSETS, *ASTRO_EFFECT_ASSETS):
+        if only_assets is not None and name not in only_assets:
+            continue
+        source = source_directory / name
+        if not source.is_file():
+            raise FileNotFoundError(f"missing Astro source: {source}")
+        output = directory / name
+        if name in ASTRO_EFFECT_ASSETS:
+            sheet = effect_from_contact_source(source, ASTRO_FRAME)
+        else:
+            sheet = body_from_contact_source(
+                source,
+                ASTRO_FRAME,
+                ASTRO_FOOTLINE,
+                ASTRO_SCALE,
+                True,
+            )
+            sheet = normalize_visual_mass(
+                sheet,
+                ASTRO_FRAME,
+                ASTRO_FOOTLINE,
+                target_area,
+            )
+        save(sheet, output)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Rebuild all fighter sprites or a safe, explicit subset."
     )
     parser.add_argument(
         "--fighter",
-        choices=("all", "rafa", "guto"),
+        choices=("all", "rafa", "guto", "astro"),
         default="all",
         help="fighter whose public sprites will be rewritten (default: all)",
     )
@@ -346,7 +462,13 @@ def validate_requested_assets(fighter: str, assets: set[str] | None) -> None:
         directories.append(PUBLIC / "rafa-mare")
     if fighter in ("all", "guto"):
         directories.append(PUBLIC / "guto-barba")
-    available = {path.name for directory in directories for path in directory.glob("*.png")}
+    if fighter in ("all", "astro"):
+        available = set(ASTRO_BODY_ASSETS) | set(ASTRO_EFFECT_ASSETS)
+    else:
+        available = set()
+    available.update(
+        path.name for directory in directories for path in directory.glob("*.png")
+    )
     missing = sorted(assets - available)
     if missing:
         raise ValueError(f"unknown requested assets: {', '.join(missing)}")
@@ -360,6 +482,8 @@ def main() -> None:
         rebuild_rafa(assets)
     if args.fighter in ("all", "guto"):
         rebuild_guto(assets)
+    if args.fighter in ("all", "astro"):
+        rebuild_astro(assets)
 
 
 if __name__ == "__main__":

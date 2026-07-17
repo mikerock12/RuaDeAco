@@ -59,8 +59,11 @@ function groundRank(move: MoveDefinition): number {
 
 function specialRank(move: MoveDefinition): number {
   const direction = finalDirection(move);
-  if (direction === 'forward') return 1;
-  if (direction === 'down') return 2;
+  if (direction === 'downForward') return 1;
+  if (direction === 'forward') return 2;
+  if (direction === 'back') return 3;
+  if (direction === 'downBack') return 3;
+  if (direction === 'down') return 4;
   return 0;
 }
 
