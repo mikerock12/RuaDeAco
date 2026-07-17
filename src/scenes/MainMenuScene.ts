@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { ASSET_MANIFEST } from '../assets/assetManifest';
 import { audioManager } from '../audio/AudioManager';
+import { MUSIC_TRACK_BY_SCENE } from '../audio/musicCatalog';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { gameSession } from '../config/session';
 import { settingsStore } from '../config/settings';
@@ -43,6 +44,7 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   create(): void {
+    void audioManager.playMusic(MUSIC_TRACK_BY_SCENE.MainMenuScene);
     this.cameras.main.setBackgroundColor(PALETTE.ink);
     this.rows = [];
     this.selectedIndex = 0;

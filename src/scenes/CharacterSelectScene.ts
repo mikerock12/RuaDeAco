@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { ASSET_MANIFEST } from '../assets/assetManifest';
 import { audioManager } from '../audio/AudioManager';
+import { MUSIC_TRACK_BY_SCENE } from '../audio/musicCatalog';
 import { CAIS_DA_CIDADE } from '../config/gameConfig';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { gameSession } from '../config/session';
@@ -59,6 +60,7 @@ export class CharacterSelectScene extends Phaser.Scene {
   }
 
   create(): void {
+    void audioManager.playMusic(MUSIC_TRACK_BY_SCENE.CharacterSelectScene);
     inputManager.attach();
     this.phase = 'playerOne';
     this.confirming = false;

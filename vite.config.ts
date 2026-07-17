@@ -87,6 +87,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     globals: true,
     restoreMocks: true,
     clearMocks: true,

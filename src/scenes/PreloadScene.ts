@@ -124,7 +124,7 @@ export class PreloadScene extends Phaser.Scene {
     this.add.bitmapText(INTERNAL_WIDTH / 2, 290, ASSET_MANIFEST.font.key, 'ASSETS OK', 16)
       .setOrigin(0.5)
       .setTint(PALETTE.cyanLight);
-    this.time.delayedCall(220, () => this.scene.start('MainMenuScene'));
+    this.time.delayedCall(220, () => this.scene.start('StartScene'));
   }
 
   private validateLoadedSpriteSheet(asset: SpriteSheetAsset): readonly string[] {

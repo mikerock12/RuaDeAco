@@ -18,3 +18,12 @@ android/capacitor.build.gradle
 # Fontes brutas e auditoria local dos novos chutes do Guto
 /tmp/imagegen/guto-barba/kicks-v2/raw/
 /tmp/imagegen/guto-barba/audit/kicks-v2.png
+
+# Fontes WAV originais, mantidas apenas localmente
+/tmp/audio-source/
+
+# Artefatos locais do Playwright
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.auth/

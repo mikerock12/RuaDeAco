@@ -10,6 +10,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:audio:real": "playwright test e2e/audio-context.spec.ts --project=chrome-visible-real-policy",
+    "test:e2e:audio:debug": "playwright test e2e/audio-context.spec.ts --project=chrome-visible-real-policy --debug",
+    "test:e2e:ui": "playwright test --ui --project=chrome-visible-real-policy",
     "validate:sprites": "node scripts/audit-fighter-sprites.mjs",
     "generate:icons": "node scripts/generate-icons.mjs",
     "android:sync": "npx cap sync android",
@@ -25,6 +29,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.4.2",
+    "@playwright/test": "^1.61.1",
     "@types/node": "^24.13.3",
     "typescript": "^7.0.2",
     "vite": "^8.1.4",

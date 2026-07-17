@@ -9,6 +9,7 @@ import { MainMenuScene } from './scenes/MainMenuScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { ResultScene } from './scenes/ResultScene';
 import { SettingsScene } from './scenes/SettingsScene';
+import { StartScene } from './scenes/StartScene';
 import { UIScene } from './scenes/UIScene';
 import { createViewportRefreshScheduler } from './utils/viewportLayout';
 
@@ -53,6 +54,7 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [
     BootScene,
     PreloadScene,
+    StartScene,
     MainMenuScene,
     CharacterSelectScene,
     FightScene,

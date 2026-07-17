@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CpuController } from '../ai/CpuController';
 import { audioManager } from '../audio/AudioManager';
+import { MUSIC_TRACK_BY_SCENE } from '../audio/musicCatalog';
 import { phaserAnimationKey, spriteSheetFrameIndex } from '../assets/spriteSheetContract';
 import { CombatWorld } from '../combat/CombatWorld';
 import { FixedStepRunner } from '../combat/FixedStepRunner';
@@ -46,6 +47,7 @@ export class FightScene extends Phaser.Scene {
   }
 
   create(): void {
+    void audioManager.playMusic(MUSIC_TRACK_BY_SCENE.FightScene);
     this.destroyFightSprites();
     this.resultScheduled = false;
     this.cpu = null;
