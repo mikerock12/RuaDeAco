@@ -14,6 +14,7 @@ import type {
   FighterSpriteAsset,
 } from '../types/assets';
 import { resolveAttachedEffect, resolveFighterAnimation } from './fighterAnimationResolver';
+import { FighterGroundShadow } from './fighterGroundShadow';
 import {
   FighterStatusPresentation,
   keepFighterBodyColorsNeutral,
@@ -29,6 +30,7 @@ class SpriteFighterView implements FighterView {
   private readonly definition: FighterDefinition;
   private readonly sprite: Phaser.GameObjects.Sprite;
   private readonly moveEffect: Phaser.GameObjects.Sprite | null;
+  private readonly groundShadow: FighterGroundShadow;
   private readonly statusPresentation: FighterStatusPresentation;
   private readonly asset: FighterSpriteAsset;
   private currentAnimation: FighterAnimationId | null = null;
@@ -45,6 +47,7 @@ class SpriteFighterView implements FighterView {
       .setOrigin(asset.origin.x, asset.origin.y)
       .setScale(asset.scale)
       .setDepth(20);
+    this.groundShadow = this.createGroundShadow(scene, definition);
     this.statusPresentation = this.createStatusPresentation(scene, definition.id);
     const firstAttachedEffect = asset.effects.find((effect) => effect.usage === 'attached');
     this.moveEffect = firstAttachedEffect
@@ -98,6 +101,7 @@ class SpriteFighterView implements FighterView {
     }
 
     keepFighterBodyColorsNeutral(this.sprite, snapshot);
+    this.groundShadow.sync(snapshot, roundPixel(worldToScreen(worldX)));
     this.statusPresentation.sync(snapshot, roundPixel(x), roundPixel(y), 18);
 
     const attachedEffect = resolveAttachedEffect(snapshot, activeMove, this.asset);
@@ -134,6 +138,7 @@ class SpriteFighterView implements FighterView {
     this.viewVisible = visible;
     this.sprite.setVisible(visible);
     this.moveEffect?.setVisible(visible && this.moveEffectActive);
+    this.groundShadow.setVisible(visible);
     this.statusPresentation.setVisible(visible);
   }
 
@@ -142,7 +147,19 @@ class SpriteFighterView implements FighterView {
     this.destroyed = true;
     this.sprite.destroy();
     this.moveEffect?.destroy();
+    this.groundShadow.destroy();
     this.statusPresentation.destroy();
+  }
+
+  private createGroundShadow(scene: Phaser.Scene, definition: FighterDefinition): FighterGroundShadow {
+    const width = Math.max(72, Math.round(definition.stats.pushbox.width * 2.25));
+    const ambientEdge = scene.add.ellipse(0, 0, width + 8, 15, PALETTE.blue, 0.2);
+    const outer = scene.add.ellipse(0, 0, width, 13, PALETTE.black, 0.9);
+    const inner = scene.add.ellipse(0, 0, Math.round(width * 0.7), 7, PALETTE.ink, 0.82);
+    const root = scene.add.container(0, 0, [ambientEdge, outer, inner])
+      .setDepth(17)
+      .setName(`${definition.id}-ground-shadow`);
+    return new FighterGroundShadow(root);
   }
 
   private createStatusPresentation(scene: Phaser.Scene, fighterId: string): FighterStatusPresentation {

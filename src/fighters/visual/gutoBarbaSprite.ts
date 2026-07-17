@@ -4,6 +4,7 @@ import type {
   FighterEffectAsset,
   FighterSpriteAsset,
 } from '../../types/assets';
+import { FIGHTER_OPAQUE_BOTTOM_PADDING } from './groundContact';
 
 const files: Readonly<Record<FighterAnimationId, string>> = {
   idle: 'idle.png',
@@ -93,14 +94,14 @@ function effect(
   };
 }
 
-// Tank/grappler: silhueta larga ~210px, com canvas folgado e raiz nos pés.
+// Todos os frames corporais foram medidos: há 6 px transparentes abaixo da sola.
 export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
   fighterId: 'guto-barba',
   frameWidth: FRAME_SIZE,
   frameHeight: FRAME_SIZE,
   origin: { x: 0.5, y: 1 },
   scale: 1,
-  visualOffset: { x: 0, y: 4 },
+  visualOffset: { x: 0, y: FIGHTER_OPAQUE_BOTTOM_PADDING['guto-barba'] },
   hitboxGuide: [{ x: 8, y: -132, width: 108, height: 84 }],
   hurtboxGuide: [
     { x: -30, y: -150, width: 60, height: 46 },

@@ -4,6 +4,7 @@ import type {
   FighterSpriteAsset,
   SharedFighterAnimationId,
 } from '../../types/assets';
+import { FIGHTER_OPAQUE_BOTTOM_PADDING } from './groundContact';
 
 const files: Readonly<Record<SharedFighterAnimationId, string>> = {
   idle: 'idle.png',
@@ -86,14 +87,14 @@ function effect(
   };
 }
 
-// Rushdown ágil: corpo atlético ~176px, com canvas folgado e raiz nos pés.
+// Todos os frames corporais foram medidos: há 6 px transparentes abaixo da sola.
 export const rafaMareSpriteAsset: FighterSpriteAsset = {
   fighterId: 'rafa-mare',
   frameWidth: FRAME_SIZE,
   frameHeight: FRAME_SIZE,
   origin: { x: 0.5, y: 1 },
   scale: 1,
-  visualOffset: { x: 0, y: 4 },
+  visualOffset: { x: 0, y: FIGHTER_OPAQUE_BOTTOM_PADDING['rafa-mare'] },
   hitboxGuide: [{ x: 16, y: -116, width: 84, height: 56 }],
   hurtboxGuide: [
     { x: -22, y: -136, width: 44, height: 44 },
