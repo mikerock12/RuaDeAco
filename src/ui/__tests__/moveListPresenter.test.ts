@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { astroRiso } from '../../fighters/astroRiso';
 import { gutoBarba } from '../../fighters/gutoBarba';
 import { rafaMare } from '../../fighters/rafaMare';
+import { defaultControls } from '../../input/controlsStore';
 import type { FighterDefinition } from '../../types/combat';
 import { buildPauseMoveList } from '../moveListPresenter';
 
@@ -60,5 +61,57 @@ describe('lista de comandos da pausa', () => {
     expect(p2).toContain('FRENTE+BAIXO+BAIXO-FRENTE+L SORRISO RELAMPAGO');
     expect(p2).toContain('BAIXO+BAIXO-FRENTE+FRENTE+L RAJADA NEON');
     expect(p2).toContain('BAIXO+BAIXO-TRAS+TRAS+L ASTRO GIRO [100 ENERGIA]');
+  });
+});
+
+describe('rótulos dinâmicos por dispositivo e binding', () => {
+  it('reflete um teclado remapeado na lista de comandos', () => {
+    const config = defaultControls();
+    const remapped = {
+      ...config,
+      keyboard: [
+        { bindings: { ...config.keyboard[0].bindings, special: 'KeyT', down: 'KeyC' } },
+        config.keyboard[1],
+      ] as const,
+    };
+    const lines = buildPauseMoveList(gutoBarba, 0, 'keyboard', { config: remapped })
+      .lines.map(({ text }) => text);
+    expect(lines).toContain('FRENTE+T GANCHO DO URSO');
+    expect(lines).toContain('C+T ABRACO GLACIAL [100 ENERGIA]');
+    expect(lines.some((line) => line.includes('+H '))).toBe(false);
+  });
+
+  it('apresenta comandos touch com os glifos A/B/S e identifica o dispositivo', () => {
+    const lines = buildPauseMoveList(astroRiso, 0, 'touch').lines.map(({ text }) => text);
+    expect(lines[0]).toContain('(TOUCH)');
+    expect(lines).toContain('A FRACO | B FORTE | S ESPECIAL | ESCUDO DEFESA');
+    expect(lines.some((line) => line.includes('+S ') && line.includes('SORRISO'))).toBe(true);
+  });
+
+  it('usa rótulos da família do gamepad detectado', () => {
+    const linesXbox = buildPauseMoveList(gutoBarba, 0, 'gamepad', { gamepadFamily: 'xbox' })
+      .lines.map(({ text }) => text);
+    expect(linesXbox[0]).toContain('(CONTROLE)');
+    expect(linesXbox).toContain('FRENTE+X GANCHO DO URSO');
+
+    const linesGeneric = buildPauseMoveList(gutoBarba, 0, 'gamepad', { gamepadFamily: 'generic' })
+      .lines.map(({ text }) => text);
+    expect(linesGeneric).toContain('FRENTE+B2 GANCHO DO URSO');
+  });
+
+  it('reflete um gamepad remapeado', () => {
+    const config = defaultControls();
+    const remapped = {
+      ...config,
+      gamepad: [
+        { bindings: { ...config.gamepad[0].bindings, special: 5 }, pause: 9 },
+        config.gamepad[1],
+      ] as const,
+    };
+    const lines = buildPauseMoveList(gutoBarba, 0, 'gamepad', {
+      config: remapped,
+      gamepadFamily: 'playstation',
+    }).lines.map(({ text }) => text);
+    expect(lines).toContain('FRENTE+R1 GANCHO DO URSO');
   });
 });

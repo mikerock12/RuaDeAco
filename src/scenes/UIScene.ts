@@ -5,9 +5,16 @@ import type { CombatWorld, CombatWorldSnapshot } from '../combat/CombatWorld';
 import { MAX_METER } from '../config/gameConfig';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { getFighterDefinition } from '../fighters';
+import { settingsStore } from '../config/settings';
+import { gamepadManager } from '../input/GamepadManager';
 import { InputManager } from '../input/InputManager';
 import { createConceptPortrait } from '../ui/PortraitView';
-import { buildPauseMoveList, type MoveListLineTone } from '../ui/moveListPresenter';
+import {
+  buildPauseMoveList,
+  pauseHintText,
+  type MoveListDevice,
+  type MoveListLineTone,
+} from '../ui/moveListPresenter';
 import { PAUSE_MENU_OPTIONS, type PauseMenuAction } from '../ui/pauseMenu';
 import { pixelText, toPixelFontText } from '../utils/text';
 
@@ -49,10 +56,12 @@ export class UIScene extends Phaser.Scene {
   private pauseHint: Phaser.GameObjects.BitmapText | null = null;
   private pauseMoveTexts: Phaser.GameObjects.BitmapText[] = [];
   private pauseOptions: PauseOptionButton[] = [];
+  private pauseDevices: [MoveListDevice | null, MoveListDevice | null] = [null, null];
   private selectedPauseAction: PauseMenuAction = 'continue';
   private pauseButton: HudButton | null = null;
   private trainingButtons: HudButton[] = [];
   private previousBanner = '';
+  private wasPaused = false;
 
   constructor() {
     super({ key: 'UIScene' });
@@ -71,8 +80,22 @@ export class UIScene extends Phaser.Scene {
     this.game.events.on('fight:pause-selection', this.handlePauseSelection, this);
     this.render(snapshot);
 
+    if (import.meta.env.DEV) {
+      const debugGlobal = globalThis as typeof globalThis & {
+        __RUA_PAUSE_LIST_DEBUG__?: () => { devices: readonly (string | null)[]; lines: readonly string[] };
+      };
+      debugGlobal.__RUA_PAUSE_LIST_DEBUG__ = () => ({
+        devices: [...this.pauseDevices],
+        lines: this.pauseMoveTexts.map((text) => text.text),
+      });
+    }
+
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off('fight:pause-selection', this.handlePauseSelection, this);
+      if (import.meta.env.DEV) {
+        delete (globalThis as typeof globalThis & { __RUA_PAUSE_LIST_DEBUG__?: unknown })
+          .__RUA_PAUSE_LIST_DEBUG__;
+      }
       this.world = null;
       this.resetReferences();
     });
@@ -92,7 +115,9 @@ export class UIScene extends Phaser.Scene {
     this.trainingButtons = [];
     this.pauseMoveTexts = [];
     this.pauseOptions = [];
+    this.pauseDevices = [null, null];
     this.selectedPauseAction = 'continue';
+    this.wasPaused = false;
     this.infoText = null;
     this.previousBanner = '';
   }
@@ -201,9 +226,7 @@ export class UIScene extends Phaser.Scene {
       this,
       INTERNAL_WIDTH / 2,
       328,
-      InputManager.isTouchCapable()
-        ? 'TOQUE EM UMA OPCAO  OU USE > PARA CONTINUAR'
-        : 'A/D OU SETAS ESCOLHE  ENTER CONFIRMA  ESC CONTINUA',
+      pauseHintText(InputManager.isTouchCapable()),
       {
       size: 8,
       align: 'center',
@@ -211,6 +234,42 @@ export class UIScene extends Phaser.Scene {
     ).setTint(PALETTE.ivory).setVisible(false).setDepth(92);
     this.createPauseMoveList();
     this.createPauseMenu();
+  }
+
+  /** Dispositivos com comandos apresentáveis para o jogador, na ordem de
+   * preferência: touch (P1 em telas touch), gamepad atribuído e teclado. */
+  private availablePauseDevices(player: 0 | 1): MoveListDevice[] {
+    const devices: MoveListDevice[] = [];
+    if (player === 0 && InputManager.shouldShowTouch(settingsStore.get())) devices.push('touch');
+    if (gamepadManager.assignedPad(player)) devices.push('gamepad');
+    devices.push('keyboard');
+    return devices;
+  }
+
+  private pauseDeviceFor(player: 0 | 1): MoveListDevice {
+    const available = this.availablePauseDevices(player);
+    const current = this.pauseDevices[player];
+    if (current && available.includes(current)) return current;
+    const fallback = available[0] ?? 'keyboard';
+    this.pauseDevices[player] = fallback;
+    return fallback;
+  }
+
+  private cyclePauseDevice(player: 0 | 1): void {
+    const available = this.availablePauseDevices(player);
+    if (available.length < 2) return;
+    const current = this.pauseDeviceFor(player);
+    const nextIndex = (available.indexOf(current) + 1) % available.length;
+    this.pauseDevices[player] = available[nextIndex] ?? 'keyboard';
+    audioManager.play('confirm');
+    this.rebuildPauseMoveList(true);
+  }
+
+  private rebuildPauseMoveList(visible: boolean): void {
+    for (const text of this.pauseMoveTexts) text.destroy();
+    this.pauseMoveTexts = [];
+    this.createPauseMoveList();
+    for (const text of this.pauseMoveTexts) text.setVisible(visible);
   }
 
   private createPauseMoveList(): void {
@@ -222,15 +281,18 @@ export class UIScene extends Phaser.Scene {
     legend.setOrigin(0.5, 0).setCenterAlign();
     this.pauseMoveTexts.push(legend);
 
-    const touchMode = InputManager.isTouchCapable();
-    const playersToRender: readonly (0 | 1)[] = touchMode ? [0] : [0, 1];
+    const touchLayout = this.pauseDeviceFor(0) === 'touch';
+    const playersToRender: readonly (0 | 1)[] = touchLayout ? [0] : [0, 1];
 
     for (const index of playersToRender) {
       const definition = this.world.fighters[index].definition;
-      const model = buildPauseMoveList(definition, index, touchMode);
+      const device = this.pauseDeviceFor(index);
+      const model = buildPauseMoveList(definition, index, device, {
+        gamepadFamily: gamepadManager.assignedPad(index)?.family ?? 'generic',
+      });
       const playerTint = index === 0 ? PALETTE.cyan : PALETTE.pink;
 
-      const xPos = touchMode ? 170 : (index === 0 ? 24 : 328);
+      const xPos = touchLayout ? 170 : (index === 0 ? 24 : 328);
 
       model.lines.forEach((line, lineIndex) => {
         const text = pixelText(this, xPos, 104 + lineIndex * 9, line.text, { size: 8 })
@@ -238,6 +300,11 @@ export class UIScene extends Phaser.Scene {
           .setVisible(false)
           .setDepth(92);
         text.setOrigin(0, 0);
+        if (line.tone === 'player' && this.availablePauseDevices(index).length > 1) {
+          // Toque/clique na linha do jogador alterna o dispositivo exibido.
+          text.setInteractive({ useHandCursor: true });
+          text.on('pointerdown', () => this.cyclePauseDevice(index));
+        }
         this.pauseMoveTexts.push(text);
       });
     }
@@ -388,6 +455,11 @@ export class UIScene extends Phaser.Scene {
   }
 
   private updatePause(paused: boolean): void {
+    if (paused && !this.wasPaused) {
+      // Reconstrói ao abrir para refletir bindings e dispositivos atuais.
+      this.rebuildPauseMoveList(false);
+    }
+    this.wasPaused = paused;
     this.pauseShade?.setVisible(paused);
     this.pausePanel?.setVisible(paused);
     this.pauseTitle?.setVisible(paused);

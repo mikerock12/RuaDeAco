@@ -1,48 +1,80 @@
 import type { InputAction, InputFrame } from '../types/combat';
 import type { GameSettings } from '../types/game';
+import { COMBAT_ACTION_IDS, controlsStore, type ControlsConfig } from './controlsStore';
 
 export type PlayerIndex = 0 | 1;
+export type InputSource = 'keyboard' | 'touch' | 'gamepad';
+
+const INPUT_SOURCES: readonly InputSource[] = ['keyboard', 'touch', 'gamepad'];
 
 const EMPTY_SET = (): Set<InputAction> => new Set<InputAction>();
 
-export const PLAYER_ONE_KEYS: Readonly<Record<string, readonly InputAction[]>> = {
-  KeyA: ['left'],
-  KeyD: ['right'],
-  KeyW: ['up'],
-  KeyS: ['down'],
-  KeyF: ['light'],
-  KeyG: ['heavy'],
-  KeyH: ['special'],
-  KeyR: ['block'],
+/** Teclas de interface fixas, fora do remapeamento de combate. */
+const UI_KEYS: Readonly<Record<string, readonly InputAction[]>> = {
   Enter: ['confirm'],
   Escape: ['pause', 'cancel'],
 };
 
-export const PLAYER_TWO_KEYS: Readonly<Record<string, readonly InputAction[]>> = {
-  ArrowLeft: ['left'],
-  ArrowRight: ['right'],
-  ArrowUp: ['up'],
-  ArrowDown: ['down'],
-  KeyJ: ['light'],
-  KeyK: ['heavy'],
-  KeyL: ['special'],
-  KeyU: ['block'],
-};
+type KeyLookup = ReadonlyMap<string, readonly InputAction[]>;
 
-const PLAYER_KEY_BINDINGS = [PLAYER_ONE_KEYS, PLAYER_TWO_KEYS] as const;
-
-export function keyboardActionsForPlayer(player: PlayerIndex, code: string): readonly InputAction[] {
-  return PLAYER_KEY_BINDINGS[player][code] ?? [];
+function buildKeyLookup(config: ControlsConfig, player: PlayerIndex): KeyLookup {
+  const lookup = new Map<string, InputAction[]>();
+  for (const action of COMBAT_ACTION_IDS) {
+    const code = config.keyboard[player].bindings[action];
+    const actions = lookup.get(code) ?? [];
+    actions.push(action);
+    lookup.set(code, actions);
+  }
+  if (player === 0) {
+    for (const [code, actions] of Object.entries(UI_KEYS)) {
+      const existing = lookup.get(code) ?? [];
+      lookup.set(code, [...existing, ...actions]);
+    }
+  }
+  return lookup;
 }
 
+let keyLookups: readonly [KeyLookup, KeyLookup] = [
+  buildKeyLookup(controlsStore.get(), 0),
+  buildKeyLookup(controlsStore.get(), 1),
+];
+
+controlsStore.subscribe((config) => {
+  keyLookups = [buildKeyLookup(config, 0), buildKeyLookup(config, 1)];
+});
+
+export function keyboardActionsForPlayer(player: PlayerIndex, code: string): readonly InputAction[] {
+  return keyLookups[player].get(code) ?? [];
+}
+
+interface PlayerSourceState {
+  readonly held: Record<InputSource, Set<InputAction>>;
+  readonly effective: Set<InputAction>;
+  readonly pressed: Set<InputAction>;
+  readonly released: Set<InputAction>;
+}
+
+function createPlayerState(): PlayerSourceState {
+  return {
+    held: { keyboard: EMPTY_SET(), touch: EMPTY_SET(), gamepad: EMPTY_SET() },
+    effective: EMPTY_SET(),
+    pressed: EMPTY_SET(),
+    released: EMPTY_SET(),
+  };
+}
+
+/**
+ * Estado central de entrada. Cada fonte física (teclado, touch, gamepad)
+ * alimenta ações lógicas por jogador; o estado efetivo é a união das fontes,
+ * de modo que soltar uma fonte não solta a ação enquanto outra a segurar.
+ */
 export class InputManager {
-  private readonly held: [Set<InputAction>, Set<InputAction>] = [EMPTY_SET(), EMPTY_SET()];
-  private readonly pressed: [Set<InputAction>, Set<InputAction>] = [EMPTY_SET(), EMPTY_SET()];
-  private readonly released: [Set<InputAction>, Set<InputAction>] = [EMPTY_SET(), EMPTY_SET()];
-  private readonly touchHeld = EMPTY_SET();
-  private readonly touchPressed = EMPTY_SET();
-  private readonly touchReleased = EMPTY_SET();
+  private readonly players: readonly [PlayerSourceState, PlayerSourceState] = [
+    createPlayerState(),
+    createPlayerState(),
+  ];
   private attached = false;
+  private captureInterceptor: ((event: KeyboardEvent) => boolean) | null = null;
 
   attach(): void {
     if (this.attached) return;
@@ -54,44 +86,67 @@ export class InputManager {
   }
 
   sample(player: PlayerIndex): InputFrame {
-    const held = new Set(this.held[player]);
-    const pressed = new Set(this.pressed[player]);
-    const released = new Set(this.released[player]);
-    if (player === 0) {
-      for (const action of this.touchHeld) held.add(action);
-      for (const action of this.touchPressed) pressed.add(action);
-      for (const action of this.touchReleased) released.add(action);
-      this.touchPressed.clear();
-      this.touchReleased.clear();
-    }
-    this.pressed[player].clear();
-    this.released[player].clear();
-    return { held, pressed, released };
+    const state = this.players[player];
+    const frame: InputFrame = {
+      held: new Set(state.effective),
+      pressed: new Set(state.pressed),
+      released: new Set(state.released),
+    };
+    state.pressed.clear();
+    state.released.clear();
+    return frame;
   }
 
   peekHeld(player: PlayerIndex, action: InputAction): boolean {
-    return this.held[player].has(action) || player === 0 && this.touchHeld.has(action);
+    return this.players[player].effective.has(action);
   }
 
+  /** Alimenta uma ação lógica a partir de uma fonte física. `edge: false`
+   * atualiza o estado sem gerar borda de pressed (ex.: repeat de teclado). */
+  setSourceAction(
+    source: InputSource,
+    player: PlayerIndex,
+    action: InputAction,
+    active: boolean,
+    edge = true,
+  ): void {
+    const state = this.players[player];
+    const held = state.held[source];
+    if (active) {
+      if (held.has(action)) return;
+      held.add(action);
+      if (!state.effective.has(action)) {
+        state.effective.add(action);
+        if (edge) state.pressed.add(action);
+      }
+      return;
+    }
+    if (!held.delete(action)) return;
+    if (this.anySourceHolds(player, action)) return;
+    state.effective.delete(action);
+    state.released.add(action);
+  }
+
+  /** Compatibilidade com os controles touch, sempre ligados ao jogador 1. */
   setTouchAction(action: InputAction, active: boolean): void {
-    if (active && !this.touchHeld.has(action)) {
-      this.touchHeld.add(action);
-      this.touchPressed.add(action);
-      this.touchReleased.delete(action);
-    } else if (!active && this.touchHeld.delete(action)) {
-      this.touchReleased.add(action);
+    this.setSourceAction('touch', 0, action, active);
+  }
+
+  /** Solta todas as ações de uma fonte (ex.: gamepad desconectado). */
+  releaseSource(source: InputSource, player: PlayerIndex): void {
+    const state = this.players[player];
+    for (const action of [...state.held[source]]) {
+      this.setSourceAction(source, player, action, false);
     }
   }
 
   clear = (): void => {
-    for (const player of [0, 1] as const) {
-      for (const action of this.held[player]) this.released[player].add(action);
-      this.held[player].clear();
-      this.pressed[player].clear();
+    for (const state of this.players) {
+      for (const action of state.effective) state.released.add(action);
+      state.effective.clear();
+      state.pressed.clear();
+      for (const source of INPUT_SOURCES) state.held[source].clear();
     }
-    for (const action of this.touchHeld) this.touchReleased.add(action);
-    this.touchHeld.clear();
-    this.touchPressed.clear();
   };
 
   detach(): void {
@@ -104,6 +159,12 @@ export class InputManager {
     this.attached = false;
   }
 
+  /** Intercepta o próximo teclado físico durante a captura de remapeamento.
+   * O interceptor retorna true para consumir o evento sem alimentar ações. */
+  setCaptureInterceptor(interceptor: ((event: KeyboardEvent) => boolean) | null): void {
+    this.captureInterceptor = interceptor;
+  }
+
   static isTouchCapable(): boolean {
     return (globalThis.navigator?.maxTouchPoints ?? 0) > 0
       || globalThis.matchMedia?.('(pointer: coarse)').matches === true;
@@ -114,12 +175,25 @@ export class InputManager {
       || settings.touchControls === 'auto' && InputManager.isTouchCapable();
   }
 
+  private anySourceHolds(player: PlayerIndex, action: InputAction): boolean {
+    const state = this.players[player];
+    for (const source of INPUT_SOURCES) {
+      if (state.held[source].has(action)) return true;
+    }
+    return false;
+  }
+
   private handleKeyDown = (event: KeyboardEvent): void => {
+    if (this.captureInterceptor?.(event)) {
+      event.preventDefault();
+      return;
+    }
     const handled = this.applyKey(event.code, true, event.repeat);
     if (handled) event.preventDefault();
   };
 
   private handleKeyUp = (event: KeyboardEvent): void => {
+    if (this.captureInterceptor !== null) return;
     const handled = this.applyKey(event.code, false, false);
     if (handled) event.preventDefault();
   };
@@ -131,12 +205,7 @@ export class InputManager {
       if (actions.length === 0) continue;
       handled = true;
       for (const action of actions) {
-        if (active && !this.held[player].has(action)) {
-          this.held[player].add(action);
-          if (!repeat) this.pressed[player].add(action);
-        } else if (!active && this.held[player].delete(action)) {
-          this.released[player].add(action);
-        }
+        this.setSourceAction('keyboard', player, action, active, !repeat);
       }
     }
     return handled;

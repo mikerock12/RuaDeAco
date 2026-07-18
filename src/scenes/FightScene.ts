@@ -174,10 +174,11 @@ export class FightScene extends Phaser.Scene {
   private simulateStep(): void {
     const playerOneInput = inputManager.sample(0);
     const keyboardTwo = inputManager.sample(1);
+    // Apenas a ação lógica 'pause' alterna a pausa. 'cancel' não entra aqui
+    // porque, no gamepad, o botão de cancelar compartilha o físico com o
+    // ataque forte; Esc continua pausando por mapear também para 'pause'.
     const pausePressed = playerOneInput.pressed.has('pause')
-      || playerOneInput.pressed.has('cancel')
-      || keyboardTwo.pressed.has('pause')
-      || keyboardTwo.pressed.has('cancel');
+      || keyboardTwo.pressed.has('pause');
 
     if (this.world.paused) {
       if (pausePressed) {

@@ -6,6 +6,8 @@ import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConf
 import { gameSession } from '../config/session';
 import { settingsStore } from '../config/settings';
 import { FIGHTERS } from '../fighters';
+import { keyLabel } from '../input/controlLabels';
+import { controlsStore } from '../input/controlsStore';
 import { inputManager } from '../input/InputManager';
 import type { InputAction, InputFrame } from '../types/combat';
 import type { GameMode } from '../types/game';
@@ -62,11 +64,18 @@ export class MainMenuScene extends Phaser.Scene {
       size: 16,
       color: '#8796ae',
     });
-    pixelText(this, INTERNAL_WIDTH - 8, INTERNAL_HEIGHT - 12, 'W/S  ENTER/F', {
-      size: 16,
-      color: '#9af7ff',
-      align: 'right',
-    });
+    const playerOneKeys = controlsStore.get().keyboard[0].bindings;
+    pixelText(
+      this,
+      INTERNAL_WIDTH - 8,
+      INTERNAL_HEIGHT - 12,
+      `${keyLabel(playerOneKeys.up)}/${keyLabel(playerOneKeys.down)}  ENTER/${keyLabel(playerOneKeys.light)}`,
+      {
+        size: 16,
+        color: '#9af7ff',
+        align: 'right',
+      },
+    );
 
     this.events.once('shutdown', () => {
       this.rows = [];

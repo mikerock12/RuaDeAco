@@ -4,15 +4,21 @@ import { describe, expect, it } from 'vitest';
 import { CombatWorld } from '../../combat/CombatWorld';
 import { gutoBarba } from '../../fighters/gutoBarba';
 import { rafaMare } from '../../fighters/rafaMare';
+import { defaultControls } from '../../input/controlsStore';
 import { keyboardActionsForPlayer } from '../../input/InputManager';
+import { pauseHintText } from '../../ui/moveListPresenter';
 
 const source = (path: string): string => readFileSync(resolve(process.cwd(), path), 'utf8');
 
 describe('contrato da pausa', () => {
-  it('mostra instruções de navegação e não apresenta II como tecla de retomada', () => {
+  it('mostra instruções de navegação derivadas dos bindings e não apresenta II como tecla de retomada', () => {
     const ui = source('src/scenes/UIScene.ts');
-    expect(ui).toContain('A/D OU SETAS ESCOLHE  ENTER CONFIRMA  ESC CONTINUA');
-    expect(ui).toContain('TOQUE EM UMA OPCAO  OU USE > PARA CONTINUAR');
+    // O texto é dinâmico; com os padrões deve reproduzir as instruções originais.
+    expect(pauseHintText(false, defaultControls()))
+      .toBe('A/D OU SETAS ESCOLHE  ENTER CONFIRMA  ESC CONTINUA');
+    expect(pauseHintText(true, defaultControls()))
+      .toBe('TOQUE EM UMA OPCAO  OU USE > PARA CONTINUAR');
+    expect(ui).toContain('pauseHintText(InputManager.isTouchCapable())');
     expect(ui).not.toContain('II PARA CONTINUAR');
   });
 

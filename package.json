@@ -16,6 +16,7 @@
     "test:e2e:mobile": "playwright test --project=chrome-mobile-landscape",
     "test:e2e:guto": "playwright test e2e/guto-grabs.spec.ts --project=chrome-visible-real-policy --project=chrome-mobile-landscape",
     "test:e2e:pause": "playwright test e2e/pause-menu.spec.ts",
+    "test:e2e:controls": "playwright test e2e/controls-remapping.spec.ts",
     "test:e2e:audio:debug": "playwright test e2e/audio-context.spec.ts --project=chrome-visible-real-policy --debug",
     "test:e2e:ui": "playwright test --ui --project=chrome-visible-real-policy",
     "validate:sprites": "node scripts/audit-fighter-sprites.mjs",

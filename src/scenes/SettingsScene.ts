@@ -3,6 +3,8 @@ import { ASSET_MANIFEST } from '../assets/assetManifest';
 import { audioManager } from '../audio/AudioManager';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { settingsStore } from '../config/settings';
+import { keyLabel } from '../input/controlLabels';
+import { controlsStore } from '../input/controlsStore';
 import { inputManager } from '../input/InputManager';
 import { touchControls } from '../input/TouchControls';
 import type { InputAction, InputFrame } from '../types/combat';
@@ -19,6 +21,7 @@ type SettingId =
   | 'touchControls'
   | 'touchOpacity'
   | 'preferFullscreen'
+  | 'controls'
   | 'back';
 
 interface SettingEntry {
@@ -42,6 +45,7 @@ const SETTINGS_ENTRIES: readonly SettingEntry[] = [
   { id: 'touchControls', label: 'CONTROLES TOUCH' },
   { id: 'touchOpacity', label: 'TRANSPARENCIA TOUCH' },
   { id: 'preferFullscreen', label: 'TELA CHEIA' },
+  { id: 'controls', label: 'CONTROLES' },
   { id: 'back', label: 'VOLTAR' },
 ];
 
@@ -82,10 +86,17 @@ export class SettingsScene extends Phaser.Scene {
     SETTINGS_ENTRIES.forEach((entry, index) => this.createRow(entry, index));
     this.refreshRows();
 
-    pixelText(this, INTERNAL_WIDTH / 2, 346, 'W/S ITEM  A/D ALTERA  ESC VOLTA', {
-      size: 16,
-      align: 'center',
-    }).setTint(PALETTE.cyanLight);
+    const keys = controlsStore.get().keyboard[0].bindings;
+    pixelText(
+      this,
+      INTERNAL_WIDTH / 2,
+      346,
+      `${keyLabel(keys.up)}/${keyLabel(keys.down)} ITEM  ${keyLabel(keys.left)}/${keyLabel(keys.right)} ALTERA  ESC VOLTA`,
+      {
+        size: 16,
+        align: 'center',
+      },
+    ).setTint(PALETTE.cyanLight);
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.rows = [];
@@ -182,6 +193,10 @@ export class SettingsScene extends Phaser.Scene {
       this.goBack();
       return;
     }
+    if (entry.id === 'controls') {
+      this.openControls();
+      return;
+    }
 
     let patch: Partial<GameSettings> = {};
     switch (entry.id) {
@@ -275,9 +290,20 @@ export class SettingsScene extends Phaser.Scene {
         return ({ auto: 'AUTO', on: 'LIGADO', off: 'DESLIG.' } as const)[this.settings.touchControls];
       case 'preferFullscreen':
         return this.settings.preferFullscreen ? 'SIM' : 'NAO';
+      case 'controls':
+        return '>';
       case 'back':
         return 'ESC';
     }
+  }
+
+  private openControls(): void {
+    if (this.transitionLocked) return;
+    this.transitionLocked = true;
+    audioManager.unlock();
+    audioManager.play('confirm');
+    this.cameras.main.flash(90, 246, 64, 112);
+    this.time.delayedCall(90, () => this.scene.start('ControlsScene'));
   }
 
   private goBack(): void {

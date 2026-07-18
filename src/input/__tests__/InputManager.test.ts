@@ -20,6 +20,72 @@ describe('mapeamento de teclado por jogador', () => {
   });
 });
 
+describe('união de fontes de entrada', () => {
+  it('mantém a ação enquanto qualquer fonte a segurar', () => {
+    const manager = new InputManager();
+    manager.setSourceAction('keyboard', 0, 'left', true);
+    manager.setSourceAction('gamepad', 0, 'left', true);
+    let frame = manager.sample(0);
+    expect(frame.held.has('left')).toBe(true);
+    expect(frame.pressed.has('left')).toBe(true);
+
+    // Soltar só o teclado não solta a ação segurada pelo gamepad.
+    manager.setSourceAction('keyboard', 0, 'left', false);
+    frame = manager.sample(0);
+    expect(frame.held.has('left')).toBe(true);
+    expect(frame.released.has('left')).toBe(false);
+
+    manager.setSourceAction('gamepad', 0, 'left', false);
+    frame = manager.sample(0);
+    expect(frame.held.has('left')).toBe(false);
+    expect(frame.released.has('left')).toBe(true);
+  });
+
+  it('não duplica a borda de pressed quando uma segunda fonte ativa a mesma ação', () => {
+    const manager = new InputManager();
+    manager.setSourceAction('keyboard', 0, 'light', true);
+    manager.sample(0);
+    manager.setSourceAction('touch', 0, 'light', true);
+    const frame = manager.sample(0);
+    expect(frame.held.has('light')).toBe(true);
+    expect(frame.pressed.has('light')).toBe(false);
+  });
+
+  it('isola as fontes por jogador', () => {
+    const manager = new InputManager();
+    manager.setSourceAction('gamepad', 1, 'special', true);
+    expect(manager.sample(0).held.has('special')).toBe(false);
+    expect(manager.sample(1).held.has('special')).toBe(true);
+  });
+
+  it('limpa tudo com bordas de soltura ao perder o foco', () => {
+    const manager = new InputManager();
+    manager.setSourceAction('keyboard', 0, 'left', true);
+    manager.setSourceAction('gamepad', 1, 'down', true);
+    manager.sample(0);
+    manager.sample(1);
+    manager.clear();
+    const one = manager.sample(0);
+    const two = manager.sample(1);
+    expect(one.held.size).toBe(0);
+    expect(one.released.has('left')).toBe(true);
+    expect(two.released.has('down')).toBe(true);
+    // Depois da limpeza não sobra tecla presa.
+    expect(manager.peekHeld(0, 'left')).toBe(false);
+  });
+
+  it('libera uma fonte inteira sem afetar as demais', () => {
+    const manager = new InputManager();
+    manager.setSourceAction('gamepad', 0, 'right', true);
+    manager.setSourceAction('keyboard', 0, 'right', true);
+    manager.sample(0);
+    manager.releaseSource('gamepad', 0);
+    const frame = manager.sample(0);
+    expect(frame.held.has('right')).toBe(true);
+    expect(frame.released.has('right')).toBe(false);
+  });
+});
+
 describe('arestas de input touch', () => {
   it('preserva pointerdown mesmo se pointerup ocorrer antes do sample', () => {
     const manager = new InputManager();

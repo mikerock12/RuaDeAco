@@ -4,6 +4,7 @@ import './styles.css';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH } from './config/pixelArtConfig';
 import { BootScene } from './scenes/BootScene';
 import { CharacterSelectScene } from './scenes/CharacterSelectScene';
+import { ControlsScene } from './scenes/ControlsScene';
 import { FightScene } from './scenes/FightScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
 import { PreloadScene } from './scenes/PreloadScene';
@@ -61,6 +62,7 @@ const config: Phaser.Types.Core.GameConfig = {
     UIScene,
     ResultScene,
     SettingsScene,
+    ControlsScene,
   ],
 };
 

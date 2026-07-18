@@ -197,10 +197,11 @@ canvas,
 .dpad .down { left: calc(50% - var(--touch-button-half)); bottom: 0; }
 .dpad .left { left: 0; top: calc(50% - var(--touch-button-half)); }
 .dpad .right { right: 0; top: calc(50% - var(--touch-button-half)); }
-.buttons .heavy { left: 0; top: 0; }
-.buttons .light { right: 0; top: 0; }
-.buttons .special { left: 0; bottom: 0; }
-.buttons .block { right: 0; bottom: 0; }
+/* Posições fixas do cluster de ações; a ação de cada posição é remapeável. */
+.buttons .pos-nw { left: 0; top: 0; }
+.buttons .pos-ne { right: 0; top: 0; }
+.buttons .pos-sw { left: 0; bottom: 0; }
+.buttons .pos-se { right: 0; bottom: 0; }
 
 @media (orientation: portrait) {
   #rotate-warning { display: flex; }
@@ -222,4 +223,26 @@ canvas,
     height: min(44dvh, 164px);
   }
 
+}
+
+#gamepad-toast {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  padding: 6px 14px;
+  border: 2px solid #9db6c6;
+  background: rgba(5, 8, 20, 0.92);
+  color: #f7f2d0;
+  font-family: monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms steps(4);
+}
+
+#gamepad-toast.visible {
+  opacity: 1;
 }

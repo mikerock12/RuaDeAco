@@ -2,9 +2,12 @@ import Phaser from 'phaser';
 import { audioManager, type AudioDebugState } from '../audio/AudioManager';
 import { gameSession } from '../config/session';
 import { settingsStore } from '../config/settings';
+import { controlsStore } from '../input/controlsStore';
+import { gamepadManager } from '../input/GamepadManager';
 import { inputManager } from '../input/InputManager';
 import { touchControls } from '../input/TouchControls';
 import { registerServiceWorker } from '../pwa/registerServiceWorker';
+import { gamepadToast } from '../ui/gamepadToast';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -15,7 +18,12 @@ export class BootScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#050711');
 
     settingsStore.load();
+    controlsStore.load();
     inputManager.attach();
+    gamepadManager.attach();
+    gamepadToast.attach();
+    // Uma leitura da Gamepad API por frame, antes do update das cenas.
+    this.game.events.on(Phaser.Core.Events.PRE_STEP, gamepadManager.poll);
     audioManager.attachLifecycle();
     if (import.meta.env.DEV) {
       const debugGlobal = globalThis as typeof globalThis & {
@@ -31,6 +39,12 @@ export class BootScene extends Phaser.Scene {
         mode: gameSession.selection.mode,
         hasResult: gameSession.result !== null,
       });
+      (debugGlobal as typeof debugGlobal & {
+        __RUA_GAMEPAD_DEBUG__?: () => unknown;
+      }).__RUA_GAMEPAD_DEBUG__ = () => ({
+        connected: gamepadManager.connectedPads(),
+        assigned: [gamepadManager.assignedPad(0), gamepadManager.assignedPad(1)],
+      });
     }
     // O fluxo de instalação PWA foi removido do menu; o service worker
     // continua ativo para manter a compatibilidade web offline.
@@ -39,6 +53,9 @@ export class BootScene extends Phaser.Scene {
     globalThis.document?.addEventListener('fullscreenchange', this.syncFullscreenPreference);
 
     this.game.events.once('destroy', () => {
+      this.game.events.off(Phaser.Core.Events.PRE_STEP, gamepadManager.poll);
+      gamepadToast.detach();
+      gamepadManager.detach();
       inputManager.detach();
       touchControls.destroy();
       void audioManager.destroy();

@@ -6,6 +6,8 @@ import { CAIS_DA_CIDADE } from '../config/gameConfig';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { gameSession } from '../config/session';
 import { FIGHTERS } from '../fighters';
+import { keyLabel, movementKeysSummary } from '../input/controlLabels';
+import { controlsStore } from '../input/controlsStore';
 import { inputManager } from '../input/InputManager';
 import type { FighterDefinition, InputFrame } from '../types/combat';
 import { createConceptPortrait } from '../ui/PortraitView';
@@ -396,7 +398,8 @@ export class CharacterSelectScene extends Phaser.Scene {
     this.arenaLayer.removeAll(true);
     this.arenaLayer.setVisible(true);
     this.phaseTitle.setText('ARENA E CONFRONTO');
-    this.footerText.setText('ENTER / F OU TOQUE PARA LUTAR  |  ESC VOLTA');
+    const confirmKey = keyLabel(controlsStore.get().keyboard[0].bindings.light);
+    this.footerText.setText(`ENTER / ${confirmKey} OU TOQUE PARA LUTAR  |  ESC VOLTA`);
 
     const panel = this.add.rectangle(0, 0, 616, 272, PALETTE.panel, 1)
       .setStrokeStyle(4, PALETTE.cyan, 1);
@@ -539,21 +542,25 @@ export class CharacterSelectScene extends Phaser.Scene {
   }
 
   private updatePhaseCopy(): void {
+    const config = controlsStore.get();
+    const playerOneFooter = `${movementKeysSummary(config.keyboard[0])}  |  ENTER / ${keyLabel(config.keyboard[0].bindings.light)} CONFIRMA  |  ESC VOLTA`;
     if (this.phase === 'playerOne') {
       this.phaseTitle.setText('JOGADOR 1  |  ESCOLHA SEU LUTADOR');
-      this.footerText.setText('WASD  |  ENTER / F CONFIRMA  |  ESC VOLTA');
+      this.footerText.setText(playerOneFooter);
       return;
     }
 
     if (gameSession.selection.mode === 'versus') {
       this.phaseTitle.setText('JOGADOR 2  |  ESCOLHA SEU LUTADOR');
-      this.footerText.setText('SETAS  |  J CONFIRMA  |  ESC VOLTA');
+      this.footerText.setText(
+        `${movementKeysSummary(config.keyboard[1])}  |  ${keyLabel(config.keyboard[1].bindings.light)} CONFIRMA  |  ESC VOLTA`,
+      );
     } else if (gameSession.selection.mode === 'training') {
       this.phaseTitle.setText('TREINO  |  ESCOLHA O ADVERSARIO');
-      this.footerText.setText('WASD  |  ENTER / F CONFIRMA  |  ESC VOLTA');
+      this.footerText.setText(playerOneFooter);
     } else {
       this.phaseTitle.setText('CPU  |  ESCOLHA O ADVERSARIO');
-      this.footerText.setText('WASD  |  ENTER / F CONFIRMA  |  ESC VOLTA');
+      this.footerText.setText(playerOneFooter);
     }
   }
 

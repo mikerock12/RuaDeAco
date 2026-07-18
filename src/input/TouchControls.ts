@@ -1,5 +1,7 @@
 import { settingsStore } from '../config/settings';
-import type { InputAction } from '../types/combat';
+import type { CombatButton, InputAction } from '../types/combat';
+import { TOUCH_BUTTON_ARIA, TOUCH_BUTTON_GLYPHS } from './controlLabels';
+import { controlsStore, TOUCH_SLOT_IDS, type TouchSlotId } from './controlsStore';
 import { InputManager, inputManager } from './InputManager';
 import { touchDpadActions } from './touchDirection';
 
@@ -7,30 +9,28 @@ const DIRECTION_ACTIONS: readonly InputAction[] = ['left', 'right', 'up', 'down'
 const COMBAT_ACTIONS: readonly InputAction[] = ['light', 'heavy', 'special', 'block'];
 const ALL_TOUCH_ACTIONS = [...DIRECTION_ACTIONS, ...COMBAT_ACTIONS];
 
-interface ButtonSpec {
+interface DirectionSpec {
   readonly action: InputAction;
   readonly label: string;
   readonly className: string;
   readonly aria: string;
 }
 
-const BUTTONS: readonly ButtonSpec[] = [
+const DIRECTION_BUTTONS: readonly DirectionSpec[] = [
   { action: 'up', label: '▲', className: 'up', aria: 'Cima' },
   { action: 'down', label: '▼', className: 'down', aria: 'Baixo' },
   { action: 'left', label: '◀', className: 'left', aria: 'Esquerda' },
   { action: 'right', label: '▶', className: 'right', aria: 'Direita' },
-  { action: 'light', label: 'A', className: 'light', aria: 'Ataque fraco' },
-  { action: 'heavy', label: 'B', className: 'heavy', aria: 'Ataque forte' },
-  { action: 'special', label: 'S', className: 'special', aria: 'Especial' },
-  { action: 'block', label: '▣', className: 'block', aria: 'Defesa' },
 ];
 
 export class TouchControls {
   private readonly root: HTMLElement;
   private readonly pointers = new Map<number, Set<InputAction>>();
+  private readonly slotButtons = new Map<TouchSlotId, HTMLButtonElement>();
   private dpad: HTMLElement | null = null;
   private built = false;
   private gameplayActive = false;
+  private unsubscribe: (() => void) | null = null;
 
   constructor() {
     const element = globalThis.document?.getElementById('touch-controls');
@@ -42,16 +42,18 @@ export class TouchControls {
     if (this.built) return;
     this.built = true;
     this.root.replaceChildren();
+    this.slotButtons.clear();
     const dpad = this.createCluster('dpad');
     this.dpad = dpad;
     const buttons = this.createCluster('buttons');
 
-    for (const spec of BUTTONS) {
-      const target = spec.action === 'left' || spec.action === 'right' || spec.action === 'up' || spec.action === 'down'
-        ? dpad
-        : buttons;
-      target.append(this.createButton(spec));
+    for (const spec of DIRECTION_BUTTONS) {
+      dpad.append(this.createDirectionButton(spec));
     }
+    for (const slot of TOUCH_SLOT_IDS) {
+      buttons.append(this.createSlotButton(slot));
+    }
+    this.applyBindings();
 
     dpad.addEventListener('pointerdown', this.handleDpadDown);
     dpad.addEventListener('pointermove', this.handleDpadMove);
@@ -66,6 +68,7 @@ export class TouchControls {
     globalThis.window?.screen.orientation?.addEventListener('change', this.releaseAll);
     globalThis.document?.addEventListener('fullscreenchange', this.releaseAll);
     globalThis.document?.addEventListener('visibilitychange', this.handleVisibility);
+    this.unsubscribe = controlsStore.subscribe(() => this.applyBindings());
     this.refreshVisibility();
   }
 
@@ -88,6 +91,8 @@ export class TouchControls {
 
   destroy(): void {
     this.releaseAll();
+    this.unsubscribe?.();
+    this.unsubscribe = null;
     globalThis.window?.removeEventListener('blur', this.releaseAll);
     globalThis.window?.removeEventListener('orientationchange', this.releaseAll);
     globalThis.window?.removeEventListener('resize', this.releaseAll);
@@ -98,7 +103,25 @@ export class TouchControls {
     globalThis.document?.removeEventListener('visibilitychange', this.handleVisibility);
     this.root.replaceChildren();
     this.root.classList.remove('visible');
+    this.slotButtons.clear();
     this.built = false;
+  }
+
+  /** Sincroniza rótulo, aria e ação de cada posição com o perfil vigente. */
+  private applyBindings(): void {
+    const profile = controlsStore.get().touch;
+    let changed = false;
+    for (const slot of TOUCH_SLOT_IDS) {
+      const button = this.slotButtons.get(slot);
+      if (!button) continue;
+      const action = profile.slots[slot];
+      if (button.dataset.action !== action) changed = true;
+      button.dataset.action = action;
+      button.textContent = TOUCH_BUTTON_GLYPHS[action];
+      button.setAttribute('aria-label', TOUCH_BUTTON_ARIA[action]);
+    }
+    // Toques em andamento apontariam para a ação antiga; solte tudo.
+    if (changed) this.releaseAll();
   }
 
   private createCluster(className: string): HTMLElement {
@@ -108,23 +131,28 @@ export class TouchControls {
     return element;
   }
 
-  private createButton(spec: ButtonSpec): HTMLButtonElement {
+  private createDirectionButton(spec: DirectionSpec): HTMLButtonElement {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'touch-button ' + spec.className;
     button.dataset.action = spec.action;
     button.textContent = spec.label;
     button.setAttribute('aria-label', spec.aria);
-    if (DIRECTION_ACTIONS.includes(spec.action)) {
-      button.tabIndex = -1;
-      return button;
-    }
+    button.tabIndex = -1;
+    return button;
+  }
+
+  private createSlotButton(slot: TouchSlotId): HTMLButtonElement {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'touch-button pos-' + slot;
+    this.slotButtons.set(slot, button);
 
     button.addEventListener('pointerdown', (event) => {
       event.preventDefault();
       event.stopPropagation();
       button.setPointerCapture(event.pointerId);
-      this.pointers.set(event.pointerId, new Set([spec.action]));
+      this.pointers.set(event.pointerId, new Set([this.slotAction(slot)]));
       this.syncActions();
     });
     button.addEventListener('pointermove', (event) => {
@@ -132,13 +160,17 @@ export class TouchControls {
       const rect = button.getBoundingClientRect();
       const margin = 40;
       const inside = event.clientX >= rect.left - margin && event.clientX <= rect.right + margin && event.clientY >= rect.top - margin && event.clientY <= rect.bottom + margin;
-      this.pointers.set(event.pointerId, inside ? new Set([spec.action]) : new Set());
+      this.pointers.set(event.pointerId, inside ? new Set([this.slotAction(slot)]) : new Set());
       this.syncActions();
     });
     button.addEventListener('pointerup', this.handlePointerEnd);
     button.addEventListener('pointercancel', this.handlePointerEnd);
     button.addEventListener('lostpointercapture', this.handlePointerEnd);
     return button;
+  }
+
+  private slotAction(slot: TouchSlotId): CombatButton {
+    return controlsStore.get().touch.slots[slot];
   }
 
   private handleDpadDown = (event: PointerEvent): void => {

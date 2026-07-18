@@ -3,6 +3,7 @@ import { ASSET_MANIFEST } from '../assets/assetManifest';
 import { audioManager } from '../audio/AudioManager';
 import { MUSIC_TRACK_BY_SCENE } from '../audio/musicCatalog';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
+import { gamepadManager } from '../input/GamepadManager';
 import { InputManager, inputManager } from '../input/InputManager';
 import { pixelText } from '../utils/text';
 import { StartGate } from './startGate';
@@ -14,6 +15,7 @@ export class StartScene extends Phaser.Scene {
   private gate: StartGate | null = null;
   private transition: StartTransition | null = null;
   private startZone: Phaser.GameObjects.Zone | null = null;
+  private detachGamepadStart: (() => void) | null = null;
 
   constructor() {
     super('StartScene');
@@ -47,8 +49,14 @@ export class StartScene extends Phaser.Scene {
     ).setInteractive().setDepth(1_000);
     this.startZone.on(Phaser.Input.Events.POINTER_DOWN, this.handlePhaserPointer);
     this.input.on(Phaser.Input.Events.POINTER_DOWN, this.handlePhaserPointer);
+    // Qualquer botão de gamepad inicia o jogo. O desbloqueio de áudio é
+    // tentado, mas navegadores podem não tratar gamepad como gesto válido;
+    // a navegação nunca espera o AudioContext (ver StartTransition).
+    this.detachGamepadStart = gamepadManager.on('activity', () => this.gate?.trigger());
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.detachGamepadStart?.();
+      this.detachGamepadStart = null;
       this.input.off(Phaser.Input.Events.POINTER_DOWN, this.handlePhaserPointer);
       this.startZone?.off(Phaser.Input.Events.POINTER_DOWN, this.handlePhaserPointer);
       this.startZone = null;
