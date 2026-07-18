@@ -13,7 +13,11 @@ import type {
   FighterAnimationId,
   FighterSpriteAsset,
 } from '../types/assets';
-import { resolveAttachedEffect, resolveFighterAnimation } from './fighterAnimationResolver';
+import {
+  resolveAttachedEffect,
+  resolveAttachedEffectFrame,
+  resolveFighterAnimation,
+} from './fighterAnimationResolver';
 import { FighterGroundShadow } from './fighterGroundShadow';
 import {
   FighterStatusPresentation,
@@ -76,7 +80,7 @@ class SpriteFighterView implements FighterView {
       .setRotation(snapshot.victimRotation)
       // A vítima continua sendo seu próprio sprite, apenas atrás da camada
       // corporal do grappler durante a sustentação.
-      .setDepth(snapshot.grabbedBy === null ? 20 : 19);
+      .setDepth(snapshot.grabbedBy === null ? 20 : snapshot.victimDepth === 'front' ? 22 : 19);
 
     const activeMove = snapshot.activeMoveId ? this.definition.moves[snapshot.activeMoveId] ?? null : null;
     const resolved = resolveFighterAnimation(snapshot, activeMove, this.asset, this.definition);
@@ -107,17 +111,10 @@ class SpriteFighterView implements FighterView {
     const attachedEffect = resolveAttachedEffect(snapshot, activeMove, this.asset);
     this.moveEffectActive = attachedEffect !== undefined;
     if (this.moveEffect && attachedEffect) {
-      const effectFrame = snapshot.stateFrame - (attachedEffect.activeRange?.from ?? 0);
       this.applyAnimationFrame(
         this.moveEffect,
         attachedEffect,
-        spriteSheetFrameIndex(
-          attachedEffect,
-          effectFrame,
-          attachedEffect.activeRange
-            ? attachedEffect.activeRange.to - attachedEffect.activeRange.from + 1
-            : undefined,
-        ),
+        resolveAttachedEffectFrame(attachedEffect, snapshot.stateFrame),
       );
 
       const effectX = attachedEffect.attachTo === 'victim'
@@ -135,7 +132,11 @@ class SpriteFighterView implements FighterView {
           roundPixel(effectY + attachedEffect.offset.y),
         )
         .setScale(snapshot.facing * attachedEffect.scale, attachedEffect.scale)
-        .setRotation(snapshot.victimRotation);
+        .setRotation(
+          attachedEffect.attachTo === 'victim'
+            ? snapshot.grabbedVictimRotation
+            : snapshot.victimRotation,
+        );
     } else {
       this.moveEffect?.setVisible(false);
     }

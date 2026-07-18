@@ -19,6 +19,7 @@ import type {
 import type { GameMode } from '../types/game';
 import { FighterRuntime, type AppliedHit, type FighterSnapshot } from './FighterRuntime';
 import { horizontalOverlap, intersects, toWorldRect } from './geometry';
+import { resolveGrabVictimPose } from './grabTimeline';
 
 export type CombatPhase = 'intro' | 'active' | 'roundOver' | 'matchOver';
 
@@ -564,13 +565,17 @@ export class CombatWorld {
   private positionGrabVictim(grab: ActiveGrab): void {
     const { attacker, defender, definition } = grab;
     const frame = attacker.stateFrame;
+    const timelinePose = resolveGrabVictimPose(definition, frame);
     const phase = definition.victimPhases?.find(({ range }) => frame >= range.from && frame <= range.to);
-    const state: HeldVictimState = phase?.state
+    const state: HeldVictimState = timelinePose?.state ?? phase?.state
       ?? (frame < definition.holdStartFrame ? 'grabbedFront' : 'grabbedLifted');
     const offset = definition.victimOffsets?.[defender.id];
-    const anchorX = (phase?.victimAnchorX ?? definition.victimAnchorX) + (offset?.anchorOffsetX ?? 0);
-    const anchorY = (phase?.victimAnchorY ?? definition.victimAnchorY) + (offset?.anchorOffsetY ?? 0);
-    const rotation = (phase?.victimRotation ?? definition.victimRotation) + (offset?.rotationOffset ?? 0);
+    const anchorX = (timelinePose?.victimAnchorX ?? phase?.victimAnchorX ?? definition.victimAnchorX)
+      + (offset?.anchorOffsetX ?? 0);
+    const anchorY = (timelinePose?.victimAnchorY ?? phase?.victimAnchorY ?? definition.victimAnchorY)
+      + (offset?.anchorOffsetY ?? 0);
+    const rotation = (timelinePose?.victimRotation ?? phase?.victimRotation ?? definition.victimRotation)
+      + (offset?.rotationOffset ?? 0);
     const captureStart = Math.min(
       ...grab.move.hitboxes.map(({ range }) => range.from),
       definition.holdStartFrame,
@@ -585,6 +590,7 @@ export class CombatWorld {
 
     attacker.grabbedVictimX = victimX;
     attacker.grabbedVictimY = victimY;
+    attacker.grabbedVictimRotation = attacker.facing * rotation;
 
     defender.setGrabbedPose(
       attacker.id,
@@ -595,6 +601,8 @@ export class CombatWorld {
       attacker.facing * rotation,
       frame - phaseStart,
       phaseEnd - phaseStart + 1,
+      timelinePose?.poseFrame ?? null,
+      timelinePose?.depth ?? 'behind',
     );
   }
 

@@ -8,6 +8,7 @@ interface FighterSnapshot {
   readonly meter: number;
   readonly activeMoveId: string | null;
   readonly grabbedBy: string | null;
+  readonly victimPoseFrame: number | null;
   readonly victimPhaseFrame: number;
   readonly victimPhaseFrames: number;
 }
@@ -128,8 +129,71 @@ async function pressChord(page: Page, direction: string, button: string): Promis
   await page.keyboard.up(direction);
 }
 
+async function pressGrabCommand(
+  page: Page,
+  direction: 'right' | 'down',
+  mobile: boolean,
+): Promise<void> {
+  if (!mobile) {
+    await pressChord(page, direction === 'right' ? 'KeyD' : 'KeyS', 'KeyH');
+    return;
+  }
+  const directionBox = await page.locator(`[data-action="${direction}"]`).boundingBox();
+  const specialBox = await page.locator('[data-action="special"]').boundingBox();
+  if (!directionBox || !specialBox) throw new Error('Controles touch do agarrão não estão visíveis');
+
+  const session = await page.context().newCDPSession(page);
+  const touchPoints = [
+    { x: directionBox.x + directionBox.width / 2, y: directionBox.y + directionBox.height / 2, id: 1 },
+    { x: specialBox.x + specialBox.width / 2, y: specialBox.y + specialBox.height / 2, id: 2 },
+  ];
+  try {
+    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints });
+    await page.waitForTimeout(55);
+    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  } finally {
+    await session.detach();
+  }
+}
+
+async function captureMovePhases(
+  page: Page,
+  testInfo: TestInfo,
+  moveId: 'ganchoUrso' | 'abracoGlacial',
+  direction: 'right' | 'down',
+  phases: readonly (readonly [string, number])[],
+): Promise<void> {
+  await page.evaluate(({ moveId, direction }) => {
+    const debug = (window as typeof window & { __RUA_CAPTURE_DEBUG__: any }).__RUA_CAPTURE_DEBUG__;
+    debug.pause();
+    debug.step([direction, 'special'], ['special']);
+    const activeMoveId = (window as typeof window & { __ruaWorld: any }).__ruaWorld
+      .snapshot().fighters[0].activeMoveId;
+    if (activeMoveId !== moveId) throw new Error(`Golpe esperado ${moveId}, recebido ${activeMoveId}.`);
+  }, { moveId, direction });
+
+  for (const [phase, target] of phases) {
+    await page.evaluate((frame) => {
+      const root = window as typeof window & { __RUA_CAPTURE_DEBUG__: any; __ruaWorld: any };
+      let attempts = 0;
+      while (root.__ruaWorld.snapshot().fighters[0].stateFrame < frame) {
+        if (attempts++ > 900) throw new Error(`Frame determinístico ${frame} não alcançado.`);
+        root.__RUA_CAPTURE_DEBUG__.step();
+      }
+    }, target);
+    await page.waitForTimeout(30);
+    await testInfo.attach(`${moveId}-${phase}-${testInfo.project.name}.png`, {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
+  }
+  await page.evaluate(() =>
+    (window as typeof window & { __RUA_CAPTURE_DEBUG__: any }).__RUA_CAPTURE_DEBUG__.resume());
+}
+
 test('Guto executa Chute Pesado, Gancho e Abraço com sprites separados', async ({ page }, testInfo) => {
-  test.setTimeout(45_000);
+  test.setTimeout(60_000);
+  const mobile = testInfo.project.name === 'chrome-mobile-landscape';
   const gutoResponses: { status: number; url: string }[] = [];
   const consoleProblems: string[] = [];
   const pageErrors: string[] = [];
@@ -171,17 +235,24 @@ test('Guto executa Chute Pesado, Gancho e Abraço com sprites separados', async 
 
   await page.waitForFunction(() => !(window as typeof window & { __ruaWorld: any }).__ruaWorld.fighters[0].currentMove);
   await prepare(page, 350);
-  await pressChord(page, 'KeyD', 'KeyH');
+  await pressGrabCommand(page, 'right', mobile);
   await expect.poll(async () => (await snapshot(page)).activeGrab?.moveId).toBe('ganchoUrso');
   await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('grabbedFront');
   await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('grabbedLifted');
   await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('thrown');
 
   await page.waitForFunction(() => !(window as typeof window & { __ruaWorld: any }).__ruaWorld.fighters[0].currentMove);
+  await prepare(page, 350);
+  await captureMovePhases(page, testInfo, 'ganchoUrso', 'right', [
+    ['contato', 10],
+    ['sustentacao', 26],
+    ['arremesso', 33],
+  ]);
+  await page.waitForFunction(() => !(window as typeof window & { __ruaWorld: any }).__ruaWorld.fighters[0].currentMove);
   await prepare(page, 365, 100);
-  await pressChord(page, 'KeyS', 'KeyH');
+  await pressGrabCommand(page, 'down', mobile);
   await expect.poll(async () => (await snapshot(page)).activeGrab?.moveId).toBe('abracoGlacial');
-  await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('grabbedLifted');
+  await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('grabbedFront');
   await testInfo.attach(`guto-abraco-hold-${testInfo.project.name}.png`, {
     body: await page.screenshot(),
     contentType: 'image/png',
@@ -214,6 +285,17 @@ test('Guto executa Chute Pesado, Gancho e Abraço com sprites separados', async 
     body: await page.screenshot(),
     contentType: 'image/png',
   });
+
+  await page.waitForFunction(() => !(window as typeof window & { __ruaWorld: any }).__ruaWorld.fighters[0].currentMove);
+  await prepare(page, 365, 100);
+  await captureMovePhases(page, testInfo, 'abracoGlacial', 'down', [
+    ['contato', 14],
+    ['formacao', 31],
+    ['congelamento', 60],
+    ['rachaduras', 83],
+    ['ruptura', 89],
+  ]);
+  await page.waitForFunction(() => !(window as typeof window & { __ruaWorld: any }).__ruaWorld.fighters[0].currentMove);
 
   const finalDebug = await fighterDebug(page);
   expect(finalDebug?.bodySprites).toHaveLength(2);

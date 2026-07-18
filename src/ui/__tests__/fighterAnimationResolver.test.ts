@@ -12,6 +12,7 @@ import {
 import type { FighterState, MoveDefinition } from '../../types/combat';
 import {
   resolveAttachedEffect,
+  resolveAttachedEffectFrame,
   resolveFighterAnimation,
 } from '../fighterAnimationResolver';
 
@@ -70,9 +71,9 @@ describe('fighterAnimationResolver', () => {
 
   it('em whiff mantém startup e pula hold/freeze/throw para recovery', () => {
     const gancho = gutoBarba.moves.ganchoUrso!;
-    expect(resolveGutoGrab(gancho, 8, 'none').id).toBe('special2');
-    expect(resolveGutoGrab(gancho, 9, 'none').id).toBe('special2Grab');
-    expect(resolveGutoGrab(gancho, 12, 'none').id).toBe('special2Recovery');
+    expect(resolveGutoGrab(gancho, 7, 'none').id).toBe('special2');
+    expect(resolveGutoGrab(gancho, 8, 'none').id).toBe('special2Grab');
+    expect(resolveGutoGrab(gancho, 11, 'none').id).toBe('special2Recovery');
     expect(resolveGutoGrab(gancho, 20, 'none').id).toBe('special2Recovery');
     expect(resolveGutoGrab(gancho, 20, 'hit').id).toBe('special2Hold');
 
@@ -92,12 +93,12 @@ describe('fighterAnimationResolver', () => {
   });
 
   it('distribui todos os frames dentro da fase curta da própria vítima', () => {
-    const frames = Array.from({ length: 4 }, (_, victimPhaseFrame) => {
+    const frames = Array.from({ length: 8 }, (_, victimPhaseFrame) => {
       const resolved = resolveFighterAnimation(
         snapshot(rafaMare, 'grabbedFront', victimPhaseFrame, {
           grabbedBy: 'guto-barba',
           victimPhaseFrame,
-          victimPhaseFrames: 4,
+          victimPhaseFrames: 8,
         }),
         null,
         rafaMareSpriteAsset,
@@ -109,7 +110,7 @@ describe('fighterAnimationResolver', () => {
         resolved.phaseFrames,
       );
     });
-    expect(frames).toEqual([0, 1, 2, 3]);
+    expect(frames).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
   });
 
   it('distribui os quatro frames em cada metade do arco de pulo', () => {
@@ -181,6 +182,36 @@ describe('fighterAnimationResolver', () => {
       rafaMare,
     );
     expect(resolved).toMatchObject({ id: 'frozen', explicitFrame: 0 });
+  });
+
+  it('alcança cada frame corporal declarado e mapeia as 12 fases do gelo', () => {
+    for (const move of [gutoBarba.moves.ganchoUrso!, gutoBarba.moves.abracoGlacial!]) {
+      const reached = new Map<string, Set<number>>();
+      for (let stateFrame = 0; stateFrame < move.totalFrames; stateFrame += 1) {
+        const resolved = resolveGutoGrab(move, stateFrame, 'hit');
+        const animation = gutoBarbaSpriteAsset.animations[resolved.id]!;
+        const frame = resolved.explicitFrame
+          ?? spriteSheetFrameIndex(animation, resolved.localFrame, resolved.phaseFrames);
+        const frames = reached.get(resolved.id) ?? new Set<number>();
+        frames.add(frame);
+        reached.set(resolved.id, frames);
+      }
+      for (const phase of gutoBarbaSpriteAsset.movePhases[move.id] ?? []) {
+        const animation = gutoBarbaSpriteAsset.animations[phase.animation]!;
+        expect(reached.get(phase.animation), phase.animation)
+          .toEqual(new Set(Array.from({ length: animation.frames }, (_, frame) => frame)));
+      }
+    }
+
+    const effect = gutoBarbaSpriteAsset.effects.find(({ id }) => id === 'abraco-glacial')!;
+    const reachedEffectFrames = new Set<number>();
+    for (let frame = effect.activeRange!.from; frame <= effect.activeRange!.to; frame += 1) {
+      reachedEffectFrames.add(resolveAttachedEffectFrame(effect, frame));
+    }
+    expect(reachedEffectFrames).toEqual(new Set(Array.from({ length: 12 }, (_, frame) => frame)));
+    const stable = Array.from({ length: 45 }, (_, index) =>
+      resolveAttachedEffectFrame(effect, index + 33));
+    expect(stable.every((frame) => frame === 5 || frame === 6)).toBe(true);
   });
 
   it('alinha o frame visual de impacto dos três especiais do Astro', () => {

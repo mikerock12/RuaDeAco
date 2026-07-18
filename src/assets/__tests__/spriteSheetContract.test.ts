@@ -122,7 +122,7 @@ describe('spriteSheetContract', () => {
       const frames = Array.from({ length: duration }, (_, frame) =>
         spriteSheetFrameIndex(effect, frame, duration));
       expect(frames[0]).toBe(0);
-      expect(frames[frames.length - 1]).toBe(3);
+      expect(frames[frames.length - 1]).toBe(effect.frames - 1);
       expect(frames.every((frame, index) => index === 0 || frame >= frames[index - 1]!)).toBe(true);
     }
   });

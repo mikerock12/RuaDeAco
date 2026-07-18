@@ -23,6 +23,12 @@ android/capacitor.build.gradle
 /tmp/imagegen/guto-barba/audit/after-*.png
 /tmp/imagegen/guto-barba/kicks-v2/keyed/forward-heavy-clean-v2.png
 
+# Auditoria visual dos agarrões e fontes brutas/rejeitadas; somente as fontes
+# keyed usadas pelo pipeline permanecem elegíveis para versionamento.
+/tmp/imagegen/guto-barba/audit/
+/tmp/imagegen/guto-barba/grabs-final/*
+!/tmp/imagegen/guto-barba/grabs-final/*-source-keyed.png
+
 # Fontes, versões com chroma removido e diagnóstico local do Astro Riso
 /tmp/imagegen/astro-riso/
 

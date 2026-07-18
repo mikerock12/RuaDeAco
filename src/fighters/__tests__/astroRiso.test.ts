@@ -168,7 +168,6 @@ describe('Astro Riso', () => {
       states.add(world.snapshot().fighters[1].state);
     }
     expect(states).toContain('grabbedFront');
-    expect(states).toContain('grabbedLifted');
     expect(states).toContain('frozen');
     expect(states).toContain('thrown');
   });

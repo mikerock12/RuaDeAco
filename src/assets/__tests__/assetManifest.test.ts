@@ -57,16 +57,38 @@ describe('assetManifest', () => {
       expect(frameSize).toBeGreaterThan(0);
       const sheets = [...Object.values(fighter.animations), ...fighter.effects];
       for (const sheet of sheets) {
+        const file = basename(sheet.path);
+        const variableFrames = new Map<string, number>([
+          ['gancho-do-urso-startup.png', 6],
+          ['gancho-do-urso-grab.png', 6],
+          ['gancho-do-urso-hold.png', 8],
+          ['gancho-do-urso-throw.png', 8],
+          ['gancho-do-urso-recovery.png', 6],
+          ['abraco-glacial-startup.png', 6],
+          ['abraco-glacial-grab.png', 8],
+          ['abraco-glacial-hold.png', 8],
+          ['abraco-glacial-freeze.png', 8],
+          ['abraco-glacial-finish.png', 8],
+          ['abraco-glacial-effect.png', 12],
+        ]);
+        const victimFrames = ['grabbed-front.png', 'grabbed-lifted.png'].includes(file) ? 8 : undefined;
+        const expectedFrames = variableFrames.get(file) ?? victimFrames ?? 4;
+        const expectedSheetSize = fighter.fighterId === 'guto-barba' && expectedFrames !== 4
+          ? 256
+          : frameSize;
         expect(sheet.layout).toBe('horizontal');
-        expect(sheet.frameWidth).toBe(frameSize);
-        expect(sheet.frameHeight).toBe(frameSize);
-        expect(sheet.frames).toBe(4);
+        expect(sheet.frameWidth).toBe(expectedSheetSize);
+        expect(sheet.frameHeight).toBe(expectedSheetSize);
+        expect(sheet.frames).toBe(expectedFrames);
         expect(Number.isFinite(sheet.frameRate)).toBe(true);
         expect(sheet.frameRate).toBeGreaterThan(0);
         expect(Number.isInteger(sheet.repeat)).toBe(true);
         expect(isFlatFighterAssetPath(sheet, fighter.fighterId)).toBe(true);
         if (!existsSync(publicAsset(sheet.path))) continue;
-        expect(pngDimensions(publicAsset(sheet.path))).toEqual([frameSize * sheet.frames, frameSize]);
+        expect(pngDimensions(publicAsset(sheet.path))).toEqual([
+          expectedSheetSize * sheet.frames,
+          expectedSheetSize,
+        ]);
       }
     }
   });
@@ -148,18 +170,19 @@ describe('assetManifest', () => {
   it('cobre Gancho e Abraço com fases contíguas sem sprites agregados', () => {
     const guto = FIGHTER_SPRITE_ASSETS.find(({ fighterId }) => fighterId === 'guto-barba');
     expect(guto?.movePhases.ganchoUrso).toEqual([
-      { animation: 'special2', range: { from: 0, to: 8 } },
-      { animation: 'special2Grab', range: { from: 9, to: 12 } },
-      { animation: 'special2Hold', range: { from: 13, to: 26 } },
-      { animation: 'special2Throw', range: { from: 27, to: 32 } },
-      { animation: 'special2Recovery', range: { from: 33, to: 42 } },
+      { animation: 'special2', range: { from: 0, to: 7 } },
+      { animation: 'special2Grab', range: { from: 8, to: 13 } },
+      { animation: 'special2Hold', range: { from: 14, to: 29 } },
+      { animation: 'special2Throw', range: { from: 30, to: 39 } },
+      { animation: 'special2Recovery', range: { from: 40, to: 53 } },
     ]);
     expect(guto?.movePhases.abracoGlacial).toEqual([
-      { animation: 'special3', range: { from: 0, to: 14 } },
-      { animation: 'special3Grab', range: { from: 15, to: 19 } },
-      { animation: 'special3Hold', range: { from: 20, to: 34 } },
-      { animation: 'special3Freeze', range: { from: 35, to: 79 } },
-      { animation: 'special3Finish', range: { from: 80, to: 93 } },
+      { animation: 'special3', range: { from: 0, to: 8 } },
+      { animation: 'special3Grab', range: { from: 9, to: 18 } },
+      { animation: 'special3Hold', range: { from: 19, to: 27 } },
+      { animation: 'special3Freeze', range: { from: 28, to: 35 } },
+      { animation: 'special3Freeze', range: { from: 36, to: 80 }, explicitFrame: 7 },
+      { animation: 'special3Finish', range: { from: 81, to: 109 } },
     ]);
   });
 });

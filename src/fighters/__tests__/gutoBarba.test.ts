@@ -132,13 +132,14 @@ describe('contratos dos três golpes de Guto', () => {
     expect(front.fighters[1]).toMatchObject({ state: 'grabbedFront', grabbedBy: 'guto-barba' });
     expect(front.fighters[0].grabbedBy).toBeNull();
 
-    const hold = snapshotAtAttackerFrame(world, 13);
+    const hold = snapshotAtAttackerFrame(world, 20);
     const offset = gutoBarba.moves.ganchoUrso!.grab!.victimOffsets?.[victim.id];
     expect(hold.fighters[1]).toMatchObject({ state: 'grabbedLifted', grabbedBy: 'guto-barba' });
     expect(hold.fighters[1].x).toBeCloseTo(
-      hold.fighters[0].x - 20 + (offset?.anchorOffsetX ?? 0),
+      hold.fighters[0].x + 49 + (offset?.anchorOffsetX ?? 0),
     );
-    expect(hold.fighters[1].victimRotation).toBeCloseTo(1.05 + (offset?.rotationOffset ?? 0));
+    expect(hold.fighters[1].victimRotation).toBeCloseTo(offset?.rotationOffset ?? 0);
+    expect(hold.fighters[1].victimPoseFrame).toBe(3);
 
     runFrames(world, 100);
     const hits = world.drainEvents().filter(({ type, moveId }) => type === 'hit' && moveId === 'ganchoUrso');
@@ -150,9 +151,9 @@ describe('contratos dos três golpes de Guto', () => {
   it('espelha a âncora do Gancho ao trocar de lado', () => {
     const world = setupWorld(rafaMare, -1);
     startMove(world, 'ganchoUrso');
-    const hold = snapshotAtAttackerFrame(world, 13);
-    expect(hold.fighters[1].x).toBeCloseTo(hold.fighters[0].x + 20);
-    expect(hold.fighters[1].victimRotation).toBeCloseTo(-1.05);
+    const hold = snapshotAtAttackerFrame(world, 20);
+    expect(hold.fighters[1].x).toBeCloseTo(hold.fighters[0].x - 49);
+    expect(hold.fighters[1].victimRotation).toBeCloseTo(0);
   });
 
   it('Gancho errado não inicia hold, dano ou arremesso', () => {
@@ -170,7 +171,7 @@ describe('contratos dos três golpes de Guto', () => {
     expect(world.fighters[1].health).toBe(rafaMare.stats.maxHealth);
   });
 
-  it.each([rafaMare, astroRiso, gutoBarba])('Abraço alinha $name e sustenta frozen por 45 frames', (victim) => {
+  it.each([rafaMare, astroRiso, gutoBarba])('Abraço alinha $name e sustenta frozen sem oscilação', (victim) => {
     const world = setupWorld(victim);
     startMove(world, 'abracoGlacial');
     let frozenFrames = 0;
@@ -190,7 +191,7 @@ describe('contratos dos três golpes de Guto', () => {
       world.step(empty, empty);
     }
     const hits = world.drainEvents().filter(({ type, moveId }) => type === 'hit' && moveId === 'abracoGlacial');
-    expect(frozenFrames).toBe(45);
+    expect(frozenFrames).toBe(63);
     expect(sawThrown).toBe(true);
     expect(hits).toHaveLength(1);
     expect(world.fighters[1].health).toBe(victim.stats.maxHealth - 280);
@@ -200,15 +201,15 @@ describe('contratos dos três golpes de Guto', () => {
   it('sincroniza os 45 frames do efeito e só libera depois do congelamento', () => {
     const move = gutoBarba.moves.abracoGlacial!;
     const effect = gutoBarbaSpriteAsset.effects.find(({ id }) => id === 'abraco-glacial');
-    expect(move.totalFrames).toBe(94);
-    expect(move.grab?.releaseFrame).toBe(80);
-    const frozenPhases = move.grab?.victimPhases?.filter(({ state }) => state === 'frozen') || [];
-    const firstFrozen = frozenPhases[0]?.range.from;
-    const lastFrozen = frozenPhases[frozenPhases.length - 1]?.range.to;
-    expect(firstFrozen).toBe(35);
-    expect(lastFrozen).toBe(79);
-    expect(effect?.activeRange).toEqual({ from: 35, to: 79 });
-    expect((effect!.activeRange!.to - effect!.activeRange!.from + 1)).toBe(45);
+    expect(move.totalFrames).toBe(110);
+    expect(move.grab?.releaseFrame).toBe(91);
+    expect(move.grab?.victimTimeline?.find(({ state }) => state === 'frozen')?.frame).toBe(28);
+    expect(effect?.activeRange).toEqual({ from: 28, to: 94 });
+    expect(effect?.frames).toBe(12);
+    const fullIceFrames = effect?.frameTimeline
+      ?.filter(({ frame }) => frame === 5 || frame === 6)
+      .reduce((total, { range }) => total + range.to - range.from + 1, 0);
+    expect(fullIceFrames).toBe(45);
     expect(move.hitboxes[0]?.boxes[0]?.freezeFrames).toBeUndefined();
   });
 

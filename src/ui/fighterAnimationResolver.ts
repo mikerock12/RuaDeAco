@@ -1,6 +1,7 @@
 import {
   jumpArcPhaseFrames,
   moveAnimationFrameIndex,
+  spriteSheetFrameIndex,
 } from '../assets/spriteSheetContract';
 import type { FighterSnapshot } from '../combat/FighterRuntime';
 import { LANDING_FRAMES, WAKE_UP_FRAMES } from '../config/gameConfig';
@@ -68,6 +69,7 @@ export function resolveFighterAnimation(
         id: phase.animation,
         localFrame: snapshot.stateFrame - phase.range.from,
         phaseFrames: phase.range.to - phase.range.from + 1,
+        ...(phase.explicitFrame !== undefined ? { explicitFrame: phase.explicitFrame } : {}),
       };
     }
 
@@ -123,6 +125,7 @@ export function resolveFighterAnimation(
     return {
       id: 'grabbedFront',
       localFrame: snapshot.victimPhaseFrame,
+      ...(snapshot.victimPoseFrame !== null ? { explicitFrame: snapshot.victimPoseFrame } : {}),
       ...(snapshot.victimPhaseFrames > 0 ? { phaseFrames: snapshot.victimPhaseFrames } : {}),
     };
   }
@@ -130,6 +133,7 @@ export function resolveFighterAnimation(
     return {
       id: 'grabbedLifted',
       localFrame: snapshot.victimPhaseFrame,
+      ...(snapshot.victimPoseFrame !== null ? { explicitFrame: snapshot.victimPoseFrame } : {}),
       ...(snapshot.victimPhaseFrames > 0 ? { phaseFrames: snapshot.victimPhaseFrames } : {}),
     };
   }
@@ -139,7 +143,7 @@ export function resolveFighterAnimation(
       localFrame: snapshot.victimPhaseFrame,
       // O gelo é um efeito separado. O quadro corporal neutro evita que a
       // arte baked-in aplique uma segunda tintura azul sobre a vítima.
-      explicitFrame: 0,
+      explicitFrame: snapshot.victimPoseFrame ?? 0,
     };
   }
   if (state === 'thrown') return { id: 'thrown', localFrame: snapshot.stateFrame };
@@ -147,6 +151,23 @@ export function resolveFighterAnimation(
   if (state === 'victory') return { id: 'victory', localFrame: snapshot.stateFrame };
 
   return { id: 'idle', localFrame: snapshot.stateFrame };
+}
+
+export function resolveAttachedEffectFrame(
+  effect: FighterEffectAsset,
+  stateFrame: number,
+): number {
+  const timelinePhase = effect.frameTimeline
+    ?.find(({ range }) => stateFrame >= range.from && stateFrame <= range.to);
+  if (timelinePhase) return timelinePhase.frame;
+  const effectFrame = stateFrame - (effect.activeRange?.from ?? 0);
+  return spriteSheetFrameIndex(
+    effect,
+    effectFrame,
+    effect.activeRange
+      ? effect.activeRange.to - effect.activeRange.from + 1
+      : undefined,
+  );
 }
 
 export function resolveAttachedEffect(

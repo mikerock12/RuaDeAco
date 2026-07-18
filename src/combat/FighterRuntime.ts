@@ -11,6 +11,7 @@ import type {
   FighterDefinition,
   FighterId,
   FighterState,
+  GrabVictimDepth,
   HeldVictimState,
   HitboxDefinition,
   HurtboxDefinition,
@@ -60,7 +61,10 @@ export interface FighterSnapshot {
   readonly grabbedBy: FighterId | null;
   readonly grabbedVictimX: number;
   readonly grabbedVictimY: number;
+  readonly grabbedVictimRotation: number;
   readonly victimRotation: number;
+  readonly victimPoseFrame: number | null;
+  readonly victimDepth: GrabVictimDepth;
   readonly victimPhaseFrame: number;
   readonly victimPhaseFrames: number;
 }
@@ -87,7 +91,10 @@ export class FighterRuntime {
   grabbedBy: FighterId | null = null;
   grabbedVictimX = 0;
   grabbedVictimY = 0;
+  grabbedVictimRotation = 0;
   victimRotation = 0;
+  victimPoseFrame: number | null = null;
+  victimDepth: GrabVictimDepth = 'behind';
   victimPhaseFrame = 0;
   victimPhaseFrames = 0;
   /** Último golpe iniciado (inspeção/debug). */
@@ -308,8 +315,18 @@ export class FighterRuntime {
     }
 
     if (this.activeMove) {
+      const move = this.activeMove;
       this.stateFrame += 1;
-      if (this.stateFrame >= this.activeMove.totalFrames) {
+      const activeTo = Math.max(...move.hitboxes.map(({ range }) => range.to), -1);
+      if (
+        move.grab?.whiffRecoveryFrame !== undefined
+        && this.moveConnected === 'none'
+        && this.stateFrame > activeTo
+        && this.stateFrame < move.grab.whiffRecoveryFrame
+      ) {
+        this.stateFrame = move.grab.whiffRecoveryFrame;
+      }
+      if (this.stateFrame >= move.totalFrames) {
         this.activeMove = null;
         this.armorHits = 0;
         this.transition(this.y < GROUND_Y ? 'fall' : 'idle');
@@ -436,6 +453,8 @@ export class FighterRuntime {
     rotation: number,
     phaseFrame: number,
     phaseFrames: number,
+    poseFrame: number | null = null,
+    depth: GrabVictimDepth = 'behind',
   ): void {
     this.activeMove = null;
     this.armorHits = 0;
@@ -450,6 +469,8 @@ export class FighterRuntime {
     this.y = y;
     this.facing = attackerFacing === 1 ? -1 : 1;
     this.victimRotation = rotation;
+    this.victimPoseFrame = poseFrame;
+    this.victimDepth = depth;
     this.victimPhaseFrame = Math.max(0, phaseFrame);
     this.victimPhaseFrames = Math.max(1, phaseFrames);
     this.transition(state);
@@ -519,7 +540,10 @@ export class FighterRuntime {
     this.grabbedBy = null;
     this.grabbedVictimX = 0;
     this.grabbedVictimY = 0;
+    this.grabbedVictimRotation = 0;
     this.victimRotation = 0;
+    this.victimPoseFrame = null;
+    this.victimDepth = 'behind';
     this.victimPhaseFrame = 0;
     this.victimPhaseFrames = 0;
     this.damageTowardPassive = 0;
@@ -595,7 +619,10 @@ export class FighterRuntime {
       grabbedBy: this.grabbedBy,
       grabbedVictimX: this.grabbedVictimX,
       grabbedVictimY: this.grabbedVictimY,
+      grabbedVictimRotation: this.grabbedVictimRotation,
       victimRotation: this.victimRotation,
+      victimPoseFrame: this.victimPoseFrame,
+      victimDepth: this.victimDepth,
       victimPhaseFrame: this.victimPhaseFrame,
       victimPhaseFrames: this.victimPhaseFrames,
     };
@@ -641,6 +668,8 @@ export class FighterRuntime {
   private clearGrabPresentation(): void {
     this.grabbedBy = null;
     this.victimRotation = 0;
+    this.victimPoseFrame = null;
+    this.victimDepth = 'behind';
     this.victimPhaseFrame = 0;
     this.victimPhaseFrames = 0;
   }

@@ -53,15 +53,28 @@ const files: Readonly<Record<FighterAnimationId, string>> = {
 };
 
 const FRAME_SIZE = 288;
+const GRAB_FRAME_SIZE = 256;
 
-function animation(id: FighterAnimationId, frameRate: number, repeat: number): FighterAnimationAsset {
+interface VariableAnimationOptions {
+  readonly frames?: number;
+  readonly frameSize?: number;
+}
+
+function animation(
+  id: FighterAnimationId,
+  frameRate: number,
+  repeat: number,
+  options: VariableAnimationOptions = {},
+): FighterAnimationAsset {
+  const frames = options.frames ?? 4;
+  const frameSize = options.frameSize ?? FRAME_SIZE;
   return {
     id,
     key: `guto-barba-${id}`,
     path: `assets/fighters/guto-barba/${files[id]}`,
-    frameWidth: FRAME_SIZE,
-    frameHeight: FRAME_SIZE,
-    frames: 4,
+    frameWidth: frameSize,
+    frameHeight: frameSize,
+    frames,
     layout: 'horizontal',
     frameRate,
     repeat,
@@ -75,7 +88,10 @@ function effect(
   activeRange: FighterEffectAsset['activeRange'],
   offset: FighterEffectAsset['offset'],
   attachTo?: 'attacker' | 'victim',
+  options: VariableAnimationOptions = {},
 ): FighterEffectAsset {
+  const frames = options.frames ?? 4;
+  const frameSize = options.frameSize ?? FRAME_SIZE;
   return {
     id,
     key: `guto-barba-effect-${id}`,
@@ -87,9 +103,9 @@ function effect(
     origin: { x: 0.5, y: 0.5 },
     offset,
     scale: 1,
-    frameWidth: FRAME_SIZE,
-    frameHeight: FRAME_SIZE,
-    frames: 4,
+    frameWidth: frameSize,
+    frameHeight: frameSize,
+    frames,
     layout: 'horizontal',
     frameRate: 10,
     repeat: 0,
@@ -111,22 +127,47 @@ export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
   ],
   effects: [
     effect('muralha-norte', 'muralha-norte-effect.png', 'muralhaNorte', { from: 4, to: 36 }, { x: 36, y: -112 }),
-    effect('abraco-glacial', 'abraco-glacial-effect.png', 'abracoGlacial', { from: 35, to: 79 }, { x: 0, y: -116 }, 'victim'),
+    {
+      ...effect(
+        'abraco-glacial',
+        'abraco-glacial-effect.png',
+        'abracoGlacial',
+        { from: 28, to: 94 },
+        { x: 0, y: -116 },
+        'victim',
+        { frames: 12, frameSize: GRAB_FRAME_SIZE },
+      ),
+      frameTimeline: [
+        { range: { from: 28, to: 28 }, frame: 0 },
+        { range: { from: 29, to: 29 }, frame: 1 },
+        { range: { from: 30, to: 30 }, frame: 2 },
+        { range: { from: 31, to: 31 }, frame: 3 },
+        { range: { from: 32, to: 32 }, frame: 4 },
+        { range: { from: 33, to: 54 }, frame: 5 },
+        { range: { from: 55, to: 77 }, frame: 6 },
+        { range: { from: 78, to: 81 }, frame: 7 },
+        { range: { from: 82, to: 84 }, frame: 8 },
+        { range: { from: 85, to: 87 }, frame: 9 },
+        { range: { from: 88, to: 90 }, frame: 10 },
+        { range: { from: 91, to: 94 }, frame: 11 },
+      ],
+    },
   ],
   movePhases: {
     ganchoUrso: [
-      { animation: 'special2', range: { from: 0, to: 8 } },
-      { animation: 'special2Grab', range: { from: 9, to: 12 } },
-      { animation: 'special2Hold', range: { from: 13, to: 26 } },
-      { animation: 'special2Throw', range: { from: 27, to: 32 } },
-      { animation: 'special2Recovery', range: { from: 33, to: 42 } },
+      { animation: 'special2', range: { from: 0, to: 7 } },
+      { animation: 'special2Grab', range: { from: 8, to: 13 } },
+      { animation: 'special2Hold', range: { from: 14, to: 29 } },
+      { animation: 'special2Throw', range: { from: 30, to: 39 } },
+      { animation: 'special2Recovery', range: { from: 40, to: 53 } },
     ],
     abracoGlacial: [
-      { animation: 'special3', range: { from: 0, to: 14 } },
-      { animation: 'special3Grab', range: { from: 15, to: 19 } },
-      { animation: 'special3Hold', range: { from: 20, to: 34 } },
-      { animation: 'special3Freeze', range: { from: 35, to: 79 } },
-      { animation: 'special3Finish', range: { from: 80, to: 93 } },
+      { animation: 'special3', range: { from: 0, to: 8 } },
+      { animation: 'special3Grab', range: { from: 9, to: 18 } },
+      { animation: 'special3Hold', range: { from: 19, to: 27 } },
+      { animation: 'special3Freeze', range: { from: 28, to: 35 } },
+      { animation: 'special3Freeze', range: { from: 36, to: 80 }, explicitFrame: 7 },
+      { animation: 'special3Finish', range: { from: 81, to: 109 } },
     ],
   },
   animations: {
@@ -152,23 +193,23 @@ export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
     airLightBackward: animation('airLightBackward', 10, 0),
     airHeavyBackward: animation('airHeavyBackward', 7, 0),
     special1: animation('special1', 10, 0),
-    special2: animation('special2', 30, 0),
-    special2Grab: animation('special2Grab', 60, 0),
-    special2Hold: animation('special2Hold', 18, -1),
-    special2Throw: animation('special2Throw', 40, 0),
-    special2Recovery: animation('special2Recovery', 24, 0),
-    special3: animation('special3', 18, 0),
-    special3Grab: animation('special3Grab', 48, 0),
-    special3Hold: animation('special3Hold', 16, -1),
-    special3Freeze: animation('special3Freeze', 16, -1),
-    special3Finish: animation('special3Finish', 18, 0),
+    special2: animation('special2', 30, 0, { frames: 6, frameSize: GRAB_FRAME_SIZE }),
+    special2Grab: animation('special2Grab', 60, 0, { frames: 6, frameSize: GRAB_FRAME_SIZE }),
+    special2Hold: animation('special2Hold', 30, 0, { frames: 8, frameSize: GRAB_FRAME_SIZE }),
+    special2Throw: animation('special2Throw', 48, 0, { frames: 8, frameSize: GRAB_FRAME_SIZE }),
+    special2Recovery: animation('special2Recovery', 30, 0, { frames: 6, frameSize: GRAB_FRAME_SIZE }),
+    special3: animation('special3', 30, 0, { frames: 6, frameSize: GRAB_FRAME_SIZE }),
+    special3Grab: animation('special3Grab', 48, 0, { frames: 8, frameSize: GRAB_FRAME_SIZE }),
+    special3Hold: animation('special3Hold', 48, 0, { frames: 8, frameSize: GRAB_FRAME_SIZE }),
+    special3Freeze: animation('special3Freeze', 48, 0, { frames: 8, frameSize: GRAB_FRAME_SIZE }),
+    special3Finish: animation('special3Finish', 30, 0, { frames: 8, frameSize: GRAB_FRAME_SIZE }),
     blockStanding: animation('blockStanding', 7, 0),
     blockCrouching: animation('blockCrouching', 7, 0),
     hit: animation('hit', 10, 0),
     knockdown: animation('knockdown', 6, 0),
     wakeUp: animation('wakeUp', 7, 0),
-    grabbedFront: animation('grabbedFront', 8, -1),
-    grabbedLifted: animation('grabbedLifted', 8, -1),
+    grabbedFront: animation('grabbedFront', 30, 0, { frames: 8, frameSize: GRAB_FRAME_SIZE }),
+    grabbedLifted: animation('grabbedLifted', 30, 0, { frames: 8, frameSize: GRAB_FRAME_SIZE }),
     thrown: animation('thrown', 8, 0),
     frozen: animation('frozen', 7, -1),
     knockout: animation('knockout', 5, 0),

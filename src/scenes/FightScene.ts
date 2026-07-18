@@ -13,7 +13,7 @@ import { getFighterDefinition } from '../fighters';
 import { getFighterEffectAsset } from '../fighters/visual';
 import { inputManager } from '../input/InputManager';
 import { touchControls } from '../input/TouchControls';
-import type { CombatEvent, InputFrame } from '../types/combat';
+import type { CombatEvent, InputAction, InputFrame } from '../types/combat';
 import type { FighterEffectAsset } from '../types/assets';
 import { CaisStageView } from '../ui/CaisStageView';
 import { createFighterView, type FighterView } from '../ui/FighterSpriteView';
@@ -44,6 +44,7 @@ export class FightScene extends Phaser.Scene {
   private orientationQuery: MediaQueryList | null = null;
   private readonly pauseMenu = new PauseMenuModel();
   private transitionLocked = false;
+  private capturePaused = false;
 
   constructor() {
     super('FightScene');
@@ -54,6 +55,7 @@ export class FightScene extends Phaser.Scene {
     this.destroyFightSprites();
     this.resultScheduled = false;
     this.transitionLocked = false;
+    this.capturePaused = false;
     this.pauseMenu.reset();
     this.cpu = null;
     this.runner.reset();
@@ -66,6 +68,11 @@ export class FightScene extends Phaser.Scene {
       const debugGlobal = globalThis as typeof globalThis & {
         __ruaWorld?: CombatWorld;
         __RUA_PAUSE_DEBUG__?: () => { paused: boolean; selectedAction: PauseMenuAction };
+        __RUA_CAPTURE_DEBUG__?: {
+          pause: () => void;
+          resume: () => void;
+          step: (held?: readonly InputAction[], pressed?: readonly InputAction[]) => void;
+        };
         __RUA_FIGHTER_DEBUG__?: () => {
           fighterIds: readonly string[];
           bodySprites: readonly { name: string; texture: string; visible: boolean; active: boolean }[];
@@ -77,6 +84,26 @@ export class FightScene extends Phaser.Scene {
         paused: this.world.paused,
         selectedAction: this.pauseMenu.selected,
       });
+      debugGlobal.__RUA_CAPTURE_DEBUG__ = {
+        pause: () => {
+          this.capturePaused = true;
+          this.runner.reset();
+        },
+        resume: () => {
+          this.capturePaused = false;
+          this.runner.reset();
+        },
+        step: (held = [], pressed = []) => {
+          if (!this.capturePaused) throw new Error('Capture frame-step requer pause().');
+          const frame: InputFrame = {
+            held: new Set(held),
+            pressed: new Set(pressed),
+            released: new Set(),
+          };
+          this.world.step(frame, EMPTY_INPUT);
+          for (const event of this.world.drainEvents()) this.handleCombatEvent(event);
+        },
+      };
       debugGlobal.__RUA_FIGHTER_DEBUG__ = () => ({
         fighterIds: this.world.fighters.map(({ id }) => id),
         bodySprites: this.children.list
@@ -134,10 +161,11 @@ export class FightScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     this.stageView.update(delta);
-    this.runner.update(delta, () => this.simulateStep());
+    if (!this.capturePaused) this.runner.update(delta, () => this.simulateStep());
     const snapshot = this.world.snapshot();
-    this.views?.[0].sync(snapshot.fighters[0], this.runner.alpha);
-    this.views?.[1].sync(snapshot.fighters[1], this.runner.alpha);
+    const renderAlpha = this.capturePaused ? 1 : this.runner.alpha;
+    this.views?.[0].sync(snapshot.fighters[0], renderAlpha);
+    this.views?.[1].sync(snapshot.fighters[1], renderAlpha);
     this.drawProjectiles(snapshot);
     this.drawDebug(snapshot);
     this.drawDebugOverlay();
@@ -464,10 +492,12 @@ export class FightScene extends Phaser.Scene {
       const debugGlobal = globalThis as typeof globalThis & {
         __ruaWorld?: CombatWorld;
         __RUA_PAUSE_DEBUG__?: () => unknown;
+        __RUA_CAPTURE_DEBUG__?: unknown;
         __RUA_FIGHTER_DEBUG__?: () => unknown;
       };
       if (debugGlobal.__ruaWorld === this.world) delete debugGlobal.__ruaWorld;
       delete debugGlobal.__RUA_PAUSE_DEBUG__;
+      delete debugGlobal.__RUA_CAPTURE_DEBUG__;
       delete debugGlobal.__RUA_FIGHTER_DEBUG__;
     }
   }

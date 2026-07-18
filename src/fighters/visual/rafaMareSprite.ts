@@ -46,14 +46,19 @@ const files: Readonly<Record<SharedFighterAnimationId, string>> = {
 
 const FRAME_SIZE = 256;
 
-function animation(id: SharedFighterAnimationId, frameRate: number, repeat: number): FighterAnimationAsset {
+function animation(
+  id: SharedFighterAnimationId,
+  frameRate: number,
+  repeat: number,
+  frames = 4,
+): FighterAnimationAsset {
   return {
     id,
     key: `rafa-mare-${id}`,
     path: `assets/fighters/rafa-mare/${files[id]}`,
     frameWidth: FRAME_SIZE,
     frameHeight: FRAME_SIZE,
-    frames: 4,
+    frames,
     layout: 'horizontal',
     frameRate,
     repeat,
@@ -136,8 +141,8 @@ export const rafaMareSpriteAsset: FighterSpriteAsset = {
     hit: animation('hit', 10, 0),
     knockdown: animation('knockdown', 7, 0),
     wakeUp: animation('wakeUp', 9, 0),
-    grabbedFront: animation('grabbedFront', 10, -1),
-    grabbedLifted: animation('grabbedLifted', 10, -1),
+    grabbedFront: animation('grabbedFront', 30, 0, 8),
+    grabbedLifted: animation('grabbedLifted', 30, 0, 8),
     thrown: animation('thrown', 10, 0),
     frozen: animation('frozen', 8, -1),
     knockout: animation('knockout', 6, 0),

@@ -1,27 +1,37 @@
 """Rebuild Rafa, Guto and Astro combat strips with stable scale and pivots.
 
 The large reference-driven contact sheets stay under ``tmp/imagegen``.  This
-script only writes the public fighter PNGs, keeping their flat paths and four
-horizontal frames.  Effects are reframed without resizing their visible art.
+script only writes the public fighter PNGs, keeping their flat paths.  Legacy
+animations remain four-frame strips; selected grab animations explicitly opt
+into variable-length 256px frames. Effects are reframed without resizing their
+visible art unless a retained multi-frame source is declared below.
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 sys.dont_write_bytecode = True
 
-from PIL import Image
+from PIL import Image, ImageChops
 
-from normalize_fighter_sheet import alpha_bbox, harden_alpha, isolate_four_subjects
+from normalize_fighter_sheet import (
+    alpha_bbox,
+    alpha_components,
+    harden_alpha,
+    isolate_four_subjects,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public" / "assets" / "fighters"
 IMAGEGEN = ROOT / "tmp" / "imagegen"
 FRAME_COUNT = 4
+VARIABLE_FRAME_SIZE = 256
+VARIABLE_FOOTLINE = 249
 
 RAFA_FRAME = 256
 RAFA_FOOTLINE = 249
@@ -40,6 +50,100 @@ ASTRO_SCALE = 176 / 553
 
 MIN_MASS_SCALE = 0.75
 MAX_MASS_SCALE = 1.60
+
+
+@dataclass(frozen=True)
+class GridSelection:
+    source: Path
+    columns: int
+    rows: int
+    indices: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class VariableBodySpec:
+    selections: tuple[GridSelection, ...]
+    frames: int
+
+
+FINAL_GRAB_SOURCES = IMAGEGEN / "guto-barba" / "grabs-final"
+
+
+def grid(
+    name: str,
+    columns: int,
+    rows: int,
+    *indices: int,
+) -> GridSelection:
+    return GridSelection(
+        FINAL_GRAB_SOURCES / f"{name}-source-keyed.png",
+        columns,
+        rows,
+        tuple(indices) if indices else tuple(range(columns * rows)),
+    )
+
+
+# These are the only sheets that leave the conservative four-frame contract.
+# Mixed selections intentionally reject the last generated pose when it closes
+# Guto's hands against his own torso instead of around the separate victim.
+VARIABLE_BODY_SPECS: dict[tuple[str, str], VariableBodySpec] = {
+    ("guto-barba", "gancho-do-urso-startup.png"): VariableBodySpec(
+        (grid("gancho-do-urso-startup", 3, 2),), 6
+    ),
+    ("guto-barba", "gancho-do-urso-grab.png"): VariableBodySpec(
+        (
+            grid("gancho-do-urso-grab", 3, 2, 0, 1, 2, 3, 4),
+            grid("gancho-do-urso-hold", 4, 2, 0),
+        ),
+        6,
+    ),
+    ("guto-barba", "gancho-do-urso-hold.png"): VariableBodySpec(
+        (grid("gancho-do-urso-hold", 4, 2),), 8
+    ),
+    ("guto-barba", "gancho-do-urso-throw.png"): VariableBodySpec(
+        (grid("gancho-do-urso-throw", 4, 2),), 8
+    ),
+    ("guto-barba", "gancho-do-urso-recovery.png"): VariableBodySpec(
+        (grid("gancho-do-urso-recovery", 3, 2),), 6
+    ),
+    ("guto-barba", "abraco-glacial-startup.png"): VariableBodySpec(
+        (grid("abraco-glacial-startup", 3, 2),), 6
+    ),
+    ("guto-barba", "abraco-glacial-grab.png"): VariableBodySpec(
+        (
+            grid("abraco-glacial-grab", 4, 2, 0, 1, 2),
+            grid("abraco-glacial-hold", 4, 2, 0, 1, 2, 3, 4),
+        ),
+        8,
+    ),
+    ("guto-barba", "abraco-glacial-hold.png"): VariableBodySpec(
+        (grid("abraco-glacial-hold", 4, 2),), 8
+    ),
+    ("guto-barba", "abraco-glacial-freeze.png"): VariableBodySpec(
+        (grid("abraco-glacial-freeze", 4, 2),), 8
+    ),
+    ("guto-barba", "abraco-glacial-finish.png"): VariableBodySpec(
+        (grid("abraco-glacial-finish", 4, 2),), 8
+    ),
+    ("rafa-mare", "grabbed-front.png"): VariableBodySpec(
+        (grid("rafa-mare-grabbed-front", 4, 2),), 8
+    ),
+    ("rafa-mare", "grabbed-lifted.png"): VariableBodySpec(
+        (grid("rafa-mare-grabbed-lifted", 4, 2),), 8
+    ),
+    ("astro-riso", "grabbed-front.png"): VariableBodySpec(
+        (grid("astro-riso-grabbed-front", 4, 2),), 8
+    ),
+    ("astro-riso", "grabbed-lifted.png"): VariableBodySpec(
+        (grid("astro-riso-grabbed-lifted", 4, 2),), 8
+    ),
+    ("guto-barba", "grabbed-front.png"): VariableBodySpec(
+        (grid("guto-barba-grabbed-front", 4, 2),), 8
+    ),
+    ("guto-barba", "grabbed-lifted.png"): VariableBodySpec(
+        (grid("guto-barba-grabbed-lifted", 4, 2),), 8
+    ),
+}
 
 
 RAFA_SOURCES: dict[str, tuple[str, bool]] = {
@@ -157,6 +261,148 @@ def split_contact_sheet(source: Image.Image, isolate: bool) -> list[Image.Image]
     ]
 
 
+def split_grid(source: Image.Image, columns: int, rows: int) -> list[Image.Image]:
+    """Split model output using rounded boundaries (outputs are not always divisible)."""
+
+    return [
+        source.crop(
+            (
+                round(column * source.width / columns),
+                round(row * source.height / rows),
+                round((column + 1) * source.width / columns),
+                round((row + 1) * source.height / rows),
+            )
+        )
+        for row in range(rows)
+        for column in range(columns)
+    ]
+
+
+def isolate_largest_subject(cell: Image.Image) -> Image.Image:
+    """Discard disconnected prompt marks while preserving the complete body."""
+
+    source = harden_alpha(cell.convert("RGBA"))
+    components = sorted(
+        alpha_components(source),
+        key=lambda component: component.area,
+        reverse=True,
+    )
+    if not components:
+        raise ValueError("generated contact-sheet cell is empty")
+    component = components[0]
+    box = (component.min_x, component.min_y, component.max_x + 1, component.max_y + 1)
+    pose = source.crop(box)
+    mask = Image.new("L", pose.size, 0)
+    mask_pixels = mask.load()
+    for index in component.pixels:
+        y, x = divmod(index, source.width)
+        mask_pixels[x - component.min_x, y - component.min_y] = 255
+    pose.putalpha(ImageChops.multiply(source.getchannel("A").crop(box), mask))
+    return harden_alpha(pose)
+
+
+def selected_variable_poses(spec: VariableBodySpec) -> list[Image.Image]:
+    poses: list[Image.Image] = []
+    for selection in spec.selections:
+        source = harden_alpha(Image.open(selection.source).convert("RGBA"))
+        cells = split_grid(source, selection.columns, selection.rows)
+        poses.extend(isolate_largest_subject(cells[index]) for index in selection.indices)
+    if len(poses) != spec.frames:
+        raise ValueError(f"expected {spec.frames} selected poses, found {len(poses)}")
+    return poses
+
+
+def median(values: list[float]) -> float:
+    ordered = sorted(values)
+    middle = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[middle]
+    return (ordered[middle - 1] + ordered[middle]) / 2
+
+
+def compose_variable_body(
+    poses: list[Image.Image],
+    target_area: float,
+) -> Image.Image:
+    """Apply one area-derived scale to every pose, then align to the shared sole."""
+
+    source_areas = [pose.getchannel("A").histogram()[255] for pose in poses]
+    scale = (target_area / median(source_areas)) ** 0.5
+    widest = max(pose.width for pose in poses)
+    tallest = max(pose.height for pose in poses)
+    fit_scale = min(
+        (VARIABLE_FRAME_SIZE - 12) / widest,
+        (VARIABLE_FOOTLINE - 3) / tallest,
+    )
+    scale = min(scale, fit_scale)
+    if scale <= 0:
+        raise ValueError("variable body scale must be positive")
+
+    sheet = Image.new(
+        "RGBA",
+        (VARIABLE_FRAME_SIZE * len(poses), VARIABLE_FRAME_SIZE),
+        (0, 0, 0, 0),
+    )
+    for index, pose in enumerate(poses):
+        width = max(1, round(pose.width * scale))
+        height = max(1, round(pose.height * scale))
+        resized = harden_alpha(pose.resize((width, height), Image.Resampling.NEAREST))
+        x = index * VARIABLE_FRAME_SIZE + (VARIABLE_FRAME_SIZE - width) // 2
+        y = VARIABLE_FOOTLINE - height + 1
+        sheet.alpha_composite(resized, (x, y))
+    return harden_alpha(sheet)
+
+
+def suppress_unexpected_green(sheet: Image.Image) -> Image.Image:
+    """Remove isolated model artifacts using the same predicate as the audit."""
+
+    cleaned = sheet.copy()
+    pixels = list(cleaned.get_flattened_data())
+    for index, (red, green, blue, alpha) in enumerate(pixels):
+        if alpha > 0 and green >= 80 and green > red * 1.35 and green > blue * 1.15:
+            pixels[index] = (red, max(red, blue), blue, alpha)
+    cleaned.putdata(pixels)
+    return cleaned
+
+
+def variable_body_sheet(
+    fighter: str,
+    name: str,
+    target_area: float,
+) -> Image.Image | None:
+    spec = VARIABLE_BODY_SPECS.get((fighter, name))
+    if spec is None:
+        return None
+    sheet = compose_variable_body(selected_variable_poses(spec), target_area)
+    return suppress_unexpected_green(sheet) if fighter == "guto-barba" else sheet
+
+
+def variable_ice_effect() -> Image.Image:
+    source = harden_alpha(
+        Image.open(FINAL_GRAB_SOURCES / "abraco-glacial-effect-source-keyed.png").convert("RGBA")
+    )
+    cells = split_grid(source, 4, 3)
+    boxes = [alpha_bbox(cell) for cell in cells]
+    scale = min(
+        (VARIABLE_FRAME_SIZE - 12) / max(box[2] - box[0] for box in boxes),
+        (VARIABLE_FRAME_SIZE - 12) / max(box[3] - box[1] for box in boxes),
+    )
+    sheet = Image.new(
+        "RGBA",
+        (VARIABLE_FRAME_SIZE * len(cells), VARIABLE_FRAME_SIZE),
+        (0, 0, 0, 0),
+    )
+    for index, (cell, box) in enumerate(zip(cells, boxes, strict=True)):
+        effect = cell.crop(box)
+        width = max(1, round(effect.width * scale))
+        height = max(1, round(effect.height * scale))
+        effect = harden_alpha(effect.resize((width, height), Image.Resampling.NEAREST))
+        x = index * VARIABLE_FRAME_SIZE + (VARIABLE_FRAME_SIZE - width) // 2
+        y = (VARIABLE_FRAME_SIZE - height) // 2
+        sheet.alpha_composite(effect, (x, y))
+    return harden_alpha(sheet)
+
+
 def compose_body(
     poses: list[Image.Image],
     frame_size: int,
@@ -187,16 +433,19 @@ def compose_body(
     return sheet
 
 
-def median_opaque_area(sheet: Image.Image, frame_size: int) -> float:
+def median_opaque_area(
+    sheet: Image.Image,
+    frame_size: int,
+    frame_count: int = FRAME_COUNT,
+) -> float:
     areas: list[int] = []
-    for index in range(FRAME_COUNT):
+    for index in range(frame_count):
         frame = sheet.crop(
             (index * frame_size, 0, (index + 1) * frame_size, frame_size)
         )
         alpha = frame.getchannel("A")
         areas.append(alpha.histogram()[255])
-    ordered = sorted(areas)
-    return (ordered[1] + ordered[2]) / 2
+    return median(areas)
 
 
 def normalize_visual_mass(
@@ -333,7 +582,11 @@ def rebuild_rafa(only_assets: set[str] | None = None) -> None:
         if only_assets is not None and output.name not in only_assets:
             continue
         normalize_mass = True
-        if output.name.endswith("-effect.png"):
+        variable_sheet = variable_body_sheet("rafa-mare", output.name, target_area)
+        if variable_sheet is not None:
+            sheet = variable_sheet
+            normalize_mass = False
+        elif output.name.endswith("-effect.png"):
             sheet = reframe_effect(output, RAFA_FRAME)
             normalize_mass = False
         elif output.name in RAFA_SOURCES:
@@ -385,7 +638,12 @@ def rebuild_guto(only_assets: set[str] | None = None) -> None:
     for output in sorted(directory.glob("*.png")):
         if only_assets is not None and output.name not in only_assets:
             continue
-        if output.name.endswith("-effect.png"):
+        variable_sheet = variable_body_sheet("guto-barba", output.name, target_area)
+        if variable_sheet is not None:
+            sheet = variable_sheet
+        elif output.name == "abraco-glacial-effect.png":
+            sheet = variable_ice_effect()
+        elif output.name.endswith("-effect.png"):
             # Guto already uses the final effect canvas. Reframing is
             # intentionally lossless and leaves its visible size untouched.
             sheet = reframe_effect(output, GUTO_FRAME)
@@ -426,7 +684,10 @@ def rebuild_astro(only_assets: set[str] | None = None) -> None:
         if not source.is_file():
             raise FileNotFoundError(f"missing Astro source: {source}")
         output = directory / name
-        if name in ASTRO_EFFECT_ASSETS:
+        variable_sheet = variable_body_sheet("astro-riso", name, target_area)
+        if variable_sheet is not None:
+            sheet = variable_sheet
+        elif name in ASTRO_EFFECT_ASSETS:
             sheet = effect_from_contact_source(source, ASTRO_FRAME)
         else:
             sheet = body_from_contact_source(

@@ -92,11 +92,20 @@ export interface FighterEffectAsset extends AnimatedSpriteSheetAsset {
   readonly origin: Readonly<{ x: number; y: number }>;
   readonly offset: Readonly<{ x: number; y: number }>;
   readonly scale: number;
+  /** Mapeamento determinístico da simulação para poses específicas do efeito. */
+  readonly frameTimeline?: readonly FighterEffectFramePhase[];
+}
+
+export interface FighterEffectFramePhase {
+  readonly range: FrameRange;
+  readonly frame: number;
 }
 
 export interface FighterMoveAnimationPhase {
   readonly animation: FighterAnimationId;
   readonly range: FrameRange;
+  /** Mantém uma pose específica durante trechos longos, como o gelo completo. */
+  readonly explicitFrame?: number;
 }
 
 export interface FighterSpriteAsset {

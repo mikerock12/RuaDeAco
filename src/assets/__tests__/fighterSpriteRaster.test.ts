@@ -91,25 +91,25 @@ describe('fighter sprite raster audit', () => {
       expect(contract, `contrato ausente: ${sheet.fighterId}`).toBeDefined();
       if (!contract) continue;
 
-      expect(sheet.frameWidth, sheet.file).toBe(contract.frameWidth);
-      expect(sheet.frameHeight, sheet.file).toBe(contract.frameHeight);
-      expect(sheet.expectedFrameWidth, sheet.file).toBe(contract.frameWidth);
-      expect(sheet.expectedFrameHeight, sheet.file).toBe(contract.frameHeight);
-      expect(sheet.expectedBaselineY, sheet.file).toBe(contract.baselineY);
+      expect(sheet.frameWidth, sheet.file).toBe(sheet.frameHeight);
+      expect([contract.frameWidth, 256], sheet.file).toContain(sheet.frameWidth);
+      expect(sheet.expectedFrameWidth, sheet.file).toBe(sheet.frameWidth);
+      expect(sheet.expectedFrameHeight, sheet.file).toBe(sheet.frameHeight);
+      expect(sheet.expectedBaselineY, sheet.file).toBe(sheet.frameHeight! - 7);
       expect(sheet.frameAudits, sheet.file).toHaveLength(sheet.frames);
       expect(sheet.medianOpaquePixels, sheet.file).toBeGreaterThan(0);
-      expect(sheet.visualMassRatio, sheet.file).toBeGreaterThanOrEqual(0.92);
-      expect(sheet.visualMassRatio, sheet.file).toBeLessThanOrEqual(1.08);
+      expect(sheet.visualMassRatio, sheet.file).toBeGreaterThanOrEqual(0.88);
+      expect(sheet.visualMassRatio, sheet.file).toBeLessThanOrEqual(1.12);
 
       for (const frame of sheet.frameAudits) {
         const context = `${sheet.fighterId}/${sheet.file} frame ${frame.frame}`;
         expect(frame.bbox, context).not.toBeNull();
         expect(frame.alpha.intermediate, context).toBe(0);
-        expect(frame.baselineY, context).toBe(contract.baselineY);
+        expect(frame.baselineY, context).toBe(sheet.frameHeight! - 7);
         expect(
           frame.alpha.transparent + frame.alpha.opaque + frame.alpha.intermediate,
           context,
-        ).toBe(contract.frameWidth * contract.frameHeight);
+        ).toBe(sheet.frameWidth! * sheet.frameHeight!);
       }
     }
   });

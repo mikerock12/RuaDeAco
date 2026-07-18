@@ -142,6 +142,16 @@ export interface GrabVictimPhase {
   readonly victimRotation?: number;
 }
 
+export type GrabVictimDepth = 'behind' | 'front';
+
+/** Keyframe centralizado: pose e transformação são resolvidas pelo frame da simulação. */
+export interface GrabVictimKeyframe extends GrabVictimTransform {
+  readonly frame: number;
+  readonly state: HeldVictimState;
+  readonly poseFrame: number;
+  readonly depth?: GrabVictimDepth;
+}
+
 /**
  * Contrato genérico de agarrão. O atacante fornece apenas timing e âncoras;
  * a vítima continua uma entidade separada e usa suas próprias animações.
@@ -152,7 +162,10 @@ export interface GrabDefinition extends GrabVictimTransform {
   readonly throwVelocityX: number;
   readonly throwVelocityY: number;
   readonly victimPhases?: readonly GrabVictimPhase[];
+  readonly victimTimeline?: readonly GrabVictimKeyframe[];
   readonly victimOffsets?: Partial<Readonly<Record<FighterId, GrabVictimOffset>>>;
+  /** Frame absoluto para o qual um agarrão que errou salta antes da recuperação. */
+  readonly whiffRecoveryFrame?: number;
 }
 
 export type MoveEvent =

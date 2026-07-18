@@ -50,6 +50,7 @@ function animation(
   id: SharedFighterAnimationId,
   frameRate: number,
   repeat: number,
+  frames = 4,
 ): FighterAnimationAsset {
   return {
     id,
@@ -57,7 +58,7 @@ function animation(
     path: `assets/fighters/astro-riso/${files[id]}`,
     frameWidth: FRAME_SIZE,
     frameHeight: FRAME_SIZE,
-    frames: 4,
+    frames,
     layout: 'horizontal',
     frameRate,
     repeat,
@@ -139,8 +140,8 @@ export const astroRisoSpriteAsset: FighterSpriteAsset = {
     hit: animation('hit', 12, 0),
     knockdown: animation('knockdown', 8, 0),
     wakeUp: animation('wakeUp', 11, 0),
-    grabbedFront: animation('grabbedFront', 10, -1),
-    grabbedLifted: animation('grabbedLifted', 10, -1),
+    grabbedFront: animation('grabbedFront', 30, 0, 8),
+    grabbedLifted: animation('grabbedLifted', 30, 0, 8),
     thrown: animation('thrown', 11, 0),
     frozen: animation('frozen', 8, -1),
     knockout: animation('knockout', 7, 0),
