@@ -3,10 +3,10 @@
 Este diretório contém o primeiro APK Beta do jogo Rua de Aço para dispositivos Android.
 
 ## O que é este APK?
-Este arquivo (`Rua-de-Aco-Beta-0.1.0.apk`) é um aplicativo Android nativo construído usando Capacitor. Ele encapsula a versão web do jogo, permitindo que ele rode localmente no seu celular sem precisar de internet (offline), de forma idêntica a um aplicativo baixado na loja.
+Este arquivo (`Rua-de-Aco-Beta-0.2.0.apk`) é um aplicativo Android nativo construído usando Capacitor. Ele encapsula a versão web do jogo, permitindo que ele rode localmente no seu celular sem precisar de internet (offline), de forma idêntica a um aplicativo baixado na loja.
 
 ## Onde ele está?
-O arquivo pode ser encontrado em: `release-android/Rua-de-Aco-Beta-0.1.0.apk`
+O arquivo pode ser encontrado em: `release-android/Rua-de-Aco-Beta-0.2.0.apk`
 
 ## Como enviar ao celular?
 1. Conecte seu dispositivo Android ao computador com um cabo USB e copie o arquivo para a memória do celular (ex: pasta `Downloads`).
@@ -14,7 +14,7 @@ O arquivo pode ser encontrado em: `release-android/Rua-de-Aco-Beta-0.1.0.apk`
 
 ## Como instalar manualmente?
 1. Abra um Gerenciador de Arquivos no seu Android e navegue até a pasta onde salvou o APK.
-2. Toque no arquivo `Rua-de-Aco-Beta-0.1.0.apk`.
+2. Toque no arquivo `Rua-de-Aco-Beta-0.2.0.apk`.
 3. Siga as instruções do instalador na tela.
 
 ## Como autorizar temporariamente "instalar apps desconhecidos"?

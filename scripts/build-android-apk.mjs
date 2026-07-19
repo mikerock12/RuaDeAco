@@ -46,7 +46,7 @@ if (!existsSync(releaseDir)) {
   mkdirSync(releaseDir, { recursive: true });
 }
 
-const finalApkName = 'Rua-de-Aco-Beta-0.1.0.apk';
+const finalApkName = 'Rua-de-Aco-Beta-0.2.0.apk';
 const finalApkPath = join(releaseDir, finalApkName);
 
 copyFileSync(originalApkPath, finalApkPath);
@@ -70,7 +70,7 @@ console.log(`Caminho absoluto: ${finalApkPath}`);
 console.log(`Tamanho: ${(stats.size / (1024 * 1024)).toFixed(2)} MB (${stats.size} bytes)`);
 console.log(`SHA-256: ${hex}`);
 console.log(`Package ID: com.mikerock12.ruadeaco`);
-console.log(`Version Name: 0.1.0-beta.1`);
-console.log(`Version Code: 1`);
+console.log(`Version Name: 0.2.0-beta.2`);
+console.log(`Version Code: 2`);
 console.log(`Assinatura: Debug automatizada`);
 console.log('\nVocê pode testar localmente ou instalar no dispositivo Android.');
