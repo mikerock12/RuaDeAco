@@ -183,3 +183,57 @@ export function resolveAttachedEffect(
       || snapshot.stateFrame >= effect.activeRange.from
       && snapshot.stateFrame <= effect.activeRange.to));
 }
+
+/** Efeitos dirigidos por campo numérico do snapshot (ex.: fumaça de redução). */
+export function resolveStatusEffects(
+  snapshot: FighterSnapshot,
+  asset: FighterSpriteAsset,
+): readonly FighterEffectAsset[] {
+  return asset.effects.filter((effect) => {
+    if (effect.usage !== 'status' || !effect.statusField) return false;
+    const value = snapshot[effect.statusField];
+    return typeof value === 'number' && value > 0;
+  });
+}
+
+export function resolveStatusEffectFrame(
+  effect: FighterEffectAsset,
+  statusFramesRemaining: number,
+): number {
+  // Usa a contagem decrescente para loop estável enquanto o status vive.
+  const elapsed = Math.max(0, statusFramesRemaining);
+  return spriteSheetFrameIndex(effect, elapsed);
+}
+
+/**
+ * Mapeia arming/active do snapshot de projétil para frames do sheet.
+ * Aviso faz loop; a explosão/active avança sem loop e sem mostrar frame de impacto no arming.
+ */
+export function resolveProjectileVisualFrame(
+  effect: FighterEffectAsset,
+  projectile: {
+    readonly ageFrames: number;
+    readonly armingFrames: number;
+    readonly state: 'arming' | 'active';
+  },
+): number {
+  const warningCount = Math.max(
+    1,
+    Math.min(
+      effect.frames,
+      effect.warningFrameCount ?? (effect.frames > 1 ? Math.floor(effect.frames / 2) : 1),
+    ),
+  );
+
+  if (projectile.state === 'arming' || projectile.ageFrames < projectile.armingFrames) {
+    if (warningCount <= 1) return 0;
+    return projectile.ageFrames % warningCount;
+  }
+
+  const activeAge = Math.max(0, projectile.ageFrames - projectile.armingFrames);
+  const activeStart = warningCount;
+  if (activeStart >= effect.frames) {
+    return Math.min(effect.frames - 1, activeAge);
+  }
+  return Math.min(effect.frames - 1, activeStart + activeAge);
+}

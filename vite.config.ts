@@ -5,7 +5,7 @@ import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 const publicRoot = resolve(process.cwd(), 'public');
-const fighterAssetPattern = /^assets\/fighters\/(?:rafa-mare|astro-riso|guto-barba)\/[^/]+\.png$/;
+const fighterAssetPattern = /^assets\/fighters\/(?:rafa-mare|astro-riso|guto-barba|dante-sinal)\/[^/]+\.png$/;
 
 function listPublicFiles(root: string): string[] {
   if (!existsSync(root)) return [];

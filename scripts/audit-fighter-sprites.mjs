@@ -4,8 +4,8 @@ import { createHash } from 'node:crypto';
 import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { inflateSync } from 'node:zlib';
 import { createServer } from 'vite';
+import { decodePng, frameBounds, placeholderIssues } from './fighterRasterAnalysis.mjs';
 
 const ROOT = new URL('../', import.meta.url).pathname.replace(/^\/(?:([A-Za-z]:))/, '$1');
 
@@ -13,6 +13,7 @@ const FIGHTER_NAMES = {
   'rafa-mare': 'Rafa Maré',
   'guto-barba': 'Guto Barba',
   'astro-riso': 'Astro Riso',
+  'dante-sinal': 'Dante Sinal',
 };
 
 // Contrato do raster final. O baseline é expresso nas coordenadas locais do
@@ -21,6 +22,7 @@ const FIGHTER_RASTER_CONTRACTS = {
   'rafa-mare': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
   'guto-barba': { frameWidth: 288, frameHeight: 288, baselineY: 281 },
   'astro-riso': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
+  'dante-sinal': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
 };
 const BODY_MASS_RATIO_TOLERANCE = 0.12;
 
@@ -65,92 +67,6 @@ async function loadFighterManifest() {
   }
 }
 
-function paeth(a, b, c) {
-  const p = a + b - c;
-  const pa = Math.abs(p - a);
-  const pb = Math.abs(p - b);
-  const pc = Math.abs(p - c);
-  if (pa <= pb && pa <= pc) return a;
-  if (pb <= pc) return b;
-  return c;
-}
-
-function decodePng(buffer) {
-  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-  if (!buffer.subarray(0, 8).equals(signature)) throw new Error('Assinatura PNG inválida');
-
-  let width = 0;
-  let height = 0;
-  let bitDepth = 0;
-  let colorType = 0;
-  let interlace = 0;
-  const idat = [];
-  let offset = 8;
-  while (offset < buffer.length) {
-    const length = buffer.readUInt32BE(offset);
-    const type = buffer.toString('ascii', offset + 4, offset + 8);
-    const data = buffer.subarray(offset + 8, offset + 8 + length);
-    if (type === 'IHDR') {
-      width = data.readUInt32BE(0);
-      height = data.readUInt32BE(4);
-      bitDepth = data[8];
-      colorType = data[9];
-      interlace = data[12];
-    } else if (type === 'IDAT') {
-      idat.push(data);
-    } else if (type === 'IEND') {
-      break;
-    }
-    offset += length + 12;
-  }
-  if (bitDepth !== 8) throw new Error(`Bit depth não suportado: ${bitDepth}`);
-  if (interlace !== 0) throw new Error('PNG entrelaçado não suportado');
-  const channels = { 0: 1, 2: 3, 4: 2, 6: 4 }[colorType];
-  if (!channels) throw new Error(`Color type não suportado: ${colorType}`);
-
-  const raw = inflateSync(Buffer.concat(idat));
-  const stride = width * channels;
-  const pixels = Buffer.alloc(width * height * 4, 255);
-  let previous = Buffer.alloc(stride);
-  for (let y = 0; y < height; y += 1) {
-    const filter = raw[y * (stride + 1)];
-    const line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
-    const current = Buffer.from(line);
-    for (let x = 0; x < stride; x += 1) {
-      const left = x >= channels ? current[x - channels] : 0;
-      const up = previous[x];
-      const upLeft = x >= channels ? previous[x - channels] : 0;
-      switch (filter) {
-        case 1: current[x] = (current[x] + left) & 255; break;
-        case 2: current[x] = (current[x] + up) & 255; break;
-        case 3: current[x] = (current[x] + ((left + up) >> 1)) & 255; break;
-        case 4: current[x] = (current[x] + paeth(left, up, upLeft)) & 255; break;
-      }
-    }
-    for (let x = 0; x < width; x += 1) {
-      const target = (y * width + x) * 4;
-      const source = x * channels;
-      if (colorType === 6) {
-        pixels[target] = current[source];
-        pixels[target + 1] = current[source + 1];
-        pixels[target + 2] = current[source + 2];
-        pixels[target + 3] = current[source + 3];
-      } else if (colorType === 2) {
-        pixels[target] = current[source];
-        pixels[target + 1] = current[source + 1];
-        pixels[target + 2] = current[source + 2];
-      } else if (colorType === 4) {
-        pixels[target] = pixels[target + 1] = pixels[target + 2] = current[source];
-        pixels[target + 3] = current[source + 1];
-      } else {
-        pixels[target] = pixels[target + 1] = pixels[target + 2] = current[source];
-      }
-    }
-    previous = current;
-  }
-  return { width, height, bitDepth, colorType, interlace, pixels };
-}
-
 function auditAlpha(image) {
   let transparent = 0;
   let opaque = 0;
@@ -162,22 +78,6 @@ function auditAlpha(image) {
     else intermediate += 1;
   }
   return { transparent, opaque, intermediate };
-}
-
-function frameBounds(sheet, frameIndex) {
-  return sheet.layout === 'vertical'
-    ? {
-        startX: 0,
-        endX: sheet.frameWidth - 1,
-        startY: frameIndex * sheet.frameHeight,
-        endY: (frameIndex + 1) * sheet.frameHeight - 1,
-      }
-    : {
-        startX: frameIndex * sheet.frameWidth,
-        endX: (frameIndex + 1) * sheet.frameWidth - 1,
-        startY: 0,
-        endY: sheet.frameHeight - 1,
-      };
 }
 
 function countUnexpectedGreen(image) {
@@ -501,6 +401,20 @@ for (const fighter of FIGHTERS) {
         frameHashes.set(frameHash, frame);
       }
     }
+
+    // Anti-placeholder: hash distinto não prova animação real. Estas
+    // verificações rejeitam retângulos uniformes, frames com pouquíssimas
+    // cores e pares de poses alterados por poucos pixels.
+    entry.issues.push(...placeholderIssues(
+      image,
+      {
+        frames: availableFrames,
+        frameWidth: sheet.frameWidth,
+        frameHeight: sheet.frameHeight,
+        layout: sheet.layout,
+      },
+      sheet.rasterKind,
+    ));
   }
 }
 

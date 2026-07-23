@@ -83,12 +83,24 @@ export interface FighterAnimationAsset extends AnimatedSpriteSheetAsset {
   readonly id: FighterAnimationId;
 }
 
+export type FighterStatusEffectField = 'damageReductionFrames';
+
 export interface FighterEffectAsset extends AnimatedSpriteSheetAsset {
   readonly id: string;
   readonly moveId: string;
-  readonly usage: 'attached' | 'projectile';
+  readonly usage: 'attached' | 'projectile' | 'status';
   readonly attachTo?: 'attacker' | 'victim';
   readonly activeRange?: FrameRange;
+  /**
+   * Quando `usage === 'status'`, o efeito permanece enquanto o campo do
+   * snapshot for > 0 (contrato genérico, sem hardcode por lutador na view).
+   */
+  readonly statusField?: FighterStatusEffectField;
+  /**
+   * Quadros visuais de aviso/arming no sheet de projétil (estado `arming`).
+   * Os frames restantes cobrem a janela `active` sem loop.
+   */
+  readonly warningFrameCount?: number;
   readonly origin: Readonly<{ x: number; y: number }>;
   readonly offset: Readonly<{ x: number; y: number }>;
   readonly scale: number;

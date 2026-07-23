@@ -44,6 +44,7 @@ const CONTRACTS = {
   'rafa-mare': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
   'astro-riso': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
   'guto-barba': { frameWidth: 288, frameHeight: 288, baselineY: 281 },
+  'dante-sinal': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
 } as const;
 
 const execution = spawnSync(

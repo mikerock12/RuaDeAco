@@ -173,6 +173,18 @@ export type MoveEvent =
   | { readonly frame: number; readonly type: 'grantArmor'; readonly hits: number }
   | { readonly frame: number; readonly type: 'clearArmor' }
   | { readonly frame: number; readonly type: 'grantBuff'; readonly durationFrames: number }
+  | {
+      readonly frame: number;
+      readonly type: 'grantDamageReduction';
+      readonly durationFrames: number;
+      /** Multiplicador do dano final (ex.: 0.70 = 30% de redução). */
+      readonly multiplier: number;
+      /**
+       * Cooldown genérico a partir do grant (inclui a duração ativa).
+       * Novas concessões só ocorrem com cooldown em 0 e sem redução ativa.
+       */
+      readonly cooldownFrames?: number;
+    }
   | { readonly frame: number; readonly type: 'throw'; readonly range: number; readonly damage: number; readonly cinematic?: boolean };
 
 export interface CancelWindow {
@@ -249,6 +261,9 @@ export interface ProjectileDefinition {
   readonly velocityX: number;
   readonly lifeFrames: number;
   readonly hitbox: HitboxDefinition;
+  readonly armingFrames?: number;
+  readonly spawnMode?: 'ownerOffset' | 'targetSnapshot';
+  readonly maxActivePerOwner?: number;
 }
 
 export interface FighterDefinition {

@@ -17,12 +17,19 @@ import {
   resolveAttachedEffect,
   resolveAttachedEffectFrame,
   resolveFighterAnimation,
+  resolveStatusEffectFrame,
+  resolveStatusEffects,
 } from './fighterAnimationResolver';
 import { FighterGroundShadow } from './fighterGroundShadow';
 import {
   FighterStatusPresentation,
   keepFighterBodyColorsNeutral,
 } from './fighterStatusPresentation';
+import type { FighterEffectAsset } from '../types/assets';
+import {
+  logMissingAnimationFrameOnce,
+  resolveSafeFrameIndex,
+} from './safeAnimationFrame';
 
 export interface FighterView {
   sync(snapshot: FighterSnapshot, alpha: number): void;
@@ -34,6 +41,10 @@ class SpriteFighterView implements FighterView {
   private readonly definition: FighterDefinition;
   private readonly sprite: Phaser.GameObjects.Sprite;
   private readonly moveEffect: Phaser.GameObjects.Sprite | null;
+  private readonly statusEffectSprites: ReadonlyArray<{
+    readonly effect: FighterEffectAsset;
+    readonly sprite: Phaser.GameObjects.Sprite;
+  }>;
   private readonly groundShadow: FighterGroundShadow;
   private readonly statusPresentation: FighterStatusPresentation;
   private readonly asset: FighterSpriteAsset;
@@ -60,6 +71,16 @@ class SpriteFighterView implements FighterView {
         .setVisible(false)
         .setDepth(21)
       : null;
+    this.statusEffectSprites = asset.effects
+      .filter((effect) => effect.usage === 'status')
+      .map((effect) => {
+        const sprite = scene.add.sprite(0, 0, effect.key, 0)
+          .setOrigin(effect.origin.x, effect.origin.y)
+          .setVisible(false)
+          .setDepth(21)
+          .setName(`${definition.id}-status-effect-${effect.id}`);
+        return { effect, sprite };
+      });
 
     for (const animation of Object.values(asset.animations)) this.assertTexture(scene, animation);
     for (const effect of asset.effects) this.assertTexture(scene, effect);
@@ -140,6 +161,31 @@ class SpriteFighterView implements FighterView {
     } else {
       this.moveEffect?.setVisible(false);
     }
+
+    const activeStatusEffects = resolveStatusEffects(snapshot, this.asset);
+    for (const entry of this.statusEffectSprites) {
+      const active = activeStatusEffects.find((effect) => effect.id === entry.effect.id);
+      if (!active || !active.statusField) {
+        entry.sprite.setVisible(false);
+        continue;
+      }
+      const remaining = snapshot[active.statusField];
+      this.applyAnimationFrame(
+        entry.sprite,
+        active,
+        resolveStatusEffectFrame(active, typeof remaining === 'number' ? remaining : 0),
+      );
+      entry.sprite
+        .setVisible(this.viewVisible)
+        .setOrigin(active.origin.x, active.origin.y)
+        .setPosition(
+          roundPixel(x + snapshot.facing * active.offset.x),
+          roundPixel(y + active.offset.y),
+        )
+        .setScale(snapshot.facing * active.scale, active.scale)
+        .setRotation(snapshot.victimRotation)
+        .setDepth(21);
+    }
   }
 
   setVisible(visible: boolean): void {
@@ -147,6 +193,10 @@ class SpriteFighterView implements FighterView {
     this.viewVisible = visible;
     this.sprite.setVisible(visible);
     this.moveEffect?.setVisible(visible && this.moveEffectActive);
+    if (!visible) {
+      for (const entry of this.statusEffectSprites) entry.sprite.setVisible(false);
+    }
+    // reaparece no próximo sync se o status ainda estiver ativo
     this.groundShadow.setVisible(visible);
     this.statusPresentation.setVisible(visible);
   }
@@ -156,6 +206,7 @@ class SpriteFighterView implements FighterView {
     this.destroyed = true;
     this.sprite.destroy();
     this.moveEffect?.destroy();
+    for (const entry of this.statusEffectSprites) entry.sprite.destroy();
     this.groundShadow.destroy();
     this.statusPresentation.destroy();
   }
@@ -221,11 +272,25 @@ class SpriteFighterView implements FighterView {
     }
 
     const phaserAnimation = sprite.anims.currentAnim;
-    const phaserFrame = phaserAnimation?.frames[frameIndex];
+    const available = phaserAnimation?.frames.length
+      ?? animation.frames
+      ?? 0;
+    const safe = resolveSafeFrameIndex(frameIndex, available);
+    if (safe.clamped) {
+      // Fail-safe visual: não congela o FightScene por asset incompleto.
+      // Auditoria/testes de contrato continuam falhando no CI.
+      logMissingAnimationFrameOnce(
+        animation.key,
+        safe.requested,
+        safe.available,
+        safe.index,
+      );
+    }
+    const phaserFrame = phaserAnimation?.frames[safe.index];
     if (!phaserFrame) {
-      const message = `[Rua de Aço] Frame ${frameIndex} ausente em ${animation.key}`;
-      console.error(message);
-      throw new Error(message);
+      // Textura sem frames úteis — log único e segue sem lançar.
+      logMissingAnimationFrameOnce(animation.key, frameIndex, 0, 0);
+      return;
     }
     sprite.anims.setCurrentFrame(phaserFrame);
   }

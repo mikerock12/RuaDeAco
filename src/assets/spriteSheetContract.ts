@@ -55,7 +55,11 @@ function moveImpactRange(move: MoveDefinition): readonly [number, number] {
   }
 
   const cueFrames = move.events
-    ?.filter(({ type }) => type === 'spawnProjectile' || type === 'grantBuff' || type === 'throw')
+    ?.filter(({ type }) =>
+      type === 'spawnProjectile'
+      || type === 'grantBuff'
+      || type === 'grantDamageReduction'
+      || type === 'throw')
     .map(({ frame }) => frame) ?? [];
   if (cueFrames.length > 0) return [Math.min(...cueFrames), Math.max(...cueFrames)];
 

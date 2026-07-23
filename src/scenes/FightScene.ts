@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import { CpuController } from '../ai/CpuController';
 import { audioManager } from '../audio/AudioManager';
 import { MUSIC_TRACK_BY_SCENE } from '../audio/musicCatalog';
-import { phaserAnimationKey, spriteSheetFrameIndex } from '../assets/spriteSheetContract';
+import { phaserAnimationKey } from '../assets/spriteSheetContract';
+import { resolveProjectileVisualFrame } from '../ui/fighterAnimationResolver';
 import { CombatWorld } from '../combat/CombatWorld';
 import { FixedStepRunner } from '../combat/FixedStepRunner';
 import { toWorldRect } from '../combat/geometry';
@@ -336,7 +337,7 @@ export class FightScene extends Phaser.Scene {
       const projectile = snapshot.projectiles[index];
       if (!projectile) return;
       const effect = this.projectileEffect(projectile);
-      this.syncProjectileEffect(sprite, effect, projectile.ageFrames);
+      this.syncProjectileEffect(sprite, effect, projectile);
       sprite
         .setVisible(true)
         .setPosition(
@@ -365,14 +366,18 @@ export class FightScene extends Phaser.Scene {
   private syncProjectileEffect(
     sprite: Phaser.GameObjects.Sprite,
     effect: FighterEffectAsset,
-    projectileAgeFrames: number,
+    projectile: {
+      readonly ageFrames: number;
+      readonly armingFrames: number;
+      readonly state: 'arming' | 'active';
+    },
   ): void {
     const animationKey = phaserAnimationKey(effect.key);
     if (sprite.anims.getName() !== animationKey) {
       sprite.play(animationKey);
       sprite.anims.pause();
     }
-    const frameIndex = spriteSheetFrameIndex(effect, projectileAgeFrames);
+    const frameIndex = resolveProjectileVisualFrame(effect, projectile);
     const frame = sprite.anims.currentAnim?.frames[frameIndex];
     if (!frame) return;
     sprite.anims.setCurrentFrame(frame);

@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { CombatWorld } from '../../combat/CombatWorld';
 import { FighterRuntime } from '../../combat/FighterRuntime';
 import { astroRiso } from '../astroRiso';
+import { danteSinal } from '../danteSinal';
 import { gutoBarba } from '../gutoBarba';
 import { rafaMare } from '../rafaMare';
 import type { FighterDefinition, InputAction, InputFrame } from '../../types/combat';
 import { gutoBarbaSpriteAsset } from '../visual/gutoBarbaSprite';
+import { getFighterSpriteAsset } from '../visual';
+import { resolveFighterAnimation } from '../../ui/fighterAnimationResolver';
 
 const input = (held: readonly InputAction[] = [], pressed: readonly InputAction[] = []): InputFrame => ({
   held: new Set(held),
@@ -125,7 +128,7 @@ describe('contratos dos três golpes de Guto', () => {
     expect(blocked.drainEvents().filter(({ type }) => type === 'blocked')).toHaveLength(1);
   });
 
-  it.each([rafaMare, astroRiso, gutoBarba])('Gancho separa, alinha e arremessa $name uma única vez', (victim) => {
+  it.each([rafaMare, astroRiso, gutoBarba, danteSinal])('Gancho separa, alinha e arremessa $name uma única vez', (victim) => {
     const world = setupWorld(victim);
     startMove(world, 'ganchoUrso');
     const front = snapshotAtAttackerFrame(world, 10);
@@ -146,6 +149,72 @@ describe('contratos dos três golpes de Guto', () => {
     expect(hits).toHaveLength(1);
     expect(world.fighters[1].health).toBe(victim.stats.maxHealth - 155);
     expect(world.snapshot().activeGrab).toBeNull();
+  });
+
+  it.each([1, -1] as const)('Gancho com Dante cobre poses 0–5/0–7, libera e aceita novo golpe (facing %s)', (facing) => {
+    const grab = gutoBarba.moves.ganchoUrso!.grab!;
+    const victimAsset = getFighterSpriteAsset('dante-sinal')!;
+    // Timeline completa (incluindo pose 0 do contato): todos os explicitFrames cabem no sheet.
+    for (const entry of grab.victimTimeline ?? []) {
+      const animId = entry.state === 'grabbedFront' ? 'grabbedFront' : entry.state === 'grabbedLifted' ? 'grabbedLifted' : null;
+      if (!animId) continue;
+      expect(entry.poseFrame).toBeLessThan(victimAsset.animations[animId].frames);
+    }
+
+    const world = setupWorld(danteSinal, facing);
+    const health = world.fighters[1].health;
+    startMove(world, 'ganchoUrso');
+
+    const frontPoses = new Set<number>();
+    const liftedPoses = new Set<number>();
+    let sawThrown = false;
+    let sawPose4Plus = false;
+
+    for (let step = 0; step < 200; step += 1) {
+      const snap = world.snapshot();
+      const victim = snap.fighters[1];
+      if (victim.state === 'grabbedFront' && victim.victimPoseFrame !== null) {
+        frontPoses.add(victim.victimPoseFrame);
+        sawPose4Plus ||= victim.victimPoseFrame >= 4;
+        const resolved = resolveFighterAnimation(victim, null, victimAsset, danteSinal);
+        expect(resolved.explicitFrame).toBe(victim.victimPoseFrame);
+        expect(resolved.explicitFrame!).toBeLessThan(victimAsset.animations.grabbedFront.frames);
+      }
+      if (victim.state === 'grabbedLifted' && victim.victimPoseFrame !== null) {
+        liftedPoses.add(victim.victimPoseFrame);
+        const resolved = resolveFighterAnimation(victim, null, victimAsset, danteSinal);
+        expect(resolved.explicitFrame).toBe(victim.victimPoseFrame);
+        expect(resolved.explicitFrame!).toBeLessThan(victimAsset.animations.grabbedLifted.frames);
+      }
+      sawThrown ||= victim.state === 'thrown';
+      world.step(empty, empty);
+      if (
+        sawThrown
+        && world.snapshot().activeGrab === null
+        && world.fighters[1].grabbedBy === null
+        && world.fighters[0].currentMove === null
+      ) break;
+    }
+
+    // Hit-stop no encaixe pode pular a pose 0 (1 frame), mas 4–5 (travamento antigo) e 0–7 lifted
+    // precisam existir no runtime.
+    expect(sawPose4Plus).toBe(true);
+    expect(Math.max(...frontPoses)).toBe(5);
+    for (let pose = 1; pose <= 5; pose += 1) expect(frontPoses.has(pose)).toBe(true);
+    for (let pose = 0; pose <= 7; pose += 1) expect(liftedPoses.has(pose)).toBe(true);
+
+    const hits = world.drainEvents().filter(({ type, moveId }) => type === 'hit' && moveId === 'ganchoUrso');
+    expect(hits).toHaveLength(1);
+    expect(world.fighters[1].health).toBe(health - 155);
+    expect(world.fighters[1].grabbedBy).toBeNull();
+    expect(world.snapshot().activeGrab).toBeNull();
+    expect(sawThrown).toBe(true);
+
+    // Continua responsivo: novo golpe aceito após a soltura.
+    const frameBefore = world.frame;
+    world.step(input([facing === 1 ? 'right' : 'left'], ['light']), empty);
+    expect(world.frame).toBe(frameBefore + 1);
+    expect(world.fighters[0].currentMove?.id === 'lightPunch' || world.fighters[0].state !== 'idle').toBe(true);
   });
 
   it('espelha a âncora do Gancho ao trocar de lado', () => {
@@ -171,7 +240,7 @@ describe('contratos dos três golpes de Guto', () => {
     expect(world.fighters[1].health).toBe(rafaMare.stats.maxHealth);
   });
 
-  it.each([rafaMare, astroRiso, gutoBarba])('Abraço alinha $name e sustenta frozen sem oscilação', (victim) => {
+  it.each([rafaMare, astroRiso, gutoBarba, danteSinal])('Abraço alinha $name e sustenta frozen sem oscilação', (victim) => {
     const world = setupWorld(victim);
     startMove(world, 'abracoGlacial');
     let frozenFrames = 0;
@@ -196,6 +265,58 @@ describe('contratos dos três golpes de Guto', () => {
     expect(hits).toHaveLength(1);
     expect(world.fighters[1].health).toBe(victim.stats.maxHealth - 280);
     expect(world.fighters[1].freezeEffectFrames).toBe(0);
+  });
+
+  it.each([1, -1] as const)('Abraço com Dante cobre grabbedFront 0–7, frozen e libera (facing %s)', (facing) => {
+    const grab = gutoBarba.moves.abracoGlacial!.grab!;
+    const victimAsset = getFighterSpriteAsset('dante-sinal')!;
+    for (const entry of grab.victimTimeline ?? []) {
+      if (entry.state !== 'grabbedFront' && entry.state !== 'frozen') continue;
+      const animId = entry.state === 'grabbedFront' ? 'grabbedFront' : 'frozen';
+      expect(entry.poseFrame).toBeLessThan(victimAsset.animations[animId].frames);
+    }
+
+    const world = setupWorld(danteSinal, facing);
+    const health = world.fighters[1].health;
+    startMove(world, 'abracoGlacial');
+    const frontPoses = new Set<number>();
+    let frozenFrames = 0;
+    let sawThrown = false;
+
+    for (let frame = 0; frame < 240; frame += 1) {
+      const snap = world.snapshot();
+      const victim = snap.fighters[1];
+      if (victim.state === 'grabbedFront' && victim.victimPoseFrame !== null) {
+        frontPoses.add(victim.victimPoseFrame);
+        const resolved = resolveFighterAnimation(victim, null, victimAsset, danteSinal);
+        expect(resolved.explicitFrame).toBeLessThan(victimAsset.animations.grabbedFront.frames);
+      }
+      if (victim.state === 'frozen') {
+        frozenFrames += 1;
+        const resolved = resolveFighterAnimation(victim, null, victimAsset, danteSinal);
+        expect(resolved.explicitFrame ?? 0).toBeLessThan(victimAsset.animations.frozen.frames);
+        world.step(empty, input(['left', 'up', 'light'], ['up', 'light']));
+        continue;
+      }
+      sawThrown ||= victim.state === 'thrown';
+      world.step(empty, empty);
+    }
+
+    // Pose 0 pode ser engolida pelo hit-stop; 1–7 e o pico 7 precisam existir.
+    expect(Math.max(...frontPoses)).toBe(7);
+    for (let pose = 1; pose <= 7; pose += 1) expect(frontPoses.has(pose)).toBe(true);
+    expect(frozenFrames).toBe(63);
+    expect(sawThrown).toBe(true);
+    const hits = world.drainEvents().filter(({ type, moveId }) => type === 'hit' && moveId === 'abracoGlacial');
+    expect(hits).toHaveLength(1);
+    expect(world.fighters[1].health).toBe(health - 280);
+    expect(world.fighters[1].freezeEffectFrames).toBe(0);
+    expect(world.fighters[1].grabbedBy).toBeNull();
+    expect(world.snapshot().activeGrab).toBeNull();
+
+    const frameBefore = world.frame;
+    world.step(input(['left'], ['heavy']), empty);
+    expect(world.frame).toBe(frameBefore + 1);
   });
 
   it('sincroniza os 45 frames do efeito e só libera depois do congelamento', () => {

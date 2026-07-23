@@ -41,6 +41,7 @@ interface ProjectileRuntime {
   facing: 1 | -1;
   life: number;
   ageFrames: number;
+  readonly armingFrames: number;
   readonly sourceMove: MoveDefinition;
 }
 
@@ -60,10 +61,12 @@ export interface ProjectileSnapshot {
   readonly sourceMoveId: string;
   readonly ownerId: FighterId;
   readonly ageFrames: number;
+  readonly armingFrames: number;
   readonly x: number;
   readonly y: number;
   readonly facing: 1 | -1;
   readonly hitbox: LocalRect;
+  readonly state: 'arming' | 'active';
 }
 
 export interface GrabSnapshot {
@@ -214,6 +217,8 @@ export class CombatWorld {
         y: projectile.y,
         facing: projectile.facing,
         hitbox: this.projectileRect(projectile),
+        armingFrames: projectile.armingFrames,
+        state: projectile.ageFrames < projectile.armingFrames ? 'arming' : 'active',
       })),
       activeGrab: this.activeGrab
         ? {
@@ -394,17 +399,38 @@ export class CombatWorld {
     const sourceMove = owner.currentMove;
     if (!definition || !sourceMove) return;
 
+    // Limite por dono: não substitui, teleporta nem reposiciona o existente.
+    if (definition.maxActivePerOwner !== undefined) {
+      const ownerCount = this.projectiles.filter(
+        (p) => p.owner === owner && p.projectileId === definition.id,
+      ).length;
+      if (ownerCount >= definition.maxActivePerOwner) return;
+    }
+
+    const spawnMode = definition.spawnMode ?? 'ownerOffset';
+    let x = owner.x + owner.facing * definition.offsetX;
+    let y = GROUND_Y + definition.offsetY;
+    let facing = owner.facing;
+    let velocityX = owner.facing * definition.velocityX;
+
+    if (spawnMode === 'targetSnapshot') {
+      const target = this.fighters.find(f => f !== owner)!;
+      x = target.x + definition.offsetX;
+      y = target.y + definition.offsetY;
+    }
+
     this.projectileSequence += 1;
     this.projectiles.push({
       runtimeId: this.projectileSequence,
       projectileId: definition.id,
       owner,
-      x: owner.x + owner.facing * definition.offsetX,
-      y: GROUND_Y + definition.offsetY,
-      velocityX: owner.facing * definition.velocityX,
-      facing: owner.facing,
+      x,
+      y,
+      velocityX,
+      facing,
       life: definition.lifeFrames,
       ageFrames: 0,
+      armingFrames: definition.armingFrames ?? 0,
       sourceMove,
       hitbox: {
         ...definition.hitbox,
@@ -617,6 +643,8 @@ export class CombatWorld {
   private resolveProjectileContacts(): void {
     const consumed = new Set<number>();
     for (const projectile of this.projectiles) {
+      if (projectile.ageFrames < projectile.armingFrames) continue;
+
       const targetIndex: 0 | 1 = projectile.owner === this.fighters[0] ? 1 : 0;
       const target = this.fighters[targetIndex];
       const projectileRect = this.projectileRect(projectile);

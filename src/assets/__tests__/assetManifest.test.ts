@@ -51,6 +51,7 @@ describe('assetManifest', () => {
       'rafa-mare': 256,
       'astro-riso': 256,
       'guto-barba': 288,
+      'dante-sinal': 256,
     };
     for (const fighter of FIGHTER_SPRITE_ASSETS) {
       const frameSize = expectedFrameSize[fighter.fighterId] ?? 0;
@@ -71,7 +72,9 @@ describe('assetManifest', () => {
           ['abraco-glacial-finish.png', 8],
           ['abraco-glacial-effect.png', 12],
         ]);
-        const victimFrames = ['grabbed-front.png', 'grabbed-lifted.png'].includes(file) ? 8 : undefined;
+        const victimFrames = ['grabbed-front.png', 'grabbed-lifted.png'].includes(file)
+          ? 8
+          : undefined;
         const expectedFrames = variableFrames.get(file) ?? victimFrames ?? 4;
         const expectedSheetSize = fighter.fighterId === 'guto-barba' && expectedFrames !== 4
           ? 256

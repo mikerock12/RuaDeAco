@@ -55,6 +55,11 @@ export interface FighterSnapshot {
   readonly meter: number;
   readonly armorHits: number;
   readonly passiveFrames: number;
+  /** Frames restantes de redução de dano genérica (≠ passiva de velocidade). */
+  readonly damageReductionFrames: number;
+  readonly damageReductionMultiplier: number;
+  /** Cooldown genérico que impede re-grant até zerar. */
+  readonly damageReductionCooldownFrames: number;
   readonly freezeEffectFrames: number;
   readonly activeMoveId: string | null;
   readonly moveConnected: 'none' | 'hit' | 'block';
@@ -87,6 +92,9 @@ export class FighterRuntime {
   armorHits = 0;
   invulnerableFrames = 0;
   passiveFrames = 0;
+  damageReductionFrames = 0;
+  damageReductionMultiplier = 1;
+  damageReductionCooldownFrames = 0;
   freezeEffectFrames = 0;
   grabbedBy: FighterId | null = null;
   grabbedVictimX = 0;
@@ -132,6 +140,11 @@ export class FighterRuntime {
     this.commandBuffer.push(simulationFrame, input, this.facing);
     this.invulnerableFrames = Math.max(0, this.invulnerableFrames - 1);
     this.passiveFrames = Math.max(0, this.passiveFrames - 1);
+    if (this.damageReductionFrames > 0) {
+      this.damageReductionFrames -= 1;
+      if (this.damageReductionFrames === 0) this.damageReductionMultiplier = 1;
+    }
+    this.damageReductionCooldownFrames = Math.max(0, this.damageReductionCooldownFrames - 1);
     this.freezeEffectFrames = Math.max(0, this.freezeEffectFrames - 1);
 
     if (this.hitStopFrames > 0) {
@@ -345,6 +358,16 @@ export class FighterRuntime {
       if (event.type === 'grantArmor') this.armorHits = event.hits;
       if (event.type === 'clearArmor') this.armorHits = 0;
       if (event.type === 'grantBuff') this.passiveFrames = event.durationFrames;
+      if (event.type === 'grantDamageReduction') {
+        // Sem stack, sem refresh e sem reativação durante cooldown.
+        if (this.damageReductionFrames > 0 || this.damageReductionCooldownFrames > 0) continue;
+        const duration = Math.max(0, Math.floor(event.durationFrames));
+        if (duration <= 0) continue;
+        this.damageReductionFrames = duration;
+        this.damageReductionMultiplier = Math.max(0, Math.min(1, event.multiplier));
+        const cooldown = event.cooldownFrames ?? duration;
+        this.damageReductionCooldownFrames = Math.max(duration, Math.floor(cooldown));
+      }
     }
     return events;
   }
@@ -409,6 +432,7 @@ export class FighterRuntime {
       chipDamage: hitbox.chipDamage,
       blocked,
       comboHits,
+      defenseMultiplier: this.damageReductionFrames > 0 ? this.damageReductionMultiplier : 1,
     });
     if (!infiniteHealth) this.health = applyDamageToHealth(this.health, damage);
     let passiveActivated = false;
@@ -536,6 +560,9 @@ export class FighterRuntime {
     this.armorHits = 0;
     this.invulnerableFrames = 0;
     this.passiveFrames = 0;
+    this.damageReductionFrames = 0;
+    this.damageReductionMultiplier = 1;
+    this.damageReductionCooldownFrames = 0;
     this.freezeEffectFrames = 0;
     this.grabbedBy = null;
     this.grabbedVictimX = 0;
@@ -613,6 +640,9 @@ export class FighterRuntime {
       meter: this.meter,
       armorHits: this.armorHits,
       passiveFrames: this.passiveFrames,
+      damageReductionFrames: this.damageReductionFrames,
+      damageReductionMultiplier: this.damageReductionMultiplier,
+      damageReductionCooldownFrames: this.damageReductionCooldownFrames,
       freezeEffectFrames: this.freezeEffectFrames,
       activeMoveId: this.activeMove?.id ?? null,
       moveConnected: this.moveConnected,
