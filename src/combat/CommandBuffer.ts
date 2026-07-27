@@ -18,6 +18,11 @@ export interface ButtonSample {
   readonly frame: number;
 }
 
+export interface CommandBufferState {
+  readonly directions: readonly DirectionSample[];
+  readonly buttons: readonly ButtonSample[];
+}
+
 const buttonToAction: Readonly<Record<CombatButton, InputAction>> = {
   light: 'light',
   heavy: 'heavy',
@@ -142,6 +147,13 @@ export class CommandBuffer {
   clear(): void {
     this.samples.length = 0;
     this.buttonSamples.length = 0;
+  }
+
+  exportDeterministicState(): CommandBufferState {
+    return {
+      directions: this.samples.map(({ token, frame }) => ({ token, frame })),
+      buttons: this.buttonSamples.map(({ button, frame }) => ({ button, frame })),
+    };
   }
 
   get history(): readonly DirectionSample[] {

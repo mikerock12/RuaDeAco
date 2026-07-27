@@ -44,6 +44,7 @@ export const MUSIC_CATALOG: Readonly<Record<MusicTrack, MusicTrackDefinition>> =
 export const MUSIC_TRACK_BY_SCENE = {
   MainMenuScene: 'main-menu',
   CharacterSelectScene: 'character-select',
+  OnlineScene: 'character-select',
   FightScene: 'cais-da-cidade',
 } as const satisfies Readonly<Record<string, MusicTrack>>;
 

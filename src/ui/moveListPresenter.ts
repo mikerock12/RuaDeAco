@@ -15,6 +15,7 @@ import type {
   FighterDefinition,
   MoveDefinition,
 } from '../types/combat';
+import { toPixelFontText } from '../utils/textLayout';
 
 export type MoveListLineTone = 'player' | 'section' | 'controls' | 'move' | 'note';
 export type MoveListDevice = 'keyboard' | 'touch' | 'gamepad';
@@ -105,10 +106,6 @@ export function pauseHintText(
   return `${keyLabel(playerOne.left)}/${keyLabel(playerOne.right)} OU ${playerTwoSummary} ESCOLHE  ENTER CONFIRMA  ESC CONTINUA`;
 }
 
-function pixelSafeText(text: string): string {
-  return text.normalize('NFD').replace(/[̀-ͯ]/gu, '');
-}
-
 function finalDirection(move: MoveDefinition): DirectionToken | undefined {
   return move.command.directions?.at(-1);
 }
@@ -155,7 +152,7 @@ function commandLabel(move: MoveDefinition, controls: PlayerControlLabels, airbo
 function moveLine(move: MoveDefinition, controls: PlayerControlLabels, airborne = false): MoveListLine {
   const cost = move.meterCost > 0 ? ` [${move.meterCost} ENERGIA]` : '';
   return {
-    text: `${commandLabel(move, controls, airborne)} ${pixelSafeText(move.label).toUpperCase()}${cost}`,
+    text: `${commandLabel(move, controls, airborne)} ${toPixelFontText(move.label).toUpperCase()}${cost}`,
     tone: 'move',
   };
 }
@@ -185,7 +182,7 @@ export function buildPauseMoveList(
   return {
     lines: [
       {
-        text: `P${player + 1} - ${pixelSafeText(definition.name).toUpperCase()} (${MOVE_LIST_DEVICE_LABELS[device]})`,
+        text: `P${player + 1} - ${toPixelFontText(definition.name).toUpperCase()} (${MOVE_LIST_DEVICE_LABELS[device]})`,
         tone: 'player',
       },
       { text: 'MOVIMENTO E DEFESA', tone: 'section' },

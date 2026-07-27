@@ -11,7 +11,7 @@ import { controlsStore } from '../input/controlsStore';
 import { inputManager } from '../input/InputManager';
 import type { FighterDefinition, InputFrame } from '../types/combat';
 import { createConceptPortrait } from '../ui/PortraitView';
-import { pixelText } from '../utils/text';
+import { pixelText, tagLayoutPanel } from '../utils/text';
 
 type SelectionPhase = 'playerOne' | 'opponent' | 'arena';
 
@@ -24,24 +24,6 @@ interface FighterCard {
 
 const CARD_COLUMNS = 3;
 const CARD_ROWS = 2;
-
-function wrapCopy(value: string, maxCharacters: number): string {
-  const words = value.toUpperCase().split(/\s+/u);
-  const lines: string[] = [];
-  let current = '';
-
-  for (const word of words) {
-    const candidate = current.length === 0 ? word : `${current} ${word}`;
-    if (candidate.length <= maxCharacters) {
-      current = candidate;
-    } else {
-      if (current.length > 0) lines.push(current);
-      current = word;
-    }
-  }
-  if (current.length > 0) lines.push(current);
-  return lines.slice(0, 4).join('\n');
-}
 
 export class CharacterSelectScene extends Phaser.Scene {
   private selectionLayer!: Phaser.GameObjects.Container;
@@ -78,21 +60,32 @@ export class CharacterSelectScene extends Phaser.Scene {
 
     pixelText(this, INTERNAL_WIDTH / 2, 16, 'SELECAO DE LUTADORES', {
       size: 16,
+      maxWidth: 420,
+      maxHeight: 22,
       color: '#ffd55c',
       align: 'center',
+      layoutName: 'character-select-title',
     });
     this.phaseTitle = pixelText(this, INTERNAL_WIDTH / 2, 38, '', {
       size: 16,
+      minSize: 8,
+      maxWidth: 500,
+      maxHeight: 22,
       color: '#9af7ff',
       align: 'center',
+      layoutName: 'character-select-phase',
     });
 
     this.selectionLayer = this.add.container(0, 0);
     this.arenaLayer = this.add.container(0, 0).setVisible(false);
-    this.footerText = pixelText(this, INTERNAL_WIDTH / 2, INTERNAL_HEIGHT - 10, '', {
-      size: 16,
+    this.footerText = pixelText(this, INTERNAL_WIDTH / 2, INTERNAL_HEIGHT - 16, '', {
+      size: 8,
+      minSize: 8,
+      maxWidth: 608,
+      maxHeight: 14,
       color: '#aebbd0',
       align: 'center',
+      layoutName: 'character-select-footer',
     });
     this.createBackButton();
 
@@ -191,7 +184,7 @@ export class CharacterSelectScene extends Phaser.Scene {
       let portrait: Phaser.GameObjects.GameObject;
       if (this.textures.exists(concept.key)) {
         portrait = createConceptPortrait(this, 0, -16, fighter.id, 92, 64, {
-          crop: 'framed',
+          crop: 'card',
           locked: !fighter.available,
           frameColor: fighter.available ? fighter.visual.accent : PALETTE.muted,
         });
@@ -200,6 +193,9 @@ export class CharacterSelectScene extends Phaser.Scene {
         missing.add(this.add.rectangle(0, 0, 92, 64, PALETTE.ink, 1).setStrokeStyle(2, PALETTE.pink));
         missing.add(pixelText(this, 0, 0, 'IMAGEM\nAUSENTE', {
           size: 16,
+          minSize: 8,
+          maxWidth: 84,
+          maxHeight: 56,
           color: '#f64070',
           align: 'center',
         }));
@@ -208,11 +204,16 @@ export class CharacterSelectScene extends Phaser.Scene {
 
       const name = pixelText(this, 0, 26, fighter.name.split(' ')[0] ?? fighter.name, {
         size: 16,
+        minSize: 8,
+        maxWidth: 96,
+        maxHeight: 18,
         color: fighter.available ? '#f7f2d0' : '#80889a',
         align: 'center',
       });
       const status = pixelText(this, 0, 44, fighter.available ? 'OK' : 'DEV', {
         size: 16,
+        maxWidth: 96,
+        maxHeight: 18,
         color: fighter.available ? '#29d9ff' : '#e08499',
         align: 'center',
       });
@@ -264,25 +265,43 @@ export class CharacterSelectScene extends Phaser.Scene {
   private renderFighterDetails(fighter: FighterDefinition): void {
     this.detailContainer?.destroy();
 
-    const panel = this.add.rectangle(500, 192, 268, 268, PALETTE.panel, 1)
-      .setStrokeStyle(4, fighter.available ? fighter.visual.accent : PALETTE.muted, 1);
+    const panelName = 'fighter-details-panel';
+    const panel = tagLayoutPanel(
+      this.add.rectangle(500, 192, 268, 268, PALETTE.panel, 1)
+        .setStrokeStyle(4, fighter.available ? fighter.visual.accent : PALETTE.muted, 1),
+      panelName,
+      { x: 8, y: 8 },
+    );
     const metalTop = this.add.rectangle(500, 62, 260, 6, PALETTE.metalLight, 1);
     const label = pixelText(this, 374, 72, 'FICHA DO LUTADOR', {
       size: 16,
       color: '#ffd55c',
     });
     const portrait = createConceptPortrait(this, 410, 132, fighter.id, 72, 96, {
-      crop: 'hud',
+      crop: 'profile',
       locked: !fighter.available,
       frameColor: fighter.available ? fighter.visual.accent : PALETTE.muted,
     });
     const name = pixelText(this, 460, 90, fighter.name.toUpperCase(), {
       size: 16,
+      minSize: 8,
+      maxWidth: 160,
+      maxHeight: 20,
+      maxLines: 1,
       color: fighter.available ? '#f7f2d0' : '#9aa2b2',
+      layoutName: 'fighter-details-name',
+      panelName,
     });
-    const archetype = pixelText(this, 460, 112, wrapCopy(fighter.archetype, 14), {
+    const archetype = pixelText(this, 460, 112, fighter.archetype.toUpperCase(), {
       size: 16,
+      minSize: 8,
+      maxWidth: 160,
+      maxHeight: 66,
+      maxLines: 4,
+      lineSpacing: 1,
       color: fighter.available ? '#29d9ff' : '#80889a',
+      layoutName: 'fighter-details-archetype',
+      panelName,
     }).setOrigin(0, 0);
     const abilitiesLabel = pixelText(this, 374, 188, 'HABILIDADES', {
       size: 16,
@@ -295,7 +314,13 @@ export class CharacterSelectScene extends Phaser.Scene {
       `> ${ability.toUpperCase()}`,
       {
         size: 16,
+        minSize: 8,
+        maxWidth: 238,
+        maxHeight: 20,
+        maxLines: 1,
         color: fighter.available ? '#f7f2d0' : '#747d90',
+        layoutName: `fighter-details-ability-${index}`,
+        panelName,
       },
     ));
     const children: Phaser.GameObjects.GameObject[] = [
@@ -310,11 +335,17 @@ export class CharacterSelectScene extends Phaser.Scene {
     ];
 
     if (fighter.available) {
-      const button = this.add.rectangle(502, 302, 224, 28, 0x12364c, 1)
-        .setStrokeStyle(2, PALETTE.cyan)
-        .setInteractive({ useHandCursor: true });
+      const button = tagLayoutPanel(
+        this.add.rectangle(502, 302, 224, 28, 0x12364c, 1)
+          .setStrokeStyle(2, PALETTE.cyan)
+          .setInteractive({ useHandCursor: true }),
+        'fighter-details-confirm',
+        { x: 10, y: 2 },
+      );
       const buttonLabel = pixelText(this, 502, 302, 'CONFIRMAR', {
         size: 16,
+        maxWidth: 204,
+        maxHeight: 24,
         color: '#9af7ff',
         align: 'center',
       });
@@ -328,6 +359,9 @@ export class CharacterSelectScene extends Phaser.Scene {
     } else {
       children.push(pixelText(this, 502, 302, 'EM DESENVOLVIMENTO', {
         size: 16,
+        minSize: 8,
+        maxWidth: 224,
+        maxHeight: 24,
         color: '#e08499',
         align: 'center',
       }));
@@ -406,6 +440,9 @@ export class CharacterSelectScene extends Phaser.Scene {
     const topRail = this.add.rectangle(0, -132, 608, 8, PALETTE.metalLight, 1);
     const arenaName = pixelText(this, 0, -112, CAIS_DA_CIDADE.name, {
       size: 16,
+      minSize: 8,
+      maxWidth: 560,
+      maxHeight: 22,
       color: '#ffd55c',
       align: 'center',
     });
@@ -416,26 +453,40 @@ export class CharacterSelectScene extends Phaser.Scene {
       'NOITE | ZONA PORTUARIA',
       {
         size: 16,
-      color: '#9af7ff',
-      align: 'center',
+        minSize: 8,
+        maxWidth: 540,
+        maxHeight: 22,
+        color: '#9af7ff',
+        align: 'center',
+        layoutName: 'fighter-details-confirm-label',
+        panelName: 'fighter-details-confirm',
+        padding: { x: 10, y: 2 },
       },
     );
 
     const portraitOne = createConceptPortrait(this, -188, 10, playerOne.id, 168, 176, {
-      crop: 'framed',
+      crop: 'hero',
       frameColor: playerOne.visual.accent,
     });
     const portraitTwo = createConceptPortrait(this, 188, 10, opponent.id, 168, 176, {
-      crop: 'framed',
+      crop: 'hero',
       frameColor: opponent.visual.accent,
     });
     const nameOne = pixelText(this, -188, 110, playerOne.name.toUpperCase(), {
       size: 16,
+      minSize: 8,
+      maxWidth: 168,
+      maxHeight: 22,
+      maxLines: 1,
       color: '#f7f2d0',
       align: 'center',
     });
     const nameTwo = pixelText(this, 188, 110, opponent.name.toUpperCase(), {
       size: 16,
+      minSize: 8,
+      maxWidth: 168,
+      maxHeight: 22,
+      maxLines: 1,
       color: '#f7f2d0',
       align: 'center',
     });
@@ -443,6 +494,8 @@ export class CharacterSelectScene extends Phaser.Scene {
     const stagePreview = this.createCaisPreview();
     const versus = pixelText(this, 0, -8, 'VS', {
       size: 32,
+      maxWidth: 80,
+      maxHeight: 42,
       color: '#f64070',
       align: 'center',
     });
@@ -451,6 +504,9 @@ export class CharacterSelectScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
     const buttonLabel = pixelText(this, 0, 118, 'LUTAR NO CAIS', {
       size: 16,
+      minSize: 8,
+      maxWidth: 164,
+      maxHeight: 24,
       color: '#9af7ff',
       align: 'center',
     });

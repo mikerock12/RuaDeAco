@@ -10,7 +10,7 @@ import { touchControls } from '../input/TouchControls';
 import type { InputAction, InputFrame } from '../types/combat';
 import type { Difficulty, GameSettings, TouchControlsPreference } from '../types/game';
 import { toggleFullscreen } from '../utils/fullscreen';
-import { pixelText } from '../utils/text';
+import { pixelText, tagLayoutPanel } from '../utils/text';
 
 type SettingId =
   | 'masterVolume'
@@ -78,7 +78,14 @@ export class SettingsScene extends Phaser.Scene {
     inputManager.clear();
 
     this.drawBackdrop();
-    pixelText(this, INTERNAL_WIDTH / 2, 28, 'CONFIGURACOES', { size: 32, align: 'center' })
+    pixelText(this, INTERNAL_WIDTH / 2, 28, 'CONFIGURACOES', {
+      size: 32,
+      minSize: 16,
+      maxWidth: 440,
+      maxHeight: 40,
+      align: 'center',
+      layoutName: 'settings-title',
+    })
       .setTint(PALETTE.ivory);
     this.add.rectangle(INTERNAL_WIDTH / 2, 50, 300, 4, PALETTE.gold);
     this.add.rectangle(INTERNAL_WIDTH / 2, 54, 380, 2, PALETTE.cyan);
@@ -90,11 +97,14 @@ export class SettingsScene extends Phaser.Scene {
     pixelText(
       this,
       INTERNAL_WIDTH / 2,
-      346,
+      344,
       `${keyLabel(keys.up)}/${keyLabel(keys.down)} ITEM  ${keyLabel(keys.left)}/${keyLabel(keys.right)} ALTERA  ESC VOLTA`,
       {
-        size: 16,
+        size: 8,
+        maxWidth: 600,
+        maxHeight: 14,
         align: 'center',
+        layoutName: 'settings-footer',
       },
     ).setTint(PALETTE.cyanLight);
 
@@ -126,12 +136,34 @@ export class SettingsScene extends Phaser.Scene {
 
   private createRow(entry: SettingEntry, index: number): void {
     const y = 72 + index * 28;
-    const background = this.add.rectangle(INTERNAL_WIDTH / 2, y, 564, 24, PALETTE.metalDark)
-      .setStrokeStyle(2, PALETTE.steelDark)
-      .setInteractive({ useHandCursor: true });
+    const panelName = `settings-row-${index}`;
+    const background = tagLayoutPanel(
+      this.add.rectangle(INTERNAL_WIDTH / 2, y, 564, 24, PALETTE.metalDark)
+        .setStrokeStyle(2, PALETTE.steelDark)
+        .setInteractive({ useHandCursor: true }),
+      panelName,
+      { x: 8, y: 3 },
+    );
     const marker = pixelText(this, 44, y, '>', { size: 16, align: 'center' }).setTint(PALETTE.gold);
-    const label = pixelText(this, 60, y, entry.label, { size: 16 }).setTint(PALETTE.steelLight);
-    const value = pixelText(this, 596, y, '', { size: 16, align: 'right' }).setTint(PALETTE.cyanLight);
+    const label = pixelText(this, 60, y, entry.label, {
+      size: 16,
+      minSize: 8,
+      maxWidth: 310,
+      maxHeight: 20,
+      layoutName: `settings-label-${index}`,
+      panelName,
+      padding: { x: 8, y: 3 },
+    }).setTint(PALETTE.steelLight);
+    const value = pixelText(this, 592, y, '', {
+      size: 16,
+      minSize: 8,
+      maxWidth: 210,
+      maxHeight: 20,
+      align: 'right',
+      layoutName: `settings-value-${index}`,
+      panelName,
+      padding: { x: 8, y: 3 },
+    }).setTint(PALETTE.cyanLight);
 
     background.on('pointerover', () => this.setSelected(index));
     background.on('pointerdown', (pointer: Phaser.Input.Pointer) => {

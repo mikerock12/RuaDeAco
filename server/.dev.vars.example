@@ -1,0 +1,3 @@
+# Copie para .dev.vars apenas no ambiente local. O arquivo real é ignorado pelo Git.
+# Gere pelo menos 32 bytes aleatórios; não reutilize uma chave de produção.
+TICKET_SECRET="substitua-por-um-segredo-aleatorio-com-no-minimo-32-bytes"

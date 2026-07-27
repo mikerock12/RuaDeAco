@@ -19,7 +19,7 @@ import {
 import { GamepadManager, gamepadManager } from '../input/GamepadManager';
 import { inputManager } from '../input/InputManager';
 import type { CombatButton, InputAction, InputFrame } from '../types/combat';
-import { pixelText } from '../utils/text';
+import { pixelText, tagLayoutPanel } from '../utils/text';
 
 type RowKind = 'player' | 'device' | 'action' | 'touch-slot' | 'reset-profile' | 'reset-all' | 'back';
 
@@ -100,20 +100,42 @@ export class ControlsScene extends Phaser.Scene {
     inputManager.clear();
 
     this.drawBackdrop();
-    pixelText(this, INTERNAL_WIDTH / 2, 24, 'CONTROLES', { size: 32, align: 'center' })
+    pixelText(this, INTERNAL_WIDTH / 2, 24, 'CONTROLES', {
+      size: 32,
+      minSize: 16,
+      maxWidth: 420,
+      maxHeight: 36,
+      align: 'center',
+      layoutName: 'controls-title',
+    })
       .setTint(PALETTE.ivory);
     this.add.rectangle(INTERNAL_WIDTH / 2, 44, 300, 4, PALETTE.gold);
 
-    this.gamepadInfoText = pixelText(this, INTERNAL_WIDTH / 2, 54, '', { size: 8, align: 'center' })
+    this.gamepadInfoText = pixelText(this, INTERNAL_WIDTH / 2, 54, '', {
+      size: 8,
+      maxWidth: 600,
+      maxHeight: 14,
+      align: 'center',
+      layoutName: 'controls-gamepad-info',
+    })
       .setTint(PALETTE.cyanLight);
-    this.statusText = pixelText(this, INTERNAL_WIDTH / 2, 330, '', { size: 8, align: 'center' })
+    this.statusText = pixelText(this, INTERNAL_WIDTH / 2, 330, '', {
+      size: 8,
+      maxWidth: 600,
+      maxHeight: 14,
+      align: 'center',
+      layoutName: 'controls-status',
+    })
       .setTint(PALETTE.gold);
 
     this.rebuildRows();
 
-    pixelText(this, INTERNAL_WIDTH / 2, 348, 'CIMA/BAIXO ITEM  ESQ/DIR ALTERA  CONFIRMA CAPTURA  ESC VOLTA', {
+    pixelText(this, INTERNAL_WIDTH / 2, 344, 'CIMA/BAIXO ITEM  ESQ/DIR ALTERA  CONFIRMA CAPTURA  ESC VOLTA', {
       size: 8,
+      maxWidth: 600,
+      maxHeight: 14,
       align: 'center',
+      layoutName: 'controls-footer',
     }).setTint(PALETTE.cyanLight);
 
     this.captureShade = this.add.rectangle(
@@ -126,7 +148,12 @@ export class ControlsScene extends Phaser.Scene {
     ).setVisible(false).setDepth(200);
     this.captureText = pixelText(this, INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, '', {
       size: 16,
+      minSize: 8,
+      maxWidth: 500,
+      maxHeight: 120,
+      maxLines: 5,
       align: 'center',
+      layoutName: 'controls-capture',
     }).setTint(PALETTE.ivory).setVisible(false).setDepth(201);
 
     this.gamepadUnsubscribers.push(
@@ -234,12 +261,34 @@ export class ControlsScene extends Phaser.Scene {
 
     this.specs.forEach((spec, index) => {
       const y = ROW_START_Y + index * ROW_SPACING;
-      const background = this.add.rectangle(INTERNAL_WIDTH / 2, y, 564, 18, PALETTE.metalDark)
-        .setStrokeStyle(2, PALETTE.steelDark)
-        .setInteractive({ useHandCursor: true });
+      const panelName = `controls-row-${index}`;
+      const background = tagLayoutPanel(
+        this.add.rectangle(INTERNAL_WIDTH / 2, y, 564, 18, PALETTE.metalDark)
+          .setStrokeStyle(2, PALETTE.steelDark)
+          .setInteractive({ useHandCursor: true }),
+        panelName,
+        { x: 8, y: 2 },
+      );
       const marker = pixelText(this, 44, y, '>', { size: 16, align: 'center' }).setTint(PALETTE.gold);
-      const label = pixelText(this, 60, y, spec.label, { size: 16 }).setTint(PALETTE.steelLight);
-      const value = pixelText(this, 596, y, '', { size: 16, align: 'right' }).setTint(PALETTE.cyanLight);
+      const label = pixelText(this, 60, y, spec.label, {
+        size: 16,
+        minSize: 8,
+        maxWidth: 312,
+        maxHeight: 16,
+        layoutName: `controls-label-${index}`,
+        panelName,
+        padding: { x: 8, y: 2 },
+      }).setTint(PALETTE.steelLight);
+      const value = pixelText(this, 592, y, '', {
+        size: 16,
+        minSize: 8,
+        maxWidth: 210,
+        maxHeight: 16,
+        align: 'right',
+        layoutName: `controls-value-${index}`,
+        panelName,
+        padding: { x: 8, y: 2 },
+      }).setTint(PALETTE.cyanLight);
 
       background.on('pointerover', () => this.setSelected(index));
       background.on('pointerdown', (pointer: Phaser.Input.Pointer) => {

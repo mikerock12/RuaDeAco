@@ -5,6 +5,8 @@ import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 const publicRoot = resolve(process.cwd(), 'public');
+const projectRoot = resolve(process.cwd());
+const sourceRoot = resolve(projectRoot, 'src');
 const fighterAssetPattern = /^assets\/fighters\/(?:rafa-mare|astro-riso|guto-barba|dante-sinal)\/[^/]+\.png$/;
 
 function listPublicFiles(root: string): string[] {
@@ -44,6 +46,14 @@ const fighterAssetRevision = contentRevision(
   publicRoot,
   listPublicFiles(publicRoot).filter((file) => fighterAssetPattern.test(file)),
 );
+const projectPackage = JSON.parse(
+  readFileSync(resolve(projectRoot, 'package.json'), 'utf8'),
+) as { version?: string };
+const clientSourceRevision = contentRevision(projectRoot, [
+  'package.json',
+  ...listPublicFiles(sourceRoot).map((file) => `src/${file}`),
+]);
+const clientBuildId = `web-${projectPackage.version ?? '0'}-${clientSourceRevision}`;
 
 function precacheManifestPlugin(): Plugin {
   return {
@@ -77,6 +87,8 @@ export default defineConfig({
   plugins: [precacheManifestPlugin()],
   define: {
     __FIGHTER_ASSET_REVISION__: JSON.stringify(fighterAssetRevision),
+    __CLIENT_BUILD_ID__: JSON.stringify(clientBuildId),
+    __COMBAT_ENGINE_VERSION__: JSON.stringify('lockstep-v1'),
   },
   build: {
     target: 'es2022',
@@ -87,7 +99,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
+    exclude: ['e2e/**', 'server/**', 'node_modules/**', 'dist/**'],
     globals: true,
     restoreMocks: true,
     clearMocks: true,

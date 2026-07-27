@@ -7,6 +7,7 @@ export function setupCapacitorApp(game: Phaser.Game) {
 
   App.addListener('appStateChange', ({ isActive }) => {
     if (!isActive) {
+      game.events.emit('online:background');
       // Pause game
       if (game.loop) {
         game.loop.sleep();

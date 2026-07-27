@@ -1,5 +1,5 @@
 import { CAIS_DA_CIDADE } from './gameConfig';
-import type { MatchResult, MatchSelection } from '../types/game';
+import type { MatchResult, MatchSelection, OnlineMatchResult } from '../types/game';
 
 class GameSession {
   selection: MatchSelection = {
@@ -10,6 +10,7 @@ class GameSession {
   };
 
   result: MatchResult | null = null;
+  onlineResult: OnlineMatchResult | null = null;
 
   setSelection(patch: Partial<MatchSelection>): void {
     this.selection = { ...this.selection, ...patch };

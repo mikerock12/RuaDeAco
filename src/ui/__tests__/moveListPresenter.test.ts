@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { astroRiso } from '../../fighters/astroRiso';
+import { danteSinal } from '../../fighters/danteSinal';
 import { gutoBarba } from '../../fighters/gutoBarba';
 import { rafaMare } from '../../fighters/rafaMare';
 import { defaultControls } from '../../input/controlsStore';
@@ -65,6 +66,30 @@ describe('lista de comandos da pausa', () => {
 });
 
 describe('rótulos dinâmicos por dispositivo e binding', () => {
+  it('cobre os quatro lutadores disponíveis em teclado, touch e gamepad', () => {
+    const fighters = [rafaMare, astroRiso, gutoBarba, danteSinal];
+    const devices = ['keyboard', 'touch', 'gamepad'] as const;
+    for (const fighter of fighters) {
+      for (const device of devices) {
+        const lines = buildPauseMoveList(fighter, 0, device, {
+          gamepadFamily: 'xbox',
+        }).lines.map(({ text }) => text);
+        const deviceLabel = device === 'keyboard'
+          ? 'TECLADO'
+          : device === 'touch' ? 'TOUCH' : 'CONTROLE';
+        expect(lines[0], `${fighter.id}/${device}`).toContain(`(${deviceLabel})`);
+        expect(lines).toContain('ESPECIAIS');
+        for (const move of Object.values(fighter.moves).filter((candidate) => (
+          candidate?.command.buttons.includes('special')
+        ))) {
+          const label = move!.label.normalize('NFD').replace(/[̀-ͯ]/gu, '').toUpperCase();
+          expect(lines.some((line) => line.includes(label)), `${fighter.id}/${device}/${label}`)
+            .toBe(true);
+        }
+      }
+    }
+  });
+
   it('reflete um teclado remapeado na lista de comandos', () => {
     const config = defaultControls();
     const remapped = {

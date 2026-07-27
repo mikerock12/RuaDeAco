@@ -21,6 +21,7 @@ describe('catálogo de músicas', () => {
     expect(MUSIC_TRACK_BY_SCENE).toEqual({
       MainMenuScene: 'main-menu',
       CharacterSelectScene: 'character-select',
+      OnlineScene: 'character-select',
       FightScene: 'cais-da-cidade',
     });
   });

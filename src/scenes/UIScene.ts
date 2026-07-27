@@ -8,6 +8,8 @@ import { getFighterDefinition } from '../fighters';
 import { settingsStore } from '../config/settings';
 import { gamepadManager } from '../input/GamepadManager';
 import { InputManager } from '../input/InputManager';
+import { onlineSession } from '../online/OnlineSession';
+import type { PlayerSlot } from '../online/protocol';
 import { createConceptPortrait } from '../ui/PortraitView';
 import {
   buildPauseMoveList,
@@ -16,10 +18,12 @@ import {
   type MoveListLineTone,
 } from '../ui/moveListPresenter';
 import { PAUSE_MENU_OPTIONS, type PauseMenuAction } from '../ui/pauseMenu';
-import { pixelText, toPixelFontText } from '../utils/text';
+import { pixelText, tagLayoutPanel } from '../utils/text';
 
 export interface UISceneData {
   readonly world: CombatWorld;
+  readonly online?: boolean;
+  readonly localSlot?: PlayerSlot | null;
 }
 
 interface HudButton {
@@ -62,6 +66,9 @@ export class UIScene extends Phaser.Scene {
   private trainingButtons: HudButton[] = [];
   private previousBanner = '';
   private wasPaused = false;
+  private online = false;
+  private localSlot: PlayerSlot | null = null;
+  private onlineText: Phaser.GameObjects.BitmapText | null = null;
 
   constructor() {
     super({ key: 'UIScene' });
@@ -70,9 +77,21 @@ export class UIScene extends Phaser.Scene {
   create(data: UISceneData): void {
     this.resetReferences();
     this.world = data.world;
+    this.online = data.online ?? false;
+    this.localSlot = data.localSlot ?? null;
     const snapshot = data.world.snapshot();
 
     this.createHudFrame();
+    if (this.online) {
+      this.onlineText = pixelText(this, INTERNAL_WIDTH / 2, 55, '', {
+        size: 8,
+        maxWidth: 380,
+        maxHeight: 12,
+        color: '#9af7ff',
+        align: 'center',
+        layoutName: 'online-hud-status',
+      }).setDepth(10);
+    }
     this.createFighterHud(0, snapshot.fighters[0].id);
     this.createFighterHud(1, snapshot.fighters[1].id);
     this.createAnnouncements();
@@ -120,6 +139,9 @@ export class UIScene extends Phaser.Scene {
     this.wasPaused = false;
     this.infoText = null;
     this.previousBanner = '';
+    this.online = false;
+    this.localSlot = null;
+    this.onlineText = null;
   }
 
   // Faixa do HUD: 64px de altura (safe area superior). Os lutadores em pé
@@ -128,7 +150,14 @@ export class UIScene extends Phaser.Scene {
     this.add.rectangle(INTERNAL_WIDTH / 2, 32, INTERNAL_WIDTH, 64, PALETTE.black, 0.94).setDepth(4);
     this.add.image(0, 0, ASSET_MANIFEST.ui.hudFrame.key).setOrigin(0).setScale(2).setDepth(5);
 
-    this.timerText = pixelText(this, INTERNAL_WIDTH / 2, 20, '99', { size: 32, align: 'center' })
+    this.timerText = pixelText(this, INTERNAL_WIDTH / 2, 20, '99', {
+      size: 32,
+      minSize: 16,
+      maxWidth: 72,
+      maxHeight: 40,
+      align: 'center',
+      layoutName: 'fight-timer',
+    })
       .setTint(PALETTE.gold)
       .setDepth(9);
   }
@@ -149,7 +178,12 @@ export class UIScene extends Phaser.Scene {
     // Margem superior segura: topo do texto (12 - 8) fica a 4px da borda.
     pixelText(this, barStart, 12, fighter.name.toUpperCase(), {
       size: 16,
+      minSize: 8,
+      maxWidth: 232,
+      maxHeight: 16,
+      maxLines: 1,
       align: playerOne ? 'left' : 'right',
+      layoutName: `fight-name-${index}`,
     }).setTint(PALETTE.ivory).setDepth(9);
 
     this.add.rectangle(
@@ -198,11 +232,25 @@ export class UIScene extends Phaser.Scene {
   }
 
   private createAnnouncements(): void {
-    this.bannerBackground = this.add.rectangle(INTERNAL_WIDTH / 2, 156, 348, 58, PALETTE.black, 0.9)
-      .setStrokeStyle(4, PALETTE.steelLight)
-      .setVisible(false)
-      .setDepth(30);
-    this.bannerText = pixelText(this, INTERNAL_WIDTH / 2, 156, '', { size: 48, align: 'center' })
+    this.bannerBackground = tagLayoutPanel(
+      this.add.rectangle(INTERNAL_WIDTH / 2, 156, 348, 58, PALETTE.black, 0.9)
+        .setStrokeStyle(4, PALETTE.steelLight)
+        .setVisible(false)
+        .setDepth(30),
+      'fight-banner',
+      { x: 12, y: 5 },
+    );
+    this.bannerText = pixelText(this, INTERNAL_WIDTH / 2, 156, '', {
+      size: 48,
+      minSize: 16,
+      maxWidth: 324,
+      maxHeight: 48,
+      maxLines: 1,
+      align: 'center',
+      layoutName: 'fight-banner-text',
+      panelName: 'fight-banner',
+      padding: { x: 12, y: 5 },
+    })
       .setVisible(false)
       .setDepth(32);
 
@@ -214,11 +262,22 @@ export class UIScene extends Phaser.Scene {
       PALETTE.black,
       0.78,
     ).setVisible(false).setDepth(90);
-    this.pausePanel = this.add.rectangle(INTERNAL_WIDTH / 2, 200, 608, 280, PALETTE.panel, 1)
-      .setStrokeStyle(4, PALETTE.steelLight)
-      .setVisible(false)
-      .setDepth(91);
-    this.pauseTitle = pixelText(this, INTERNAL_WIDTH / 2, 72, 'PAUSA', { size: 24, align: 'center' })
+    this.pausePanel = tagLayoutPanel(
+      this.add.rectangle(INTERNAL_WIDTH / 2, 200, 608, 280, PALETTE.panel, 1)
+        .setStrokeStyle(4, PALETTE.steelLight)
+        .setVisible(false)
+        .setDepth(91),
+      'pause-panel',
+      { x: 12, y: 8 },
+    );
+    this.pauseTitle = pixelText(this, INTERNAL_WIDTH / 2, 72, 'PAUSA', {
+      size: 24,
+      maxWidth: 240,
+      maxHeight: 30,
+      align: 'center',
+      layoutName: 'pause-title',
+      panelName: 'pause-panel',
+    })
       .setTint(PALETTE.gold)
       .setVisible(false)
       .setDepth(92);
@@ -228,8 +287,12 @@ export class UIScene extends Phaser.Scene {
       328,
       pauseHintText(InputManager.isTouchCapable()),
       {
-      size: 8,
-      align: 'center',
+        size: 8,
+        maxWidth: 580,
+        maxHeight: 14,
+        align: 'center',
+        layoutName: 'pause-hint',
+        panelName: 'pause-panel',
       },
     ).setTint(PALETTE.ivory).setVisible(false).setDepth(92);
     this.createPauseMoveList();
@@ -276,7 +339,11 @@ export class UIScene extends Phaser.Scene {
     if (!this.world) return;
     const legend = pixelText(this, INTERNAL_WIDTH / 2, 94, 'FRENTE = EM DIRECAO AO ADVERSARIO', {
       size: 8,
+      maxWidth: 560,
+      maxHeight: 14,
       align: 'center',
+      layoutName: 'pause-legend',
+      panelName: 'pause-panel',
     }).setTint(PALETTE.cyanLight).setVisible(false).setDepth(92);
     legend.setOrigin(0.5, 0).setCenterAlign();
     this.pauseMoveTexts.push(legend);
@@ -295,7 +362,14 @@ export class UIScene extends Phaser.Scene {
       const xPos = touchLayout ? 170 : (index === 0 ? 24 : 328);
 
       model.lines.forEach((line, lineIndex) => {
-        const text = pixelText(this, xPos, 104 + lineIndex * 9, line.text, { size: 8 })
+        const text = pixelText(this, xPos, 104 + lineIndex * 9, line.text, {
+          size: 8,
+          maxWidth: touchLayout ? 440 : 288,
+          maxHeight: 9,
+          maxLines: 1,
+          layoutName: `pause-moves-${index}-${lineIndex}`,
+          panelName: 'pause-panel',
+        })
           .setTint(this.pauseLineTint(line.tone, playerTint))
           .setVisible(false)
           .setDepth(92);
@@ -341,7 +415,7 @@ export class UIScene extends Phaser.Scene {
   }
 
   private createButtons(snapshot: CombatWorldSnapshot): void {
-    this.pauseButton = this.createButton(INTERNAL_WIDTH / 2, 55, 40, 14, 'II', () => {
+    this.pauseButton = this.createButton(this.online ? INTERNAL_WIDTH - 24 : INTERNAL_WIDTH / 2, 55, 40, 14, 'II', () => {
       this.game.events.emit('fight:pause');
     });
     this.pauseButton.container.setDepth(100);
@@ -357,7 +431,14 @@ export class UIScene extends Phaser.Scene {
       this.createButton(x, 78, label === 'REPOS.' ? 92 : 76, 24, label, () => this.game.events.emit(eventName))
     ));
 
-    this.infoText = pixelText(this, 8, 302, '', { size: 16 })
+    this.infoText = pixelText(this, 8, 302, '', {
+      size: 16,
+      minSize: 8,
+      maxWidth: 624,
+      maxHeight: 44,
+      maxLines: 3,
+      layoutName: 'training-info',
+    })
       .setTint(PALETTE.cyanLight)
       .setDepth(80);
     this.updateTrainingLabels(snapshot);
@@ -371,9 +452,24 @@ export class UIScene extends Phaser.Scene {
     text: string,
     onActivate: () => void,
   ): HudButton {
-    const background = this.add.rectangle(0, 0, width, height, PALETTE.metalDark, 0.96)
-      .setStrokeStyle(2, PALETTE.steelLight);
-    const label = pixelText(this, 0, 0, text, { size: 16, align: 'center' }).setTint(PALETTE.ivory);
+    const panelName = `hud-button-${text.toLowerCase().replace(/[^a-z0-9]+/gu, '-')}-${x}-${y}`;
+    const background = tagLayoutPanel(
+      this.add.rectangle(0, 0, width, height, PALETTE.metalDark, 0.96)
+        .setStrokeStyle(2, PALETTE.steelLight),
+      panelName,
+      { x: 6, y: 3 },
+    );
+    const label = pixelText(this, 0, 0, text, {
+      size: 16,
+      minSize: 8,
+      maxWidth: Math.max(8, width - 12),
+      maxHeight: Math.max(8, height - 6),
+      maxLines: 1,
+      align: 'center',
+      layoutName: `${panelName}-label`,
+      panelName,
+      padding: { x: 6, y: 3 },
+    }).setTint(PALETTE.ivory);
     const container = this.add.container(x, y, [background, label]);
     container.setSize(width + 20, height + 16).setInteractive({ useHandCursor: true });
     container.on('pointerdown', () => background.setFillStyle(PALETTE.panelLight));
@@ -411,6 +507,11 @@ export class UIScene extends Phaser.Scene {
     }
 
     this.timerText?.setText(String(snapshot.timeSeconds).padStart(2, '0'));
+    if (this.onlineText) {
+      this.onlineText.setText(
+        `ONLINE • ${this.localSlot?.toUpperCase() ?? '--'} LOCAL • PING ${onlineSession.snapshot.latencyMs ?? '--'} MS`,
+      );
+    }
     this.updateBanner(snapshot);
     this.updatePause(snapshot.paused);
     this.updateTrainingLabels(snapshot);
@@ -446,12 +547,12 @@ export class UIScene extends Phaser.Scene {
     }
 
     this.bannerBackground?.setVisible(true);
-    this.bannerText?.setVisible(true).setText(toPixelFontText(banner.text)).setTint(banner.tint);
+    this.bannerText?.setVisible(true).setText(banner.text).setTint(banner.tint);
     if (banner.text === this.previousBanner || !this.bannerText) return;
 
     this.previousBanner = banner.text;
-    this.bannerText.setScale(2);
-    this.time.delayedCall(70, () => this.bannerText?.setScale(1));
+    this.bannerText.setAlpha(0.45);
+    this.time.delayedCall(70, () => this.bannerText?.setAlpha(1));
   }
 
   private updatePause(paused: boolean): void {

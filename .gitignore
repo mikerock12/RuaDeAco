@@ -32,6 +32,13 @@ android/capacitor.build.gradle
 # Fontes, versões com chroma removido e diagnóstico local do Astro Riso
 /tmp/imagegen/astro-riso/
 
+# Fontes e diagnósticos locais do Dante Sinal
+/tmp/imagegen/dante-sinal/
+
+# Evidências locais das auditorias de interface e multiplayer
+/tmp/ui-audit/
+/tmp/online-audit/
+
 # Cache local dos scripts Python
 __pycache__/
 
@@ -40,6 +47,14 @@ __pycache__/
 
 # Artefatos locais do Playwright
 /playwright-report/
+/playwright-report-online/
 /test-results/
+/test-results-online/
 /blob-report/
 /playwright/.auth/
+
+# Servidor Cloudflare local
+/server/node_modules/
+/server/.wrangler/
+/server/.dev.vars
+/server/coverage/

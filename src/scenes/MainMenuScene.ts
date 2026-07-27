@@ -13,7 +13,7 @@ import type { InputAction, InputFrame } from '../types/combat';
 import type { GameMode } from '../types/game';
 import { createConceptPortrait } from '../ui/PortraitView';
 import { toggleFullscreen } from '../utils/fullscreen';
-import { pixelText } from '../utils/text';
+import { pixelText, tagLayoutPanel } from '../utils/text';
 
 type MenuAction = GameMode | 'settings' | 'fullscreen';
 
@@ -60,20 +60,27 @@ export class MainMenuScene extends Phaser.Scene {
     this.rebuildMenu();
 
     const settings = settingsStore.get();
-    pixelText(this, 8, INTERNAL_HEIGHT - 12, `V ${settings.wins}  D ${settings.losses}`, {
-      size: 16,
+    pixelText(this, 8, INTERNAL_HEIGHT - 16, `V ${settings.wins}  D ${settings.losses}`, {
+      size: 8,
+      maxWidth: 180,
+      maxHeight: 20,
       color: '#8796ae',
+      layoutName: 'main-record',
     });
     const playerOneKeys = controlsStore.get().keyboard[0].bindings;
     pixelText(
       this,
       INTERNAL_WIDTH - 8,
-      INTERNAL_HEIGHT - 12,
+      INTERNAL_HEIGHT - 16,
       `${keyLabel(playerOneKeys.up)}/${keyLabel(playerOneKeys.down)}  ENTER/${keyLabel(playerOneKeys.light)}`,
       {
-        size: 16,
+        size: 8,
+        minSize: 8,
+        maxWidth: 380,
+        maxHeight: 20,
         color: '#9af7ff',
         align: 'right',
+        layoutName: 'main-input-hint',
       },
     );
 
@@ -116,15 +123,21 @@ export class MainMenuScene extends Phaser.Scene {
     } else {
       pixelText(this, INTERNAL_WIDTH / 2, 40, 'LOGO AUSENTE', {
         size: 16,
+        maxWidth: 200,
+        maxHeight: 24,
         color: '#f64070',
         align: 'center',
+        layoutName: 'main-logo-fallback',
       });
     }
 
     pixelText(this, INTERNAL_WIDTH / 2, 100, 'A CIDADE LUTA DE VOLTA', {
       size: 16,
+      maxWidth: 360,
+      maxHeight: 24,
       color: '#ffd55c',
       align: 'center',
+      layoutName: 'main-tagline',
     });
     this.add.rectangle(INTERNAL_WIDTH / 2, 112, 224, 2, PALETTE.cyan, 1);
   }
@@ -138,23 +151,29 @@ export class MainMenuScene extends Phaser.Scene {
       const concept = ASSET_MANIFEST.concepts[fighter.id];
 
       if (this.textures.exists(concept.key)) {
-        createConceptPortrait(this, x, y, fighter.id, 68, 60, {
-          crop: 'framed',
+        createConceptPortrait(this, x, y, fighter.id, 68, 50, {
+          crop: 'card',
           locked: !fighter.available,
           frameColor: fighter.available ? fighter.visual.accent : PALETTE.muted,
         });
       } else {
-        this.add.rectangle(x, y, 68, 60, PALETTE.panel, 1)
+        this.add.rectangle(x, y, 68, 50, PALETTE.panel, 1)
           .setStrokeStyle(2, PALETTE.pink);
         pixelText(this, x, y, 'SEM\nIMAGEM', {
           size: 16,
+          minSize: 8,
+          maxWidth: 56,
+          maxHeight: 52,
           color: '#f64070',
           align: 'center',
         });
       }
 
-      pixelText(this, x, y + 36, fighter.name.split(' ')[0] ?? fighter.name, {
+      pixelText(this, x, y + 34, fighter.name.split(' ')[0] ?? fighter.name, {
         size: 16,
+        minSize: 8,
+        maxWidth: 76,
+        maxHeight: 14,
         color: fighter.available ? '#f7f2d0' : '#73829b',
         align: 'center',
       });
@@ -173,6 +192,7 @@ export class MainMenuScene extends Phaser.Scene {
       { action: 'cpu', label: 'JOGAR CONTRA CPU' },
       { action: 'versus', label: 'DOIS JOGADORES' },
       { action: 'training', label: 'TREINAMENTO' },
+      { action: 'online', label: 'JOGAR ONLINE' },
       { action: 'settings', label: 'CONFIGURACOES' },
       { action: 'fullscreen', label: 'TELA CHEIA' },
     ];
@@ -183,9 +203,14 @@ export class MainMenuScene extends Phaser.Scene {
     const startY = entries.length > 5 ? 126 : 128;
     entries.forEach((entry, index) => {
       const y = startY + index * spacing;
-      const background = this.add.rectangle(INTERNAL_WIDTH / 2, y, MENU_WIDTH, 26, PALETTE.panel, 1)
-        .setStrokeStyle(2, PALETTE.metalLight)
-        .setInteractive({ useHandCursor: true });
+      const panelName = `main-menu-row-${index}`;
+      const background = tagLayoutPanel(
+        this.add.rectangle(INTERNAL_WIDTH / 2, y, MENU_WIDTH, 26, PALETTE.panel, 1)
+          .setStrokeStyle(2, PALETTE.metalLight)
+          .setInteractive({ useHandCursor: true }),
+        panelName,
+        { x: 10, y: 3 },
+      );
       const marker = pixelText(this, 164, y, '>', {
         size: 16,
         color: '#ffd55c',
@@ -193,8 +218,14 @@ export class MainMenuScene extends Phaser.Scene {
       });
       const label = pixelText(this, INTERNAL_WIDTH / 2, y, entry.label, {
         size: 16,
+        minSize: 8,
+        maxWidth: MENU_WIDTH - 36,
+        maxHeight: 22,
         color: '#f7f2d0',
         align: 'center',
+        layoutName: `main-menu-label-${index}`,
+        panelName,
+        padding: { x: 10, y: 3 },
       });
 
       background.on('pointerover', () => this.setSelected(index));
@@ -242,6 +273,10 @@ export class MainMenuScene extends Phaser.Scene {
     }
     if (entry.action === 'fullscreen') {
       void this.switchFullscreen();
+      return;
+    }
+    if (entry.action === 'online') {
+      this.transitionTo('OnlineScene');
       return;
     }
 

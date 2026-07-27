@@ -8,6 +8,13 @@ import { inputManager } from '../input/InputManager';
 import { touchControls } from '../input/TouchControls';
 import { registerServiceWorker } from '../pwa/registerServiceWorker';
 import { gamepadToast } from '../ui/gamepadToast';
+import type { PortraitUse } from '../types/assets';
+import {
+  createPortraitAuditGallery,
+  inspectPortraits,
+  type PortraitDebugEntry,
+} from '../ui/PortraitView';
+import { inspectUiLayout, type UiLayoutDebugEntry } from '../utils/text';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -26,12 +33,25 @@ export class BootScene extends Phaser.Scene {
     this.game.events.on(Phaser.Core.Events.PRE_STEP, gamepadManager.poll);
     audioManager.attachLifecycle();
     if (import.meta.env.DEV) {
+      let portraitAuditGallery: Phaser.GameObjects.Container | null = null;
       const debugGlobal = globalThis as typeof globalThis & {
         __RUA_AUDIO_DEBUG__?: () => AudioDebugState;
+        __RUA_PORTRAIT_GALLERY_DEBUG__?: (use: PortraitUse | null) => void;
+        __RUA_PORTRAIT_DEBUG__?: () => readonly PortraitDebugEntry[];
+        __RUA_UI_LAYOUT_DEBUG__?: () => readonly UiLayoutDebugEntry[];
         __RUA_SCENE_DEBUG__?: () => readonly string[];
         __RUA_SESSION_DEBUG__?: () => { mode: typeof gameSession.selection.mode; hasResult: boolean };
       };
       debugGlobal.__RUA_AUDIO_DEBUG__ = () => audioManager.getDebugState();
+      debugGlobal.__RUA_PORTRAIT_GALLERY_DEBUG__ = (use) => {
+        portraitAuditGallery?.destroy(true);
+        portraitAuditGallery = null;
+        if (!use) return;
+        const scene = this.scene.manager.getScenes(true).at(-1);
+        if (scene) portraitAuditGallery = createPortraitAuditGallery(scene, use);
+      };
+      debugGlobal.__RUA_PORTRAIT_DEBUG__ = () => inspectPortraits(this.scene.manager.getScenes(true));
+      debugGlobal.__RUA_UI_LAYOUT_DEBUG__ = () => inspectUiLayout(this.scene.manager.getScenes(true));
       debugGlobal.__RUA_SCENE_DEBUG__ = () => this.scene.manager
         .getScenes(true)
         .map((scene) => scene.scene.key);
@@ -62,10 +82,16 @@ export class BootScene extends Phaser.Scene {
       if (import.meta.env.DEV) {
         const debugGlobal = globalThis as typeof globalThis & {
           __RUA_AUDIO_DEBUG__?: () => AudioDebugState;
+          __RUA_PORTRAIT_GALLERY_DEBUG__?: (use: PortraitUse | null) => void;
+          __RUA_PORTRAIT_DEBUG__?: () => readonly PortraitDebugEntry[];
+          __RUA_UI_LAYOUT_DEBUG__?: () => readonly UiLayoutDebugEntry[];
           __RUA_SCENE_DEBUG__?: () => readonly string[];
           __RUA_SESSION_DEBUG__?: () => unknown;
         };
         delete debugGlobal.__RUA_AUDIO_DEBUG__;
+        delete debugGlobal.__RUA_PORTRAIT_GALLERY_DEBUG__;
+        delete debugGlobal.__RUA_PORTRAIT_DEBUG__;
+        delete debugGlobal.__RUA_UI_LAYOUT_DEBUG__;
         delete debugGlobal.__RUA_SCENE_DEBUG__;
         delete debugGlobal.__RUA_SESSION_DEBUG__;
       }

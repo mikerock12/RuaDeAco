@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "rua-de-aco-game-server",
+  "main": "src/index.ts",
+  "preview_urls": false,
+  "compatibility_date": "2026-07-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "MATCH_ROOMS",
+        "class_name": "GameRoom"
+      }
+    ]
+  },
+  "exports": {
+    "GameRoom": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  },
+  "vars": {
+    "SESSION_TTL_SECONDS": "21600",
+    "SOCKET_TICKET_TTL_SECONDS": "45",
+    "ROOM_TTL_SECONDS": "7200",
+    "EMPTY_ROOM_TTL_SECONDS": "600",
+    "RECONNECT_GRACE_SECONDS": "30",
+    "INPUT_DELAY_FRAMES": "8"
+  },
+  "secrets": {
+    "required": ["TICKET_SECRET"]
+  }
+}

@@ -17,7 +17,12 @@ import type {
   MoveDefinition,
 } from '../types/combat';
 import type { GameMode } from '../types/game';
-import { FighterRuntime, type AppliedHit, type FighterSnapshot } from './FighterRuntime';
+import {
+  FighterRuntime,
+  type AppliedHit,
+  type FighterDeterministicState,
+  type FighterSnapshot,
+} from './FighterRuntime';
 import { horizontalOverlap, intersects, toWorldRect } from './geometry';
 import { resolveGrabVictimPose } from './grabTimeline';
 
@@ -94,6 +99,47 @@ export interface CombatWorldSnapshot {
   readonly debugBoxes: boolean;
   readonly trainingCpuEnabled: boolean;
   readonly roundDraw: boolean;
+}
+
+export interface CombatWorldDeterministicState {
+  readonly schema: 1;
+  readonly mode: GameMode;
+  readonly frame: number;
+  readonly phase: CombatPhase;
+  readonly phaseFrame: number;
+  readonly round: number;
+  readonly timeFrames: number;
+  readonly paused: boolean;
+  readonly fighters: readonly [FighterDeterministicState, FighterDeterministicState];
+  readonly projectiles: readonly {
+    readonly runtimeId: number;
+    readonly projectileId: string;
+    readonly ownerId: FighterId;
+    readonly sourceMoveId: string;
+    readonly hitboxId: string;
+    readonly x: number;
+    readonly y: number;
+    readonly velocityX: number;
+    readonly facing: 1 | -1;
+    readonly life: number;
+    readonly ageFrames: number;
+    readonly armingFrames: number;
+  }[];
+  readonly activeGrab: {
+    readonly attackerId: FighterId;
+    readonly defenderId: FighterId;
+    readonly hitboxId: string;
+    readonly moveId: string;
+    readonly attackerIndex: 0 | 1;
+    readonly comboDepth: number;
+  } | null;
+  readonly projectileSequence: number;
+  readonly comboHits: readonly [number, number];
+  readonly comboTimers: readonly [number, number];
+  readonly lastDamage: number;
+  readonly roundDraw: boolean;
+  readonly roundWinner: 0 | 1 | null;
+  readonly trainingCpuEnabled: boolean;
 }
 
 const EMPTY_INPUT: InputFrame = {
@@ -235,6 +281,54 @@ export class CombatWorld {
       debugBoxes: this.debugBoxes,
       trainingCpuEnabled: this.trainingCpuEnabled,
       roundDraw: this.roundDraw,
+    };
+  }
+
+  exportDeterministicState(): CombatWorldDeterministicState {
+    return {
+      schema: 1,
+      mode: this.mode,
+      frame: this.frame,
+      phase: this.phase,
+      phaseFrame: this.phaseFrame,
+      round: this.round,
+      timeFrames: this.timeFrames,
+      paused: this.paused,
+      fighters: [
+        this.fighters[0].exportDeterministicState(),
+        this.fighters[1].exportDeterministicState(),
+      ],
+      projectiles: this.projectiles.map((projectile) => ({
+        runtimeId: projectile.runtimeId,
+        projectileId: projectile.projectileId,
+        ownerId: projectile.owner.id,
+        sourceMoveId: projectile.sourceMove.id,
+        hitboxId: projectile.hitbox.id,
+        x: projectile.x,
+        y: projectile.y,
+        velocityX: projectile.velocityX,
+        facing: projectile.facing,
+        life: projectile.life,
+        ageFrames: projectile.ageFrames,
+        armingFrames: projectile.armingFrames,
+      })),
+      activeGrab: this.activeGrab
+        ? {
+            attackerId: this.activeGrab.attacker.id,
+            defenderId: this.activeGrab.defender.id,
+            hitboxId: this.activeGrab.hitbox.id,
+            moveId: this.activeGrab.move.id,
+            attackerIndex: this.activeGrab.attackerIndex,
+            comboDepth: this.activeGrab.comboDepth,
+          }
+        : null,
+      projectileSequence: this.projectileSequence,
+      comboHits: [this.comboHits[0], this.comboHits[1]],
+      comboTimers: [this.comboTimers[0], this.comboTimers[1]],
+      lastDamage: this.lastDamage,
+      roundDraw: this.roundDraw,
+      roundWinner: this.roundWinner,
+      trainingCpuEnabled: this.trainingCpuEnabled,
     };
   }
 

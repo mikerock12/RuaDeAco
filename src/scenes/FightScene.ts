@@ -9,11 +9,21 @@ import { FixedStepRunner } from '../combat/FixedStepRunner';
 import { toWorldRect } from '../combat/geometry';
 import { gameSession } from '../config/session';
 import { settingsStore } from '../config/settings';
-import { worldRectToScreen, worldToScreen } from '../config/pixelArtConfig';
+import {
+  INTERNAL_HEIGHT,
+  INTERNAL_WIDTH,
+  PALETTE,
+  worldRectToScreen,
+  worldToScreen,
+} from '../config/pixelArtConfig';
 import { getFighterDefinition } from '../fighters';
 import { getFighterEffectAsset } from '../fighters/visual';
 import { inputManager } from '../input/InputManager';
 import { touchControls } from '../input/TouchControls';
+import { LockstepController } from '../online/LockstepController';
+import { onlineSession } from '../online/OnlineSession';
+import type { PlayerSlot } from '../online/protocol';
+import { deterministicHash } from '../online/stateHash';
 import type { CombatEvent, InputAction, InputFrame } from '../types/combat';
 import type { FighterEffectAsset } from '../types/assets';
 import { CaisStageView } from '../ui/CaisStageView';
@@ -46,6 +56,15 @@ export class FightScene extends Phaser.Scene {
   private readonly pauseMenu = new PauseMenuModel();
   private transitionLocked = false;
   private capturePaused = false;
+  private onlineLockstep: LockstepController | null = null;
+  private onlineSlot: PlayerSlot | null = null;
+  private onlineClockStarted = false;
+  private onlineLocalPaused = false;
+  private onlinePauseChoice: 'continue' | 'leave' = 'continue';
+  private onlineStatusText: Phaser.GameObjects.BitmapText | null = null;
+  private onlineWaitText: Phaser.GameObjects.BitmapText | null = null;
+  private onlinePauseLayer: Phaser.GameObjects.Container | null = null;
+  private onlinePauseLabels: readonly Phaser.GameObjects.BitmapText[] = [];
 
   constructor() {
     super('FightScene');
@@ -57,6 +76,12 @@ export class FightScene extends Phaser.Scene {
     this.resultScheduled = false;
     this.transitionLocked = false;
     this.capturePaused = false;
+    this.onlineLockstep?.dispose();
+    this.onlineLockstep = null;
+    this.onlineSlot = null;
+    this.onlineClockStarted = false;
+    this.onlineLocalPaused = false;
+    this.onlinePauseChoice = 'continue';
     this.pauseMenu.reset();
     this.cpu = null;
     this.runner.reset();
@@ -64,6 +89,21 @@ export class FightScene extends Phaser.Scene {
     const playerOne = getFighterDefinition(selection.playerOne);
     const playerTwo = getFighterDefinition(selection.playerTwo);
     this.world = new CombatWorld(playerOne, playerTwo, selection.mode);
+    if (selection.mode === 'online') {
+      const start = onlineSession.snapshot.start;
+      const slot = onlineSession.snapshot.slot;
+      if (!start || !slot) {
+        gameSession.onlineResult = {
+          kind: 'interrupted',
+          message: 'A sessão sincronizada não estava mais disponível.',
+        };
+        this.scene.start('ResultScene');
+        return;
+      }
+      this.onlineSlot = slot;
+      this.onlineLockstep = new LockstepController(slot, start.inputDelay);
+      onlineSession.markFightEntered();
+    }
     // Gancho de inspeção para testes instrumentados (apenas em dev).
     if (import.meta.env.DEV) {
       const debugGlobal = globalThis as typeof globalThis & {
@@ -126,6 +166,38 @@ export class FightScene extends Phaser.Scene {
             active: sprite.active,
           })),
       });
+      (debugGlobal as typeof debugGlobal & {
+        __RUA_ONLINE_FIGHT_DEBUG__?: () => {
+          slot: PlayerSlot | null;
+          inputDelay: number | null;
+          startFingerprint: string | null;
+          captureFrame: number | null;
+          simulationFrame: number | null;
+          waitingForPeer: boolean | null;
+          lastHashFrame: number | null;
+          lastHash: string | null;
+        };
+      }).__RUA_ONLINE_FIGHT_DEBUG__ = () => {
+        const status = this.onlineLockstep?.status;
+        const start = onlineSession.snapshot.start;
+        return {
+          slot: this.onlineSlot,
+          inputDelay: start?.inputDelay ?? null,
+          startFingerprint: start
+            ? deterministicHash({
+                seed: start.seed,
+                startAt: start.startAt,
+                inputDelay: start.inputDelay,
+                players: start.players,
+              })
+            : null,
+          captureFrame: status?.captureFrame ?? null,
+          simulationFrame: status?.simulationFrame ?? null,
+          waitingForPeer: status?.waitingForPeer ?? null,
+          lastHashFrame: status?.lastHashFrame ?? null,
+          lastHash: status?.lastHash ?? null,
+        };
+      };
     }
     this.stageView = new CaisStageView(this);
     this.views = [
@@ -141,7 +213,12 @@ export class FightScene extends Phaser.Scene {
     }
 
     this.scene.stop('UIScene');
-    this.scene.launch('UIScene', { world: this.world });
+    this.scene.launch('UIScene', {
+      world: this.world,
+      online: selection.mode === 'online',
+      localSlot: this.onlineSlot,
+    });
+    if (selection.mode === 'online') this.createOnlineOverlay();
     touchControls.setGameplayActive(true);
 
     this.game.events.on('fight:pause', this.togglePause, this);
@@ -149,6 +226,7 @@ export class FightScene extends Phaser.Scene {
     this.game.events.on('training:reset', this.resetTraining, this);
     this.game.events.on('training:debug', this.toggleTrainingDebug, this);
     this.game.events.on('training:cpu', this.toggleTrainingCpu, this);
+    this.game.events.on('online:background', this.handleOnlineBackground, this);
     this.input.keyboard?.on('keydown-F1', this.toggleTrainingDebug, this);
     this.input.keyboard?.on('keydown-F2', this.resetTraining, this);
     this.input.keyboard?.on('keydown-F3', this.toggleTrainingCpu, this);
@@ -162,7 +240,11 @@ export class FightScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     this.stageView.update(delta);
-    if (!this.capturePaused) this.runner.update(delta, () => this.simulateStep());
+    if (this.onlineLockstep) {
+      this.updateOnlineClock(delta);
+    } else if (!this.capturePaused) {
+      this.runner.update(delta, () => this.simulateStep());
+    }
     const snapshot = this.world.snapshot();
     const renderAlpha = this.capturePaused ? 1 : this.runner.alpha;
     this.views?.[0].sync(snapshot.fighters[0], renderAlpha);
@@ -170,6 +252,71 @@ export class FightScene extends Phaser.Scene {
     this.drawProjectiles(snapshot);
     this.drawDebug(snapshot);
     this.drawDebugOverlay();
+    this.updateOnlineOverlay();
+  }
+
+  private updateOnlineClock(delta: number): void {
+    const start = onlineSession.snapshot.start;
+    const lockstep = this.onlineLockstep;
+    if (!start || !lockstep || this.resultScheduled) return;
+    if (onlineSession.snapshot.status === 'error') {
+      this.finishOnlineInterrupted(onlineSession.snapshot.message);
+      return;
+    }
+    if (onlineSession.serverNow() < start.startAt) return;
+    if (!this.onlineClockStarted) {
+      const elapsedFrames = Math.max(
+        0,
+        Math.floor((onlineSession.serverNow() - start.startAt) / (1000 / 60)),
+      );
+      if (elapsedFrames > 30) {
+        this.finishOnlineInterrupted('O início sincronizado foi perdido.');
+        return;
+      }
+      for (let frame = 0; frame < elapsedFrames; frame += 1) lockstep.capture(EMPTY_INPUT);
+      lockstep.flush();
+      this.onlineClockStarted = true;
+      this.runner.reset();
+    }
+    this.runner.update(delta, () => this.simulateOnlineTick());
+    const fatal = lockstep.status.fatalMessage;
+    if (fatal) this.finishOnlineInterrupted(fatal);
+  }
+
+  private simulateOnlineTick(): void {
+    const lockstep = this.onlineLockstep;
+    if (!lockstep) return;
+    const input = inputManager.sample(0);
+    const pausePressed = input.pressed.has('pause');
+    if (pausePressed) {
+      this.onlineLocalPaused = !this.onlineLocalPaused;
+      this.onlinePauseChoice = 'continue';
+      inputManager.clear();
+      touchControls.releaseAll();
+      touchControls.setGameplayActive(!this.onlineLocalPaused);
+    } else if (this.onlineLocalPaused) {
+      const navigation = Number(
+        input.pressed.has('down') || input.pressed.has('right'),
+      ) - Number(
+        input.pressed.has('up') || input.pressed.has('left'),
+      );
+      if (navigation !== 0) {
+        this.onlinePauseChoice = this.onlinePauseChoice === 'continue' ? 'leave' : 'continue';
+      }
+      if (input.pressed.has('confirm') || input.pressed.has('light')) {
+        if (this.onlinePauseChoice === 'leave') {
+          this.finishOnlineInterrupted('Você saiu da partida online.');
+          return;
+        }
+        this.onlineLocalPaused = false;
+        touchControls.setGameplayActive(true);
+        inputManager.clear();
+      }
+    }
+    const prefill = lockstep.status.captureFrame < lockstep.inputDelay;
+    lockstep.capture(prefill || this.onlineLocalPaused ? EMPTY_INPUT : input);
+    lockstep.advance(this.world);
+    for (const event of this.world.drainEvents()) this.handleCombatEvent(event);
   }
 
   private simulateStep(): void {
@@ -245,7 +392,9 @@ export class FightScene extends Phaser.Scene {
     const loser = this.world.loser;
     if (!winner || !loser) return;
     this.resultScheduled = true;
-    const playerWon = winner === this.world.fighters[0];
+    const playerWon = gameSession.selection.mode === 'online'
+      ? (winner === this.world.fighters[0]) === (this.onlineSlot === 'p1')
+      : winner === this.world.fighters[0];
     gameSession.result = {
       winner: winner.id,
       loser: loser.id,
@@ -256,6 +405,10 @@ export class FightScene extends Phaser.Scene {
       const settings = settingsStore.get();
       settingsStore.update(playerWon ? { wins: settings.wins + 1 } : { losses: settings.losses + 1 });
     }
+    if (gameSession.selection.mode === 'online') {
+      gameSession.onlineResult = { kind: 'completed', message: 'Partida online concluída.' };
+      onlineSession.leave();
+    }
 
     this.time.delayedCall(1100, () => {
       this.scene.stop('UIScene');
@@ -264,6 +417,14 @@ export class FightScene extends Phaser.Scene {
   }
 
   private togglePause(): void {
+    if (this.onlineLockstep) {
+      this.onlineLocalPaused = !this.onlineLocalPaused;
+      this.onlinePauseChoice = 'continue';
+      inputManager.clear();
+      touchControls.releaseAll();
+      touchControls.setGameplayActive(!this.onlineLocalPaused);
+      return;
+    }
     const paused = this.world.togglePause();
     if (paused) {
       this.pauseMenu.reset();
@@ -276,6 +437,7 @@ export class FightScene extends Phaser.Scene {
   }
 
   private readonly handlePauseAction = (action: PauseMenuAction): void => {
+    if (this.onlineLockstep) return;
     if (!this.world.paused || this.transitionLocked) return;
     const command = this.pauseMenu.activate(action);
     if (!command) return;
@@ -457,7 +619,11 @@ export class FightScene extends Phaser.Scene {
 
   private handleVisibility = (): void => {
     if (document.hidden) {
-      this.pauseForInterruption();
+      if (this.onlineLockstep) {
+        this.finishOnlineInterrupted('A página ficou em segundo plano; partida encerrada com segurança.');
+      } else {
+        this.pauseForInterruption();
+      }
     }
   };
 
@@ -467,6 +633,14 @@ export class FightScene extends Phaser.Scene {
   };
 
   private pauseForInterruption(): void {
+    if (this.onlineLockstep) {
+      this.onlineLocalPaused = true;
+      this.onlinePauseChoice = 'continue';
+      touchControls.releaseAll();
+      touchControls.setGameplayActive(false);
+      inputManager.clear();
+      return;
+    }
     this.world.setPaused(true);
     this.pauseMenu.reset();
     this.game.events.emit('fight:pause-selection', this.pauseMenu.selected);
@@ -486,6 +660,7 @@ export class FightScene extends Phaser.Scene {
     this.game.events.off('training:reset', this.resetTraining, this);
     this.game.events.off('training:debug', this.toggleTrainingDebug, this);
     this.game.events.off('training:cpu', this.toggleTrainingCpu, this);
+    this.game.events.off('online:background', this.handleOnlineBackground, this);
     this.input.keyboard?.off('keydown-F1', this.toggleTrainingDebug, this);
     this.input.keyboard?.off('keydown-F2', this.resetTraining, this);
     this.input.keyboard?.off('keydown-F3', this.toggleTrainingCpu, this);
@@ -494,18 +669,151 @@ export class FightScene extends Phaser.Scene {
     globalThis.document?.removeEventListener('visibilitychange', this.handleVisibility);
     this.orientationQuery?.removeEventListener('change', this.handleOrientation);
     this.orientationQuery = null;
+    this.onlineLockstep?.dispose();
+    this.onlineLockstep = null;
+    this.onlineStatusText = null;
+    this.onlineWaitText = null;
+    this.onlinePauseLayer = null;
+    this.onlinePauseLabels = [];
     if (import.meta.env.DEV) {
       const debugGlobal = globalThis as typeof globalThis & {
         __ruaWorld?: CombatWorld;
         __RUA_PAUSE_DEBUG__?: () => unknown;
         __RUA_CAPTURE_DEBUG__?: unknown;
         __RUA_FIGHTER_DEBUG__?: () => unknown;
+        __RUA_ONLINE_FIGHT_DEBUG__?: () => unknown;
       };
       if (debugGlobal.__ruaWorld === this.world) delete debugGlobal.__ruaWorld;
       delete debugGlobal.__RUA_PAUSE_DEBUG__;
       delete debugGlobal.__RUA_CAPTURE_DEBUG__;
       delete debugGlobal.__RUA_FIGHTER_DEBUG__;
+      delete debugGlobal.__RUA_ONLINE_FIGHT_DEBUG__;
     }
+  }
+
+  private createOnlineOverlay(): void {
+    this.onlineStatusText = pixelText(this, INTERNAL_WIDTH / 2, 70, '', {
+      size: 8,
+      maxWidth: 500,
+      maxHeight: 14,
+      color: '#9af7ff',
+      align: 'center',
+      layoutName: 'online-fight-status',
+    }).setDepth(190);
+    this.onlineWaitText = pixelText(this, INTERNAL_WIDTH / 2, 94, '', {
+      size: 16,
+      minSize: 8,
+      maxWidth: 480,
+      maxHeight: 22,
+      color: '#ffd55c',
+      align: 'center',
+      layoutName: 'online-fight-wait',
+    }).setDepth(190);
+
+    const shade = this.add.rectangle(
+      INTERNAL_WIDTH / 2,
+      INTERNAL_HEIGHT / 2,
+      INTERNAL_WIDTH,
+      INTERNAL_HEIGHT,
+      0x000000,
+      0.78,
+    );
+    const panel = this.add.rectangle(
+      INTERNAL_WIDTH / 2,
+      200,
+      430,
+      174,
+      0x101827,
+      0.98,
+    ).setStrokeStyle(4, PALETTE.cyan);
+    const title = pixelText(this, INTERNAL_WIDTH / 2, 146, 'A PARTIDA ONLINE NAO PAUSA', {
+      size: 24,
+      minSize: 16,
+      maxWidth: 400,
+      maxHeight: 30,
+      color: '#ffd55c',
+      align: 'center',
+    });
+    const warning = pixelText(this, INTERNAL_WIDTH / 2, 176, 'INPUT NEUTRO • VOCE AINDA PODE RECEBER GOLPES', {
+      size: 8,
+      maxWidth: 380,
+      maxHeight: 14,
+      color: '#ff91b2',
+      align: 'center',
+    });
+    const continueLabel = pixelText(this, INTERNAL_WIDTH / 2, 216, 'CONTINUAR', {
+      size: 16,
+      maxWidth: 280,
+      maxHeight: 22,
+      color: '#f7f2d0',
+      align: 'center',
+    }).setInteractive({ useHandCursor: true });
+    const leaveLabel = pixelText(this, INTERNAL_WIDTH / 2, 250, 'ABANDONAR PARTIDA', {
+      size: 16,
+      maxWidth: 280,
+      maxHeight: 22,
+      color: '#f7f2d0',
+      align: 'center',
+    }).setInteractive({ useHandCursor: true });
+    continueLabel.on('pointerdown', () => {
+      this.onlineLocalPaused = false;
+      touchControls.setGameplayActive(true);
+      inputManager.clear();
+    });
+    leaveLabel.on('pointerdown', () => this.finishOnlineInterrupted('Você saiu da partida online.'));
+    this.onlinePauseLabels = [continueLabel, leaveLabel];
+    this.onlinePauseLayer = this.add.container(0, 0, [
+      shade,
+      panel,
+      title,
+      warning,
+      continueLabel,
+      leaveLabel,
+    ]).setDepth(200).setVisible(false);
+  }
+
+  private updateOnlineOverlay(): void {
+    const lockstep = this.onlineLockstep;
+    if (!lockstep) return;
+    const state = lockstep.status;
+    this.onlineStatusText?.setText(
+      `LOCKSTEP • FRAME ${state.simulationFrame} • BUFFER ${state.bufferedRemoteFrames}`,
+    );
+    const start = onlineSession.snapshot.start;
+    if (start && onlineSession.serverNow() < start.startAt) {
+      const seconds = Math.max(0, Math.ceil((start.startAt - onlineSession.serverNow()) / 1000));
+      this.onlineWaitText?.setText(`SINCRONIZANDO ${seconds}`);
+    } else {
+      this.onlineWaitText?.setText(state.waitingForPeer ? 'AGUARDANDO INPUT DO RIVAL' : '');
+    }
+    this.onlinePauseLayer?.setVisible(this.onlineLocalPaused);
+    this.onlinePauseLabels.forEach((label, index) => {
+      const selected = (index === 0) === (this.onlinePauseChoice === 'continue');
+      label.setTint(selected ? PALETTE.gold : PALETTE.ivory);
+    });
+  }
+
+  private readonly handleOnlineBackground = (): void => {
+    if (this.onlineLockstep) {
+      this.finishOnlineInterrupted('Aplicativo enviado ao fundo; partida encerrada com segurança.');
+    }
+  };
+
+  private finishOnlineInterrupted(message: string): void {
+    if (this.resultScheduled) return;
+    this.resultScheduled = true;
+    gameSession.result = null;
+    gameSession.onlineResult = { kind: 'interrupted', message };
+    touchControls.releaseAll();
+    touchControls.setGameplayActive(false);
+    inputManager.clear();
+    this.onlineLockstep?.dispose();
+    this.onlineLockstep = null;
+    onlineSession.leave();
+    this.time.delayedCall(120, () => {
+      this.scene.stop('UIScene');
+      this.scene.start('ResultScene');
+    });
   }
 
   private destroyFightSprites(): void {

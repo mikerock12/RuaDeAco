@@ -17,6 +17,7 @@ import {
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { FIGHTER_SPRITE_ASSETS } from '../fighters/visual';
 import type { AnimatedSpriteSheetAsset, SpriteSheetAsset } from '../types/assets';
+import { pixelText } from '../utils/text';
 
 export class PreloadScene extends Phaser.Scene {
   private loadingFill: Phaser.GameObjects.Rectangle | null = null;
@@ -177,10 +178,25 @@ export class PreloadScene extends Phaser.Scene {
       .setStrokeStyle(4, PALETTE.danger);
 
     const addLine = (y: number, text: string, tint: number, size = 11): void => {
+      if (this.cache.bitmapFont.exists(ASSET_MANIFEST.font.key)) {
+        pixelText(this, 24, y + 7, text, {
+          size,
+          minSize: 8,
+          maxWidth: 576,
+          maxHeight: 14,
+          maxLines: 1,
+          color: tint,
+          layoutName: `preload-error-${y}`,
+        });
+        return;
+      }
+      const fallbackSize = text.length > 76 ? 8 : size;
       this.add.text(24, y, text, {
         color: `#${tint.toString(16).padStart(6, '0')}`,
         fontFamily: 'Consolas, "Lucida Console", monospace',
-        fontSize: `${size}px`,
+        fontSize: `${fallbackSize}px`,
+        fixedWidth: 576,
+        fixedHeight: 14,
       }).setResolution(2);
     };
 

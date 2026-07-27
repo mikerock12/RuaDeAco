@@ -7,6 +7,7 @@ import { CharacterSelectScene } from './scenes/CharacterSelectScene';
 import { ControlsScene } from './scenes/ControlsScene';
 import { FightScene } from './scenes/FightScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
+import { OnlineScene } from './scenes/OnlineScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { ResultScene } from './scenes/ResultScene';
 import { SettingsScene } from './scenes/SettingsScene';
@@ -57,6 +58,7 @@ const config: Phaser.Types.Core.GameConfig = {
     PreloadScene,
     StartScene,
     MainMenuScene,
+    OnlineScene,
     CharacterSelectScene,
     FightScene,
     UIScene,

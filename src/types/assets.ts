@@ -12,10 +12,11 @@ export interface ImageAsset {
   readonly path: string;
 }
 
+export type PortraitUse = 'hud' | 'card' | 'profile' | 'hero';
+
 export interface PortraitAsset extends ImageAsset {
   readonly fighterId: FighterId;
-  readonly hudCrop: AssetCrop;
-  readonly framedCrop: AssetCrop;
+  readonly crops: Readonly<Record<PortraitUse, AssetCrop>>;
 }
 
 export interface SpriteSheetAsset extends ImageAsset {

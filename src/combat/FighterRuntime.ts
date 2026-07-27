@@ -74,6 +74,54 @@ export interface FighterSnapshot {
   readonly victimPhaseFrames: number;
 }
 
+export interface FighterDeterministicState {
+  readonly id: FighterId;
+  readonly position: readonly [number, number, number, number];
+  readonly velocity: readonly [number, number];
+  readonly facing: 1 | -1;
+  readonly state: FighterState;
+  readonly stateFrame: number;
+  readonly health: number;
+  readonly meter: number;
+  readonly roundWins: number;
+  readonly armorHits: number;
+  readonly invulnerableFrames: number;
+  readonly passiveFrames: number;
+  readonly damageReduction: readonly [number, number, number];
+  readonly freezeEffectFrames: number;
+  readonly grab: readonly [
+    FighterId | null,
+    number,
+    number,
+    number,
+    number,
+    number | null,
+    GrabVictimDepth,
+    number,
+    number,
+  ];
+  readonly lastMoveId: string | null;
+  readonly input: {
+    readonly held: readonly string[];
+    readonly pressed: readonly string[];
+    readonly released: readonly string[];
+  };
+  readonly commandBuffer: ReturnType<CommandBuffer['exportDeterministicState']>;
+  readonly activeMoveId: string | null;
+  readonly attackInstance: number;
+  readonly registeredHits: readonly string[];
+  readonly emittedEvents: readonly number[];
+  readonly stun: readonly [number, number, number];
+  readonly knockdownPending: boolean;
+  readonly airDriftX: number;
+  readonly damageTowardPassive: number;
+  readonly frozen: boolean;
+  readonly moveConnected: 'none' | 'hit' | 'block';
+}
+
+const orderedActions = (actions: ReadonlySet<string>): readonly string[] =>
+  [...actions].sort();
+
 export class FighterRuntime {
   readonly id: FighterId;
   readonly definition: FighterDefinition;
@@ -655,6 +703,61 @@ export class FighterRuntime {
       victimDepth: this.victimDepth,
       victimPhaseFrame: this.victimPhaseFrame,
       victimPhaseFrames: this.victimPhaseFrames,
+    };
+  }
+
+  /**
+   * Estado competitivo completo, sem objetos Phaser nem dados de apresentação.
+   * A ordem é estável para permitir comparação entre dois clientes lockstep.
+   */
+  exportDeterministicState(): FighterDeterministicState {
+    return {
+      id: this.id,
+      position: [this.x, this.y, this.previousX, this.previousY],
+      velocity: [this.velocityX, this.velocityY],
+      facing: this.facing,
+      state: this.state,
+      stateFrame: this.stateFrame,
+      health: this.health,
+      meter: this.meter,
+      roundWins: this.roundWins,
+      armorHits: this.armorHits,
+      invulnerableFrames: this.invulnerableFrames,
+      passiveFrames: this.passiveFrames,
+      damageReduction: [
+        this.damageReductionFrames,
+        this.damageReductionMultiplier,
+        this.damageReductionCooldownFrames,
+      ],
+      freezeEffectFrames: this.freezeEffectFrames,
+      grab: [
+        this.grabbedBy,
+        this.grabbedVictimX,
+        this.grabbedVictimY,
+        this.grabbedVictimRotation,
+        this.victimRotation,
+        this.victimPoseFrame,
+        this.victimDepth,
+        this.victimPhaseFrame,
+        this.victimPhaseFrames,
+      ],
+      lastMoveId: this.lastMoveId,
+      input: {
+        held: orderedActions(this.input.held),
+        pressed: orderedActions(this.input.pressed),
+        released: orderedActions(this.input.released),
+      },
+      commandBuffer: this.commandBuffer.exportDeterministicState(),
+      activeMoveId: this.activeMove?.id ?? null,
+      attackInstance: this.attackInstance,
+      registeredHits: [...this.registeredHits].sort(),
+      emittedEvents: [...this.emittedEvents].sort((a, b) => a - b),
+      stun: [this.hitStopFrames, this.hitStunFrames, this.blockStunFrames],
+      knockdownPending: this.knockdownPending,
+      airDriftX: this.airDriftX,
+      damageTowardPassive: this.damageTowardPassive,
+      frozen: this.frozen,
+      moveConnected: this.moveConnected,
     };
   }
 

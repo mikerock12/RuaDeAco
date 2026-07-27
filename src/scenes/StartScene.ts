@@ -100,15 +100,21 @@ export class StartScene extends Phaser.Scene {
     } else {
       pixelText(this, INTERNAL_WIDTH / 2, 106, 'RUA DE ACO', {
         size: 32,
+        maxWidth: 420,
+        maxHeight: 48,
         color: PALETTE.gold,
         align: 'center',
+        layoutName: 'start-logo-fallback',
       });
     }
 
     pixelText(this, INTERNAL_WIDTH / 2, 202, 'A CIDADE LUTA DE VOLTA', {
       size: 16,
+      maxWidth: 420,
+      maxHeight: 24,
       color: PALETTE.cyanLight,
       align: 'center',
+      layoutName: 'start-tagline',
     });
 
     const touchCapable = InputManager.isTouchCapable();
@@ -119,8 +125,12 @@ export class StartScene extends Phaser.Scene {
       touchCapable ? 'TOQUE PARA INICIAR' : 'PRESSIONE ENTER PARA INICIAR',
       {
         size: 16,
+        minSize: 8,
+        maxWidth: 520,
+        maxHeight: 32,
         color: PALETTE.ivory,
         align: 'center',
+        layoutName: 'start-primary-prompt',
       },
     );
     this.tweens.add({
@@ -135,8 +145,11 @@ export class StartScene extends Phaser.Scene {
 
     pixelText(this, INTERNAL_WIDTH / 2, 318, 'ENTER / ESPACO / TOQUE', {
       size: 16,
+      maxWidth: 520,
+      maxHeight: 24,
       color: PALETTE.muted,
       align: 'center',
+      layoutName: 'start-input-hint',
     });
   }
 

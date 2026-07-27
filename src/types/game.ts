@@ -1,6 +1,6 @@
 import type { FighterId } from './combat';
 
-export type GameMode = 'cpu' | 'versus' | 'training';
+export type GameMode = 'cpu' | 'versus' | 'training' | 'online';
 export type Difficulty = 'easy' | 'normal' | 'hard';
 export type TouchControlsPreference = 'auto' | 'on' | 'off';
 
@@ -35,4 +35,9 @@ export interface MatchResult {
   loser: FighterId;
   playerWon: boolean;
   rounds: readonly [number, number];
+}
+
+export interface OnlineMatchResult {
+  readonly kind: 'completed' | 'interrupted';
+  readonly message: string;
 }
