@@ -516,11 +516,13 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    default_output_root = (ROOT / "public" / "assets" / "fighters").resolve()
+    output_root = args.output_root.resolve()
     built = 0
     cleanup_report: dict[str, dict[str, dict[str, object]]] = {}
     for fighter in FIGHTERS:
         source_dir = ROOT / "tmp" / "imagegen" / fighter.slug / "keyed"
-        destination_dir = args.output_root.resolve() / fighter.slug
+        destination_dir = output_root / fighter.slug
         scale = body_reference_scale(source_dir, fighter.target_standing_height)
         cleanup_report[fighter.slug] = {}
         for name in (*BODY_NAMES, *fighter.specials):
@@ -536,6 +538,7 @@ def main() -> None:
             )
             cleanup_report[fighter.slug][name] = {
                 "sourceSha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                "outputSha256": hashlib.sha256(destination.read_bytes()).hexdigest(),
                 "scaleFactor": SHEET_SCALE_FACTORS[fighter.slug][name],
                 "frames": frame_cleanup,
             }
@@ -547,7 +550,7 @@ def main() -> None:
             validate_output(destination, 4, baseline=False)
             built += 1
         build_contact_sheets(fighter, destination_dir)
-    report_path = (
+    local_report_path = (
         ROOT
         / "tmp"
         / "imagegen"
@@ -555,11 +558,16 @@ def main() -> None:
         / "correcao-escala-recortes"
         / "pipeline-cleanup-report.json"
     )
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(
-        json.dumps(cleanup_report, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+    versioned_report_path = (
+        ROOT / "scripts" / "data" / "leo-noir-pipeline-cleanup-report.json"
     )
+    report_json = json.dumps(cleanup_report, ensure_ascii=False, indent=2)
+    report_paths = [local_report_path]
+    if output_root == default_output_root:
+        report_paths.append(versioned_report_path)
+    for report_path in report_paths:
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(report_json, encoding="utf-8")
     print(f"{built} folhas montadas e validadas.")
 
 

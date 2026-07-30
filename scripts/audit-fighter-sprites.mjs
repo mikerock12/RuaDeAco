@@ -542,16 +542,16 @@ for (const fighter of FIGHTERS) {
   }
 }
 
-// O relatório é produzido pelo pipeline no mesmo build que monta as folhas.
-// Ele vincula cada fonte keyed por SHA-256, registra o fator único da folha e
-// prova que a limpeza conservadora removeu somente ruído de até três pixels.
+// O relatório versionado é produzido pelo pipeline no mesmo build que monta
+// as folhas. Ele vincula fonte e saída por SHA-256, registra o fator único da
+// folha e prova que a limpeza conservadora removeu somente ruído de até três
+// pixels. As fontes keyed ficam locais; o hash da saída mantém esta evidência
+// verificável também no clone limpo usado pelo GitHub Actions.
 const cleanupReportPath = join(
   ROOT,
-  'tmp',
-  'imagegen',
-  'leo-violeta-noir-reflexo',
-  'correcao-escala-recortes',
-  'pipeline-cleanup-report.json',
+  'scripts',
+  'data',
+  'leo-noir-pipeline-cleanup-report.json',
 );
 for (const fighterId of ['leo-violeta', 'noir-reflexo']) {
   const anchor = results.find(
@@ -571,11 +571,20 @@ for (const fighterId of ['leo-violeta', 'noir-reflexo']) {
     );
     continue;
   }
-  for (const entry of results.filter(
+  const bodyEntries = results.filter(
     (candidate) => candidate.fighterId === fighterId
       && candidate.rasterKind === 'body'
       && candidate.file?.endsWith('.png'),
-  )) {
+  );
+  const keyedSourceCount = bodyEntries.filter((entry) => existsSync(
+    join(ROOT, 'tmp', 'imagegen', fighterId, 'keyed', entry.file),
+  )).length;
+  if (keyedSourceCount > 0 && keyedSourceCount !== bodyEntries.length) {
+    anchor.issues.push(
+      `CONJUNTO DE FONTES KEYED INCOMPLETO: ${keyedSourceCount}/${bodyEntries.length}`,
+    );
+  }
+  for (const entry of bodyEntries) {
     const name = entry.file.slice(0, -4);
     const report = cleanupReport[fighterId]?.[name];
     if (!report) {
@@ -583,13 +592,16 @@ for (const fighterId of ['leo-violeta', 'noir-reflexo']) {
       continue;
     }
     const keyedPath = join(ROOT, 'tmp', 'imagegen', fighterId, 'keyed', entry.file);
-    if (!existsSync(keyedPath)) {
-      entry.issues.push('FONTE KEYED AUSENTE');
-      continue;
+    if (existsSync(keyedPath)) {
+      const sourceHash = createHash('sha256').update(await readFile(keyedPath)).digest('hex');
+      if (sourceHash !== report.sourceSha256) {
+        entry.issues.push('AUDITORIA DA FONTE DESATUALIZADA (SHA-256 DIVERGENTE)');
+      }
     }
-    const sourceHash = createHash('sha256').update(await readFile(keyedPath)).digest('hex');
-    if (sourceHash !== report.sourceSha256) {
-      entry.issues.push('AUDITORIA DA FONTE DESATUALIZADA (SHA-256 DIVERGENTE)');
+    const outputPath = join(ROOT, 'public', 'assets', 'fighters', fighterId, entry.file);
+    const outputHash = createHash('sha256').update(await readFile(outputPath)).digest('hex');
+    if (outputHash !== report.outputSha256) {
+      entry.issues.push('AUDITORIA DA SAÍDA DESATUALIZADA (SHA-256 DIVERGENTE)');
     }
     if (!Number.isFinite(report.scaleFactor) || report.scaleFactor <= 0) {
       entry.issues.push(`FATOR ÚNICO DA FOLHA INVÁLIDO: ${String(report.scaleFactor)}`);
