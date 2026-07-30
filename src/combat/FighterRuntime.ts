@@ -60,6 +60,9 @@ export interface FighterSnapshot {
   readonly damageReductionMultiplier: number;
   /** Cooldown genérico que impede re-grant até zerar. */
   readonly damageReductionCooldownFrames: number;
+  readonly parryFrames: number;
+  readonly offensiveDebuffFrames: number;
+  readonly offensiveDebuffMultiplier: number;
   readonly freezeEffectFrames: number;
   readonly activeMoveId: string | null;
   readonly moveConnected: 'none' | 'hit' | 'block';
@@ -88,6 +91,8 @@ export interface FighterDeterministicState {
   readonly invulnerableFrames: number;
   readonly passiveFrames: number;
   readonly damageReduction: readonly [number, number, number];
+  readonly parry: readonly [number, number];
+  readonly offensiveDebuff: readonly [number, number];
   readonly freezeEffectFrames: number;
   readonly grab: readonly [
     FighterId | null,
@@ -143,6 +148,10 @@ export class FighterRuntime {
   damageReductionFrames = 0;
   damageReductionMultiplier = 1;
   damageReductionCooldownFrames = 0;
+  parryFrames = 0;
+  parryRiposteDamage = 0;
+  offensiveDebuffFrames = 0;
+  offensiveDebuffMultiplier = 1;
   freezeEffectFrames = 0;
   grabbedBy: FighterId | null = null;
   grabbedVictimX = 0;
@@ -193,6 +202,14 @@ export class FighterRuntime {
       if (this.damageReductionFrames === 0) this.damageReductionMultiplier = 1;
     }
     this.damageReductionCooldownFrames = Math.max(0, this.damageReductionCooldownFrames - 1);
+    if (this.parryFrames > 0) {
+      this.parryFrames -= 1;
+      if (this.parryFrames === 0) this.parryRiposteDamage = 0;
+    }
+    if (this.offensiveDebuffFrames > 0) {
+      this.offensiveDebuffFrames -= 1;
+      if (this.offensiveDebuffFrames === 0) this.offensiveDebuffMultiplier = 1;
+    }
     this.freezeEffectFrames = Math.max(0, this.freezeEffectFrames - 1);
 
     if (this.hitStopFrames > 0) {
@@ -406,6 +423,10 @@ export class FighterRuntime {
       if (event.type === 'grantArmor') this.armorHits = event.hits;
       if (event.type === 'clearArmor') this.armorHits = 0;
       if (event.type === 'grantBuff') this.passiveFrames = event.durationFrames;
+      if (event.type === 'grantParry') {
+        this.parryFrames = Math.max(0, Math.floor(event.durationFrames));
+        this.parryRiposteDamage = Math.max(0, Math.floor(event.riposteDamage));
+      }
       if (event.type === 'grantDamageReduction') {
         // Sem stack, sem refresh e sem reativação durante cooldown.
         if (this.damageReductionFrames > 0 || this.damageReductionCooldownFrames > 0) continue;
@@ -462,12 +483,38 @@ export class FighterRuntime {
     return true;
   }
 
+  canParry(hitbox: HitboxDefinition): boolean {
+    return this.parryFrames > 0
+      && hitbox.kind !== 'throw'
+      && hitbox.level !== 'low';
+  }
+
+  consumeParry(): number {
+    const damage = this.parryRiposteDamage;
+    this.parryFrames = 0;
+    this.parryRiposteDamage = 0;
+    return damage;
+  }
+
+  applyOffensiveDebuff(frames: number, multiplier: number): void {
+    const duration = Math.max(0, Math.floor(frames));
+    if (duration <= 0) return;
+    // Não acumula: um novo acerto apenas renova duração e valor.
+    this.offensiveDebuffFrames = duration;
+    this.offensiveDebuffMultiplier = Math.max(0, Math.min(1, multiplier));
+  }
+
+  get outgoingDamageMultiplier(): number {
+    return this.offensiveDebuffFrames > 0 ? this.offensiveDebuffMultiplier : 1;
+  }
+
   applyHit(
     hitbox: HitboxDefinition,
     attackerFacing: 1 | -1,
     blocked: boolean,
     comboHits: number,
     infiniteHealth: boolean,
+    attackMultiplier = 1,
   ): AppliedHit {
     if (this.armorHits > 0 && hitbox.kind !== 'throw') {
       this.armorHits -= 1;
@@ -481,6 +528,7 @@ export class FighterRuntime {
       blocked,
       comboHits,
       defenseMultiplier: this.damageReductionFrames > 0 ? this.damageReductionMultiplier : 1,
+      attackMultiplier,
     });
     if (!infiniteHealth) this.health = applyDamageToHealth(this.health, damage);
     let passiveActivated = false;
@@ -611,6 +659,10 @@ export class FighterRuntime {
     this.damageReductionFrames = 0;
     this.damageReductionMultiplier = 1;
     this.damageReductionCooldownFrames = 0;
+    this.parryFrames = 0;
+    this.parryRiposteDamage = 0;
+    this.offensiveDebuffFrames = 0;
+    this.offensiveDebuffMultiplier = 1;
     this.freezeEffectFrames = 0;
     this.grabbedBy = null;
     this.grabbedVictimX = 0;
@@ -691,6 +743,9 @@ export class FighterRuntime {
       damageReductionFrames: this.damageReductionFrames,
       damageReductionMultiplier: this.damageReductionMultiplier,
       damageReductionCooldownFrames: this.damageReductionCooldownFrames,
+      parryFrames: this.parryFrames,
+      offensiveDebuffFrames: this.offensiveDebuffFrames,
+      offensiveDebuffMultiplier: this.offensiveDebuffMultiplier,
       freezeEffectFrames: this.freezeEffectFrames,
       activeMoveId: this.activeMove?.id ?? null,
       moveConnected: this.moveConnected,
@@ -728,6 +783,11 @@ export class FighterRuntime {
         this.damageReductionFrames,
         this.damageReductionMultiplier,
         this.damageReductionCooldownFrames,
+      ],
+      parry: [this.parryFrames, this.parryRiposteDamage],
+      offensiveDebuff: [
+        this.offensiveDebuffFrames,
+        this.offensiveDebuffMultiplier,
       ],
       freezeEffectFrames: this.freezeEffectFrames,
       grab: [

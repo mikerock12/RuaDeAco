@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { astroRiso } from '../../fighters/astroRiso';
 import { gutoBarba } from '../../fighters/gutoBarba';
+import { leoVioleta } from '../../fighters/leoVioleta';
+import { noirReflexo } from '../../fighters/noirReflexo';
 import { rafaMare } from '../../fighters/rafaMare';
 import { touchDpadActions } from '../../input/touchDirection';
 import type { InputAction, InputCommand, InputFrame } from '../../types/combat';
@@ -192,6 +194,115 @@ describe('leitura de comandos', () => {
     expect(buffer.findMove(astroRiso.moves, current, 7, 99)).toBeNull();
     expect(buffer.findMove(astroRiso.moves, current, 7, 100)?.id).toBe('astroGiro');
   });
+
+  it.each([
+    {
+      fighter: leoVioleta,
+      moveId: 'olharFrio',
+      right: [['down'], ['down', 'right'], ['right']],
+      left: [['down'], ['down', 'left'], ['left']],
+      meter: 0,
+    },
+    {
+      fighter: leoVioleta,
+      moveId: 'impactoSombrio',
+      right: [['right'], ['down'], ['down', 'right']],
+      left: [['left'], ['down'], ['down', 'left']],
+      meter: 0,
+    },
+    {
+      fighter: leoVioleta,
+      moveId: 'pressaoVioleta',
+      right: [['down'], ['down', 'left'], ['left']],
+      left: [['down'], ['down', 'right'], ['right']],
+      meter: 100,
+    },
+    {
+      fighter: noirReflexo,
+      moveId: 'reflexoNegro',
+      right: [['right'], ['down'], ['down', 'right']],
+      left: [['left'], ['down'], ['down', 'left']],
+      meter: 0,
+    },
+    {
+      fighter: noirReflexo,
+      moveId: 'quebraLuz',
+      right: [['down'], ['down', 'right'], ['right']],
+      left: [['down'], ['down', 'left'], ['left']],
+      meter: 0,
+    },
+    {
+      fighter: noirReflexo,
+      moveId: 'impactoSolar',
+      right: [['down'], ['down', 'left'], ['left']],
+      left: [['down'], ['down', 'right'], ['right']],
+      meter: 100,
+    },
+  ] as const)('reconhece $fighter.id.$moveId nos dois lados', ({
+    fighter,
+    moveId,
+    right,
+    left,
+    meter,
+  }) => {
+    for (const [facing, sequence] of [[1, right], [-1, left]] as const) {
+      const buffer = new CommandBuffer();
+      sequence.forEach((held, index) => {
+        const final = index === sequence.length - 1;
+        const actions = [...held, ...(final ? ['special'] as const : [])];
+        buffer.push(index * 3 + 1, frame(actions, final ? ['special'] : []), facing);
+      });
+      const currentFrame = (sequence.length - 1) * 3 + 1;
+      const current = frame([...sequence.at(-1)!, 'special'], ['special']);
+      expect(
+        buffer.findMove(fighter.moves, current, currentFrame, meter)?.id,
+        `${fighter.id} facing=${facing}`,
+      ).toBe(moveId);
+    }
+  });
+
+  it.each([
+    [leoVioleta, 'pressaoVioleta'],
+    [noirReflexo, 'impactoSolar'],
+  ] as const)('impede %s.%s com 99 de energia', (fighter, moveId) => {
+    const buffer = new CommandBuffer();
+    buffer.push(1, frame(['down']), 1);
+    buffer.push(4, frame(['down', 'left']), 1);
+    buffer.push(7, frame(['left', 'special'], ['special']), 1);
+    const current = frame(['left', 'special'], ['special']);
+    expect(buffer.findMove(fighter.moves, current, 7, 99)).toBeNull();
+    expect(buffer.findMove(fighter.moves, current, 7, 100)?.id).toBe(moveId);
+  });
+
+  it.each([leoVioleta, noirReflexo])(
+    'não aceita motion incompleto nem deixa normal roubar a prioridade de %s',
+    (fighter) => {
+      const incomplete = new CommandBuffer();
+      incomplete.push(1, frame(['down']), 1);
+      incomplete.push(4, frame(['right', 'special'], ['special']), 1);
+      expect(
+        incomplete.findMove(
+          fighter.moves,
+          frame(['right', 'special'], ['special']),
+          4,
+          100,
+        ),
+      ).toBeNull();
+
+      const complete = new CommandBuffer();
+      complete.push(1, frame(['down']), 1);
+      complete.push(4, frame(['down', 'right']), 1);
+      complete.push(7, frame(['right', 'light', 'special'], ['light', 'special']), 1);
+      expect(
+        complete.findMove(
+          fighter.moves,
+          frame(['right', 'light', 'special'], ['light', 'special']),
+          7,
+          100,
+        )?.id,
+      ).toBe(fighter === leoVioleta ? 'olharFrio' : 'quebraLuz');
+    },
+  );
 
   it.each([
     ['sorrisoRelampago', [[0.75, 0], [0, 0.75], [0.7, 0.7]], 0],

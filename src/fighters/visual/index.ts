@@ -3,15 +3,26 @@ import type { FighterEffectAsset, FighterSpriteAsset } from '../../types/assets'
 import { astroRisoSpriteAsset } from './astroRisoSprite';
 import { danteSinalSpriteAsset } from './danteSinalSprite';
 import { gutoBarbaSpriteAsset } from './gutoBarbaSprite';
+import { leoVioletaSpriteAsset } from './leoVioletaSprite';
+import { noirReflexoSpriteAsset } from './noirReflexoSprite';
 import { rafaMareSpriteAsset } from './rafaMareSprite';
 
-export { astroRisoSpriteAsset, danteSinalSpriteAsset, gutoBarbaSpriteAsset, rafaMareSpriteAsset };
+export {
+  astroRisoSpriteAsset,
+  danteSinalSpriteAsset,
+  gutoBarbaSpriteAsset,
+  leoVioletaSpriteAsset,
+  noirReflexoSpriteAsset,
+  rafaMareSpriteAsset,
+};
 
 export const FIGHTER_SPRITE_ASSETS: readonly FighterSpriteAsset[] = [
   rafaMareSpriteAsset,
   astroRisoSpriteAsset,
   gutoBarbaSpriteAsset,
   danteSinalSpriteAsset,
+  leoVioletaSpriteAsset,
+  noirReflexoSpriteAsset,
 ];
 
 export function getFighterSpriteAsset(id: FighterId): FighterSpriteAsset | null {

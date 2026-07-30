@@ -571,6 +571,11 @@ export class CombatWorld {
       || defender.isBeingGrabbed
       || !attacker.canRegisterHit(hitbox.id, defender.id)
     ) return;
+    if (defender.canParry(hitbox)) {
+      attacker.registerHit(hitbox.id, defender.id, 'block');
+      this.resolveParry(defender, attacker);
+      return;
+    }
     const blocked = defender.isBlocking(hitbox.level, hitbox.kind);
     const comboDepth = defender.state === 'hitStun' ? this.comboHits[attackerIndex] + 1 : 1;
 
@@ -591,7 +596,14 @@ export class CombatWorld {
       return;
     }
 
-    const result = defender.applyHit(hitbox, attacker.facing, blocked, comboDepth, this.mode === 'training');
+    const result = defender.applyHit(
+      hitbox,
+      attacker.facing,
+      blocked,
+      comboDepth,
+      this.mode === 'training',
+      attacker.outgoingDamageMultiplier,
+    );
     attacker.registerHit(hitbox.id, defender.id, blocked ? 'block' : 'hit');
     attacker.addHitStop(hitbox.hitStop);
     this.resolveContactResult(contact, attackerIndex, blocked, comboDepth, result);
@@ -610,6 +622,27 @@ export class CombatWorld {
       this.comboTimers[attackerIndex] = 0;
       this.emit({ type: 'blocked', frame: this.frame, attacker: attacker.id, defender: defender.id, text: 'ARMOR' });
       return;
+    }
+
+    if (
+      !blocked
+      && result.damage > 0
+      && hitbox.offensiveDebuffFrames
+      && hitbox.offensiveDebuffMultiplier !== undefined
+    ) {
+      defender.applyOffensiveDebuff(
+        hitbox.offensiveDebuffFrames,
+        hitbox.offensiveDebuffMultiplier,
+      );
+      this.emit({
+        type: 'debuff',
+        frame: this.frame,
+        attacker: attacker.id,
+        defender: defender.id,
+        value: hitbox.offensiveDebuffFrames,
+        text: 'ENFRAQUECIDO',
+        ...(move ? { moveId: move.id } : {}),
+      });
     }
 
     attacker.addMeter(blocked ? move?.meterGainOnBlock ?? 0 : move?.meterGainOnHit ?? 0);
@@ -745,6 +778,12 @@ export class CombatWorld {
       const hit = target.getHurtboxes().some((box) => intersects(projectileRect, toWorldRect(box, target)));
       if (!hit) continue;
 
+      if (target.canParry(projectile.hitbox)) {
+        consumed.add(projectile.runtimeId);
+        this.resolveParry(target, projectile.owner);
+        continue;
+      }
+
       const blocked = target.isBlocking(projectile.hitbox.level, projectile.hitbox.kind);
       const ownerIndex: 0 | 1 = targetIndex === 0 ? 1 : 0;
       const comboDepth = target.state === 'hitStun' ? this.comboHits[ownerIndex] + 1 : 1;
@@ -754,6 +793,7 @@ export class CombatWorld {
         blocked,
         comboDepth,
         this.mode === 'training',
+        projectile.owner.outgoingDamageMultiplier,
       );
       projectile.owner.addHitStop(projectile.hitbox.hitStop);
       consumed.add(projectile.runtimeId);
@@ -764,6 +804,27 @@ export class CombatWorld {
         this.comboTimers[ownerIndex] = 0;
         this.emit({ type: 'blocked', frame: this.frame, attacker: projectile.owner.id, defender: target.id, text: 'ARMOR' });
         continue;
+      }
+
+      if (
+        !blocked
+        && result.damage > 0
+        && projectile.hitbox.offensiveDebuffFrames
+        && projectile.hitbox.offensiveDebuffMultiplier !== undefined
+      ) {
+        target.applyOffensiveDebuff(
+          projectile.hitbox.offensiveDebuffFrames,
+          projectile.hitbox.offensiveDebuffMultiplier,
+        );
+        this.emit({
+          type: 'debuff',
+          frame: this.frame,
+          attacker: projectile.owner.id,
+          defender: target.id,
+          value: projectile.hitbox.offensiveDebuffFrames,
+          text: 'ENFRAQUECIDO',
+          moveId: projectile.sourceMove.id,
+        });
       }
 
       projectile.owner.addMeter(
@@ -802,6 +863,57 @@ export class CombatWorld {
       }
     }
     this.projectiles = this.projectiles.filter((projectile) => !consumed.has(projectile.runtimeId));
+  }
+
+  private resolveParry(defender: FighterRuntime, attacker: FighterRuntime): void {
+    const damage = defender.consumeParry();
+    if (damage <= 0) return;
+    const riposte: HitboxDefinition = {
+      id: `parry-riposte-${this.frame}`,
+      kind: 'strike',
+      level: 'mid',
+      x: -18,
+      y: -58,
+      width: 72,
+      height: 52,
+      damage,
+      chipDamage: 0,
+      hitStun: 24,
+      blockStun: 0,
+      hitStop: 10,
+      priority: 99,
+      knockbackX: 5,
+      knockbackY: -2,
+    };
+    const result = attacker.applyHit(
+      riposte,
+      defender.facing,
+      false,
+      1,
+      this.mode === 'training',
+      defender.outgoingDamageMultiplier,
+    );
+    defender.addHitStop(riposte.hitStop);
+    defender.addMeter(12);
+    this.lastDamage = result.damage;
+    this.emit({
+      type: 'parry',
+      frame: this.frame,
+      attacker: defender.id,
+      defender: attacker.id,
+      value: result.damage,
+      text: 'REFLEXO NEGRO',
+      ...(defender.currentMove ? { moveId: defender.currentMove.id } : {}),
+    });
+    this.emit({
+      type: 'hit',
+      frame: this.frame,
+      attacker: defender.id,
+      defender: attacker.id,
+      value: result.damage,
+      text: 'RIPOSTA',
+      ...(defender.currentMove ? { moveId: defender.currentMove.id } : {}),
+    });
   }
 
   private projectileRect(projectile: ProjectileRuntime): LocalRect {

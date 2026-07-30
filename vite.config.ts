@@ -7,7 +7,7 @@ import { defineConfig } from 'vitest/config';
 const publicRoot = resolve(process.cwd(), 'public');
 const projectRoot = resolve(process.cwd());
 const sourceRoot = resolve(projectRoot, 'src');
-const fighterAssetPattern = /^assets\/fighters\/(?:rafa-mare|astro-riso|guto-barba|dante-sinal)\/[^/]+\.png$/;
+const fighterAssetPattern = /^assets\/fighters\/(?:rafa-mare|astro-riso|guto-barba|dante-sinal|leo-violeta|noir-reflexo)\/[^/]+\.png$/;
 
 function listPublicFiles(root: string): string[] {
   if (!existsSync(root)) return [];

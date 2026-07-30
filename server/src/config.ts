@@ -13,7 +13,9 @@ export const ALLOWED_FIGHTERS = new Set([
   "rafa-mare",
   "guto-barba",
   "astro-riso",
-  "dante-sinal"
+  "dante-sinal",
+  "leo-violeta",
+  "noir-reflexo"
 ]);
 
 export const ALLOWED_ARENAS = new Set(["cais-da-cidade"]);

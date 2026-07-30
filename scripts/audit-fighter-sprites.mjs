@@ -14,6 +14,8 @@ const FIGHTER_NAMES = {
   'guto-barba': 'Guto Barba',
   'astro-riso': 'Astro Riso',
   'dante-sinal': 'Dante Sinal',
+  'leo-violeta': 'Léo Violeta',
+  'noir-reflexo': 'Noir Reflexo',
 };
 
 // Contrato do raster final. O baseline é expresso nas coordenadas locais do
@@ -23,8 +25,44 @@ const FIGHTER_RASTER_CONTRACTS = {
   'guto-barba': { frameWidth: 288, frameHeight: 288, baselineY: 281 },
   'astro-riso': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
   'dante-sinal': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
+  'leo-violeta': {
+    frameWidth: 256,
+    frameHeight: 256,
+    baselineY: 249,
+    standingHeightRange: [176, 181],
+  },
+  'noir-reflexo': {
+    frameWidth: 256,
+    frameHeight: 256,
+    baselineY: 249,
+    standingHeightRange: [178, 183],
+  },
 };
 const BODY_MASS_RATIO_TOLERANCE = 0.12;
+const ANATOMICAL_SCALE_CONTRACTS = {
+  'leo-violeta': {
+    'corrida.png': { height: [155, 163], massRatio: [0.91, 1.00] },
+    'walk-backward.png': { height: [174, 184], massRatio: [0.84, 0.94] },
+    'crouch.png': { height: [145, 156], massRatio: [0.98, 1.09] },
+    'forward-light.png': { height: [169, 179], massRatio: [0.95, 1.05] },
+    'forward-heavy.png': { height: [157, 167], massRatio: [0.88, 0.98] },
+    'olhar-frio.png': { height: [159, 170], massRatio: [0.77, 0.87] },
+    'impacto-sombrio.png': { height: [139, 150], massRatio: [0.83, 0.93] },
+    'pressao-violeta.png': { height: [181, 191], massRatio: [0.94, 1.04] },
+    'air-heavy-forward.png': { height: [146, 157], massRatio: [0.57, 0.67] },
+  },
+  'noir-reflexo': {
+    'corrida.png': { height: [164, 174], massRatio: [0.94, 1.05] },
+    'walk-backward.png': { height: [177, 187], massRatio: [0.83, 0.93] },
+    'crouch.png': { height: [118, 129], massRatio: [0.82, 0.93] },
+    'forward-light.png': { height: [152, 163], massRatio: [0.78, 0.88] },
+    'forward-heavy.png': { height: [156, 166], massRatio: [0.83, 0.94] },
+    'reflexo-negro.png': { height: [166, 177], massRatio: [0.94, 1.04] },
+    'quebra-luz.png': { height: [161, 171], massRatio: [0.86, 0.96] },
+    'impacto-solar.png': { height: [170, 181], massRatio: [0.88, 0.98] },
+    'air-heavy-forward.png': { height: [126, 136], massRatio: [0.85, 0.96] },
+  },
+};
 
 function cleanAssetPath(path) {
   return path.split(/[?#]/, 1)[0];
@@ -80,14 +118,17 @@ function auditAlpha(image) {
   return { transparent, opaque, intermediate };
 }
 
-function countUnexpectedGreen(image) {
+function countUnexpectedGreen(image, strict = false) {
   let count = 0;
   for (let index = 0; index < image.pixels.length; index += 4) {
     const red = image.pixels[index];
     const green = image.pixels[index + 1];
     const blue = image.pixels[index + 2];
     const alpha = image.pixels[index + 3];
-    if (alpha > 0 && green >= 80 && green > red * 1.35 && green > blue * 1.15) count += 1;
+    const greenSpill = strict
+      ? green >= 24 && green - red >= 8 && green - blue >= 8
+      : green >= 80 && green > red * 1.35 && green > blue * 1.15;
+    if (alpha > 0 && greenSpill) count += 1;
   }
   return count;
 }
@@ -311,8 +352,9 @@ for (const fighter of FIGHTERS) {
     entry.intermediatePixels = alpha.intermediate;
     entry.hasTransparency = alpha.transparent > 0 || alpha.intermediate > 0;
 
-    if (fighter.id === 'guto-barba' && sheet.rasterKind === 'body') {
-      entry.unexpectedGreenPixels = countUnexpectedGreen(image);
+    const strictGreenAudit = fighter.id === 'leo-violeta' || fighter.id === 'noir-reflexo';
+    if ((fighter.id === 'guto-barba' && sheet.rasterKind === 'body') || strictGreenAudit) {
+      entry.unexpectedGreenPixels = countUnexpectedGreen(image, strictGreenAudit);
       if (entry.unexpectedGreenPixels > 0) {
         entry.issues.push(`RESÍDUO VERDE: ${entry.unexpectedGreenPixels} pixels`);
       }
@@ -439,6 +481,9 @@ for (const fighter of FIGHTERS) {
     entry.medianOpaquePixels = median(
       entry.frameAudits.map((frame) => frame.alpha.opaque),
     );
+    entry.medianOpaqueHeight = median(
+      entry.frameAudits.map(({ bbox }) => (bbox ? bbox.height : 0)),
+    );
   }
 
   const idle = bodies.find(({ file }) => file === 'idle.png');
@@ -448,13 +493,127 @@ for (const fighter of FIGHTERS) {
     continue;
   }
 
+  const standingHeightRange = FIGHTER_RASTER_CONTRACTS[fighter.id]?.standingHeightRange;
+  if (standingHeightRange) {
+    const idleHeight = idle.medianOpaqueHeight;
+    idle.medianOpaqueHeight = idleHeight;
+    const [minimumHeight, maximumHeight] = standingHeightRange;
+    if (idleHeight < minimumHeight || idleHeight > maximumHeight) {
+      idle.issues.push(
+        `ALTURA ERETA MEDIANA ${idleHeight}px, ESPERADO ${minimumHeight}–${maximumHeight}px`,
+      );
+    }
+  }
+
   for (const entry of bodies) {
     entry.visualMassRatio = entry.medianOpaquePixels / referenceMass;
+
+    const anatomicalContract = ANATOMICAL_SCALE_CONTRACTS[fighter.id]?.[entry.file];
+    if (anatomicalContract) {
+      const [minimumHeight, maximumHeight] = anatomicalContract.height;
+      if (entry.medianOpaqueHeight < minimumHeight
+        || entry.medianOpaqueHeight > maximumHeight) {
+        entry.issues.push(
+          `ESCALA ANATÔMICA: ALTURA MEDIANA ${entry.medianOpaqueHeight}px, `
+          + `APROVADO ${minimumHeight}–${maximumHeight}px`,
+        );
+      }
+      const [minimumMass, maximumMass] = anatomicalContract.massRatio;
+      if (entry.visualMassRatio < minimumMass || entry.visualMassRatio > maximumMass) {
+        entry.issues.push(
+          `ESCALA ANATÔMICA: MASSA ${(entry.visualMassRatio * 100).toFixed(1)}% DO IDLE, `
+          + `APROVADO ${(minimumMass * 100).toFixed(0)}–${(maximumMass * 100).toFixed(0)}%`,
+        );
+      }
+      continue;
+    }
+
+    // Para as demais poses especiais de Léo/Noir, o contrato específico será
+    // ampliado apenas após aprovação visual. Não aplique a tolerância ingênua
+    // do idle a knockdown/aéreos; as folhas críticas acima já não são puladas.
+    if (standingHeightRange) continue;
+
     if (Math.abs(1 - entry.visualMassRatio) > BODY_MASS_RATIO_TOLERANCE) {
       entry.issues.push(
         `MASSA VISUAL ${(entry.visualMassRatio * 100).toFixed(1)}% DO IDLE, `
         + `TOLERÂNCIA ±${(BODY_MASS_RATIO_TOLERANCE * 100).toFixed(0)}%`,
       );
+    }
+  }
+}
+
+// O relatório é produzido pelo pipeline no mesmo build que monta as folhas.
+// Ele vincula cada fonte keyed por SHA-256, registra o fator único da folha e
+// prova que a limpeza conservadora removeu somente ruído de até três pixels.
+const cleanupReportPath = join(
+  ROOT,
+  'tmp',
+  'imagegen',
+  'leo-violeta-noir-reflexo',
+  'correcao-escala-recortes',
+  'pipeline-cleanup-report.json',
+);
+for (const fighterId of ['leo-violeta', 'noir-reflexo']) {
+  const anchor = results.find(
+    (entry) => entry.fighterId === fighterId && entry.file === 'idle.png',
+  );
+  if (!anchor) continue;
+  if (!existsSync(cleanupReportPath)) {
+    anchor.issues.push('RELATÓRIO DE LIMPEZA DAS FONTES AUSENTE');
+    continue;
+  }
+  let cleanupReport;
+  try {
+    cleanupReport = JSON.parse(await readFile(cleanupReportPath, 'utf8'));
+  } catch (error) {
+    anchor.issues.push(
+      `RELATÓRIO DE LIMPEZA INVÁLIDO: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    continue;
+  }
+  for (const entry of results.filter(
+    (candidate) => candidate.fighterId === fighterId
+      && candidate.rasterKind === 'body'
+      && candidate.file?.endsWith('.png'),
+  )) {
+    const name = entry.file.slice(0, -4);
+    const report = cleanupReport[fighterId]?.[name];
+    if (!report) {
+      entry.issues.push('AUDITORIA DA FONTE/CÉLULAS AUSENTE');
+      continue;
+    }
+    const keyedPath = join(ROOT, 'tmp', 'imagegen', fighterId, 'keyed', entry.file);
+    if (!existsSync(keyedPath)) {
+      entry.issues.push('FONTE KEYED AUSENTE');
+      continue;
+    }
+    const sourceHash = createHash('sha256').update(await readFile(keyedPath)).digest('hex');
+    if (sourceHash !== report.sourceSha256) {
+      entry.issues.push('AUDITORIA DA FONTE DESATUALIZADA (SHA-256 DIVERGENTE)');
+    }
+    if (!Number.isFinite(report.scaleFactor) || report.scaleFactor <= 0) {
+      entry.issues.push(`FATOR ÚNICO DA FOLHA INVÁLIDO: ${String(report.scaleFactor)}`);
+    }
+    if (!Array.isArray(report.frames) || report.frames.length !== entry.frames) {
+      entry.issues.push(
+        `AUDITORIA DE CÉLULAS: ${report.frames?.length ?? 0} FRAMES, ESPERADO ${entry.frames}`,
+      );
+      continue;
+    }
+    for (let frame = 0; frame < report.frames.length; frame += 1) {
+      const cleanup = report.frames[frame];
+      if ((cleanup.removedPixels ?? 0) > (cleanup.removedComponents ?? 0) * 3) {
+        entry.issues.push(
+          `FRAME ${frame} LIMPEZA REMOVEU COMPONENTE SIGNIFICATIVO: `
+          + `${cleanup.removedPixels}px`,
+        );
+      }
+      const margins = cleanup.sourceMargins;
+      if (!margins || margins.left < 2 || margins.right < 2 || margins.top < 2) {
+        entry.issues.push(
+          `FRAME ${frame} TOCA LIMITE EXTERNO DA FONTE: ${JSON.stringify(margins)}`,
+        );
+      }
     }
   }
 }

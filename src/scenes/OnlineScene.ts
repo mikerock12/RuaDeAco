@@ -167,8 +167,9 @@ export class OnlineScene extends Phaser.Scene {
       return;
     }
 
-    if (frame.pressed.has('left')) this.moveFighter(-1);
-    if (frame.pressed.has('right')) this.moveFighter(1);
+    const horizontal = Number(frame.pressed.has('right')) - Number(frame.pressed.has('left'));
+    const vertical = Number(frame.pressed.has('down')) - Number(frame.pressed.has('up'));
+    if (horizontal !== 0 || vertical !== 0) this.moveFighter(horizontal, vertical);
     if (frame.pressed.has('confirm') || frame.pressed.has('light')) this.confirmLobby();
     if (frame.pressed.has('cancel')) this.leaveLobby();
   }
@@ -407,21 +408,24 @@ export class OnlineScene extends Phaser.Scene {
     this.dynamic.add([roomCode, status]);
 
     AVAILABLE_FIGHTERS.forEach((fighter, index) => {
-      const x = 90 + index * 153;
+      const column = index % 3;
+      const row = Math.floor(index / 3);
+      const x = 86 + column * 234;
+      const y = 140 + row * 84;
       const selected = index === this.fighterCursor;
       const chosen = local?.fighterId === fighter.id;
-      const frame = this.add.rectangle(x, 184, 132, 128, PALETTE.panel, 0.98)
+      const frame = this.add.rectangle(x, y, 132, 76, PALETTE.panel, 0.98)
         .setStrokeStyle(selected ? 4 : 2, chosen ? PALETTE.gold : selected ? PALETTE.cyan : PALETTE.steel)
         .setInteractive({ useHandCursor: true });
-      const portrait = createConceptPortrait(this, x, 166, fighter.id, 112, 76, {
+      const portrait = createConceptPortrait(this, x, y - 10, fighter.id, 112, 46, {
         crop: 'card',
         frameColor: fighter.visual.accent,
       });
-      const name = pixelText(this, x, 220, fighter.name.toUpperCase(), {
+      const name = pixelText(this, x, y + 27, fighter.name.toUpperCase(), {
         size: 8,
         maxWidth: 120,
-        maxHeight: 20,
-        maxLines: 2,
+        maxHeight: 10,
+        maxLines: 1,
         color: chosen ? '#ffd55c' : '#f7f2d0',
         align: 'center',
       });
@@ -435,13 +439,13 @@ export class OnlineScene extends Phaser.Scene {
     const localLabel = local?.ready ? 'VOCE: PRONTO' : local?.fighterId ? 'VOCE: SELECIONADO' : 'VOCE: ESCOLHENDO';
     const peerName = peer?.fighterId ? getFighterDefinition(peer.fighterId).name.toUpperCase() : 'AGUARDANDO';
     const peerLabel = peer?.ready ? `RIVAL: ${peerName} • PRONTO` : `RIVAL: ${peerName}`;
-    const localStatus = pixelText(this, 18, 260, localLabel, {
+    const localStatus = pixelText(this, 18, 270, localLabel, {
       size: 8,
       maxWidth: 292,
       maxHeight: 16,
       color: local?.ready ? '#ffd55c' : '#9af7ff',
     }).setOrigin(0, 0.5);
-    const peerStatus = pixelText(this, INTERNAL_WIDTH - 18, 260, peerLabel, {
+    const peerStatus = pixelText(this, INTERNAL_WIDTH - 18, 270, peerLabel, {
       size: 8,
       maxWidth: 292,
       maxHeight: 16,
@@ -451,11 +455,11 @@ export class OnlineScene extends Phaser.Scene {
     this.dynamic.add([localStatus, peerStatus]);
 
     const readyLabel = local?.ready ? 'CANCELAR PRONTO' : local?.fighterId ? 'FICAR PRONTO' : 'ESCOLHER LUTADOR';
-    const readyButton = this.createButton(INTERNAL_WIDTH / 2, 298, 260, 34, readyLabel, () => this.confirmLobby());
-    const leaveButton = this.createButton(62, 328, 100, 28, 'SAIR', () => this.leaveLobby());
-    const copyButton = this.createButton(190, 328, 142, 28, 'COPIAR CODIGO', () => void this.copyRoomCode());
+    const readyButton = this.createButton(INTERNAL_WIDTH / 2, 297, 260, 32, readyLabel, () => this.confirmLobby());
+    const leaveButton = this.createButton(62, 329, 100, 26, 'SAIR', () => this.leaveLobby());
+    const copyButton = this.createButton(190, 329, 142, 26, 'COPIAR CODIGO', () => void this.copyRoomCode());
     this.dynamic.add([readyButton.container, leaveButton.container, copyButton.container]);
-    const ping = pixelText(this, INTERNAL_WIDTH - 12, 334, `PING ${this.latest.latencyMs ?? '--'} MS • ${this.latest.slot?.toUpperCase() ?? '--'}`, {
+    const ping = pixelText(this, INTERNAL_WIDTH - 12, 342, `PING ${this.latest.latencyMs ?? '--'} MS • ${this.latest.slot?.toUpperCase() ?? '--'}`, {
       size: 8,
       maxWidth: 260,
       maxHeight: 14,
@@ -586,10 +590,16 @@ export class OnlineScene extends Phaser.Scene {
     this.render();
   }
 
-  private moveFighter(direction: -1 | 1): void {
-    this.fighterCursor = (
-      this.fighterCursor + direction + AVAILABLE_FIGHTERS.length
-    ) % AVAILABLE_FIGHTERS.length;
+  private moveFighter(horizontal: number, vertical: number): void {
+    const columns = 3;
+    const rows = 2;
+    const column = (
+      this.fighterCursor % columns + Math.sign(horizontal) + columns
+    ) % columns;
+    const row = (
+      Math.floor(this.fighterCursor / columns) + Math.sign(vertical) + rows
+    ) % rows;
+    this.fighterCursor = row * columns + column;
     audioManager.play('confirm');
     this.render();
   }

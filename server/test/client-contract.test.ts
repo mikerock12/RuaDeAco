@@ -24,7 +24,9 @@ describe("contrato compartilhado com o cliente online", () => {
       "rafa-mare",
       "guto-barba",
       "astro-riso",
-      "dante-sinal"
+      "dante-sinal",
+      "leo-violeta",
+      "noir-reflexo"
     ]);
   });
 

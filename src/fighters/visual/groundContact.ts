@@ -3,6 +3,8 @@ export const FIGHTER_OPAQUE_BOTTOM_PADDING = {
   'guto-barba': 6,
   'astro-riso': 6,
   'dante-sinal': 6,
+  'leo-violeta': 6,
+  'noir-reflexo': 6,
 } as const;
 
 /**

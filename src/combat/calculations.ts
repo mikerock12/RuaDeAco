@@ -6,6 +6,7 @@ export interface DamageOptions {
   readonly blocked?: boolean;
   readonly comboHits?: number;
   readonly defenseMultiplier?: number;
+  readonly attackMultiplier?: number;
 }
 
 export function calculateDamage(options: DamageOptions): number {
@@ -15,10 +16,19 @@ export function calculateDamage(options: DamageOptions): number {
     blocked = false,
     comboHits = 1,
     defenseMultiplier = 1,
+    attackMultiplier = 1,
   } = options;
   const source = blocked ? chipDamage : baseDamage;
   const scaling = blocked ? 1 : Math.max(0.35, 1 - Math.max(0, comboHits - 1) * 0.08);
-  return Math.max(0, Math.round(source * scaling * Math.max(0, defenseMultiplier)));
+  return Math.max(
+    0,
+    Math.round(
+      source
+      * scaling
+      * Math.max(0, defenseMultiplier)
+      * Math.max(0, attackMultiplier),
+    ),
+  );
 }
 
 export function applyEnergy(current: number, delta: number, maximum = MAX_METER): number {

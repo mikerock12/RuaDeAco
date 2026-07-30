@@ -35,6 +35,11 @@ android/capacitor.build.gradle
 # Fontes e diagnósticos locais do Dante Sinal
 /tmp/imagegen/dante-sinal/
 
+# Fontes e diagnósticos locais de Léo Violeta e Noir Reflexo
+/tmp/imagegen/leo-violeta/
+/tmp/imagegen/noir-reflexo/
+/tmp/imagegen/leo-violeta-noir-reflexo/
+
 # Evidências locais das auditorias de interface e multiplayer
 /tmp/ui-audit/
 /tmp/online-audit/

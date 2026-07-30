@@ -84,7 +84,10 @@ export interface FighterAnimationAsset extends AnimatedSpriteSheetAsset {
   readonly id: FighterAnimationId;
 }
 
-export type FighterStatusEffectField = 'damageReductionFrames';
+export type FighterStatusEffectField =
+  | 'damageReductionFrames'
+  | 'offensiveDebuffFrames'
+  | 'parryFrames';
 
 export interface FighterEffectAsset extends AnimatedSpriteSheetAsset {
   readonly id: string;

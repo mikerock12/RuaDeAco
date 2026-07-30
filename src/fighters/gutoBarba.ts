@@ -300,6 +300,8 @@ export const gutoBarba: FighterDefinition = {
           // Dante: massa em pé ~178px e baseline 249; âncora neutra do Gancho encaixa
           // sem afundar no cais nem atravessar o tronco do Guto.
           'dante-sinal': { anchorOffsetX: 0, anchorOffsetY: 0 },
+          'leo-violeta': { anchorOffsetX: 0, anchorOffsetY: 0, rotationOffset: 0 },
+          'noir-reflexo': { anchorOffsetX: 0, anchorOffsetY: 0, rotationOffset: 0 },
         },
       },
       meterCost: 0,
@@ -347,6 +349,8 @@ export const gutoBarba: FighterDefinition = {
           'guto-barba': { anchorOffsetX: 8, anchorOffsetY: 0 },
           // Mesma âncora neutra do Gancho: frozen centralizado sem salto de posição.
           'dante-sinal': { anchorOffsetX: 0, anchorOffsetY: 0 },
+          'leo-violeta': { anchorOffsetX: 0, anchorOffsetY: 0, rotationOffset: 0 },
+          'noir-reflexo': { anchorOffsetX: 0, anchorOffsetY: 0, rotationOffset: 0 },
         },
       },
       meterCost: 100,

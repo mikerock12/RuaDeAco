@@ -96,6 +96,10 @@ export interface HitboxDefinition extends LocalRect {
   readonly knockbackY: number;
   readonly knockdown?: boolean;
   readonly freezeFrames?: number;
+  /** Enfraquecimento ofensivo aplicado apenas quando o golpe acerta sem defesa. */
+  readonly offensiveDebuffFrames?: number;
+  /** Multiplicador do dano causado pela vítima enquanto o debuff estiver ativo. */
+  readonly offensiveDebuffMultiplier?: number;
 }
 
 export interface HurtboxDefinition extends LocalRect {
@@ -173,6 +177,12 @@ export type MoveEvent =
   | { readonly frame: number; readonly type: 'grantArmor'; readonly hits: number }
   | { readonly frame: number; readonly type: 'clearArmor' }
   | { readonly frame: number; readonly type: 'grantBuff'; readonly durationFrames: number }
+  | {
+      readonly frame: number;
+      readonly type: 'grantParry';
+      readonly durationFrames: number;
+      readonly riposteDamage: number;
+    }
   | {
       readonly frame: number;
       readonly type: 'grantDamageReduction';
@@ -299,7 +309,9 @@ export interface CombatEvent {
     | 'knockout'
     | 'roundEnd'
     | 'matchEnd'
-    | 'passive';
+    | 'passive'
+    | 'parry'
+    | 'debuff';
   readonly frame: number;
   readonly attacker?: FighterId;
   readonly defender?: FighterId;

@@ -112,12 +112,24 @@ export class FightScene extends Phaser.Scene {
         __RUA_CAPTURE_DEBUG__?: {
           pause: () => void;
           resume: () => void;
-          step: (held?: readonly InputAction[], pressed?: readonly InputAction[]) => void;
+          step: (
+            held?: readonly InputAction[],
+            pressed?: readonly InputAction[],
+            heldTwo?: readonly InputAction[],
+            pressedTwo?: readonly InputAction[],
+          ) => void;
         };
         __RUA_FIGHTER_DEBUG__?: () => {
           fighterIds: readonly string[];
           bodySprites: readonly { name: string; texture: string; visible: boolean; active: boolean }[];
           moveEffects: readonly { name: string; texture: string; visible: boolean; active: boolean }[];
+          projectileSprites: readonly {
+            texture: string;
+            visible: boolean;
+            active: boolean;
+            x: number;
+            y: number;
+          }[];
         };
       };
       debugGlobal.__ruaWorld = this.world;
@@ -134,14 +146,19 @@ export class FightScene extends Phaser.Scene {
           this.capturePaused = false;
           this.runner.reset();
         },
-        step: (held = [], pressed = []) => {
+        step: (held = [], pressed = [], heldTwo = [], pressedTwo = []) => {
           if (!this.capturePaused) throw new Error('Capture frame-step requer pause().');
-          const frame: InputFrame = {
+          const frameOne: InputFrame = {
             held: new Set(held),
             pressed: new Set(pressed),
             released: new Set(),
           };
-          this.world.step(frame, EMPTY_INPUT);
+          const frameTwo: InputFrame = {
+            held: new Set(heldTwo),
+            pressed: new Set(pressedTwo),
+            released: new Set(),
+          };
+          this.world.step(frameOne, frameTwo);
           for (const event of this.world.drainEvents()) this.handleCombatEvent(event);
         },
       };
@@ -165,6 +182,13 @@ export class FightScene extends Phaser.Scene {
             visible: sprite.visible,
             active: sprite.active,
           })),
+        projectileSprites: this.projectileSprites.map((sprite) => ({
+          texture: sprite.texture.key,
+          visible: sprite.visible,
+          active: sprite.active,
+          x: sprite.x,
+          y: sprite.y,
+        })),
       });
       (debugGlobal as typeof debugGlobal & {
         __RUA_ONLINE_FIGHT_DEBUG__?: () => {

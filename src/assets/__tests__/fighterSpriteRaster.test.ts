@@ -35,6 +35,7 @@ interface RasterAuditEntry {
   readonly expectedBaselineY?: number | null;
   readonly frameAudits?: readonly FrameAudit[];
   readonly medianOpaquePixels?: number;
+  readonly medianOpaqueHeight?: number;
   readonly visualMassRatio?: number;
   readonly unexpectedGreenPixels?: number;
   readonly issues: readonly string[];
@@ -45,7 +46,26 @@ const CONTRACTS = {
   'astro-riso': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
   'guto-barba': { frameWidth: 288, frameHeight: 288, baselineY: 281 },
   'dante-sinal': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
+  'leo-violeta': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
+  'noir-reflexo': { frameWidth: 256, frameHeight: 256, baselineY: 249 },
 } as const;
+
+const GEOMETRIC_SCALE_CONTRACTS = {
+  'leo-violeta': { minimum: 176, maximum: 181 },
+  'noir-reflexo': { minimum: 178, maximum: 183 },
+} as const;
+
+const LEO_NOIR_REGRESSION_SHEETS = [
+  ['noir-reflexo', 'corrida.png'],
+  ['noir-reflexo', 'walk-backward.png'],
+  ['noir-reflexo', 'crouch.png'],
+  ['noir-reflexo', 'forward-heavy.png'],
+  ['noir-reflexo', 'air-heavy-forward.png'],
+  ['leo-violeta', 'walk-backward.png'],
+  ['leo-violeta', 'crouch.png'],
+  ['leo-violeta', 'forward-light.png'],
+  ['leo-violeta', 'pressao-violeta.png'],
+] as const;
 
 const execution = spawnSync(
   process.execPath,
@@ -99,8 +119,10 @@ describe('fighter sprite raster audit', () => {
       expect(sheet.expectedBaselineY, sheet.file).toBe(sheet.frameHeight! - 7);
       expect(sheet.frameAudits, sheet.file).toHaveLength(sheet.frames);
       expect(sheet.medianOpaquePixels, sheet.file).toBeGreaterThan(0);
-      expect(sheet.visualMassRatio, sheet.file).toBeGreaterThanOrEqual(0.88);
-      expect(sheet.visualMassRatio, sheet.file).toBeLessThanOrEqual(1.12);
+      if (!(sheet.fighterId in GEOMETRIC_SCALE_CONTRACTS)) {
+        expect(sheet.visualMassRatio, sheet.file).toBeGreaterThanOrEqual(0.88);
+        expect(sheet.visualMassRatio, sheet.file).toBeLessThanOrEqual(1.12);
+      }
 
       for (const frame of sheet.frameAudits) {
         const context = `${sheet.fighterId}/${sheet.file} frame ${frame.frame}`;
@@ -112,6 +134,15 @@ describe('fighter sprite raster audit', () => {
           context,
         ).toBe(sheet.frameWidth! * sheet.frameHeight!);
       }
+    }
+
+    for (const [fighterId, range] of Object.entries(GEOMETRIC_SCALE_CONTRACTS)) {
+      const idle = sheets.find(
+        (sheet) => sheet.fighterId === fighterId && sheet.file === 'idle.png',
+      );
+      expect(idle, `${fighterId}/idle.png`).toBeDefined();
+      expect(idle?.medianOpaqueHeight, fighterId).toBeGreaterThanOrEqual(range.minimum);
+      expect(idle?.medianOpaqueHeight, fighterId).toBeLessThanOrEqual(range.maximum);
     }
   });
 
@@ -132,6 +163,26 @@ describe('fighter sprite raster audit', () => {
       }
     }
   });
+
+  it.each(LEO_NOIR_REGRESSION_SHEETS)(
+    'protege escala, corpo inteiro e margens em %s/%s',
+    (fighterId, file) => {
+      const sheet = entries.find(
+        (entry) => entry.fighterId === fighterId && entry.file === file,
+      );
+      expect(sheet, `${fighterId}/${file}`).toBeDefined();
+      expect(sheet?.issues, `${fighterId}/${file}`).toEqual([]);
+      expect(sheet?.medianOpaqueHeight, `${fighterId}/${file}`).toBeGreaterThan(0);
+      expect(sheet?.visualMassRatio, `${fighterId}/${file}`).toBeGreaterThan(0);
+      for (const frame of sheet?.frameAudits ?? []) {
+        const context = `${fighterId}/${file} frame ${frame.frame}`;
+        expect(frame.bbox?.minX, context).toBeGreaterThanOrEqual(6);
+        expect(frame.bbox?.maxX, context).toBeLessThanOrEqual(249);
+        expect(frame.bbox?.minY, context).toBeGreaterThanOrEqual(6);
+        expect(frame.bbox?.maxY, context).toBe(249);
+      }
+    },
+  );
 
   it('não permite que o chroma verde volte ao Chute Pesado do Guto', () => {
     const kick = entries.find(

@@ -37,6 +37,7 @@ interface OnlineFightDebug {
 
 interface WorldSnapshot {
   readonly fighters: readonly {
+    readonly id: string;
     readonly x: number;
     readonly health: number;
     readonly activeMoveId: string | null;
@@ -237,12 +238,12 @@ async function createPair(
 }
 
 async function selectAndStart(host: Page, guest: Page, touch: boolean): Promise<void> {
-  await clickInternal(host, 90, 184, touch);
+  await clickInternal(host, 86, 140, touch);
   await expect.poll(async () => (
     (await lobbyDebug(host))?.players.find((player) => player.slot === 'p1')?.fighterId
   )).toBe('rafa-mare');
 
-  await clickInternal(guest, 549, 184, touch);
+  await clickInternal(guest, 554, 224, touch);
   await expect.poll(async () => (
     (await lobbyDebug(guest))?.players.find((player) => player.slot === 'p2')?.fighterId
   )).toBe('guto-barba');
@@ -416,6 +417,90 @@ test('duas abas criam sala, mapeiam papéis e mantêm hash lockstep', async ({ b
 
     await clickInternal(pair.host, 320, 240, testInfo.project.name.includes('mobile'));
     await waitScene(pair.host, 'OnlineScene');
+  } finally {
+    await pair.hostContext.close();
+    if (pair.guestContext.pages().length > 0) await pair.guestContext.close();
+  }
+});
+
+test('Léo e Noir iniciam online, sincronizam input/hash e encerram limpo', async ({
+  browser,
+}, testInfo) => {
+  const pair = await createPair(browser, testInfo);
+  const touch = testInfo.project.name.includes('mobile');
+  try {
+    // Grade 3x2: Léo no centro inferior; Noir no centro superior.
+    await clickInternal(pair.host, 320, 224, touch);
+    await expect.poll(async () => (
+      (await lobbyDebug(pair.host))?.players.find((player) => player.slot === 'p1')?.fighterId
+    )).toBe('leo-violeta');
+
+    await clickInternal(pair.guest, 320, 140, touch);
+    await expect.poll(async () => (
+      (await lobbyDebug(pair.guest))?.players.find((player) => player.slot === 'p2')?.fighterId
+    )).toBe('noir-reflexo');
+
+    await clickInternal(pair.host, 320, 297, touch);
+    await expect.poll(async () => (
+      (await lobbyDebug(pair.host))?.players.find((player) => player.slot === 'p1')?.ready
+    )).toBe(true);
+    await clickInternal(pair.guest, 320, 297, touch);
+    await Promise.all([
+      waitScene(pair.host, 'FightScene'),
+      waitScene(pair.guest, 'FightScene'),
+    ]);
+
+    await expect.poll(async () => {
+      const [hostWorld, guestWorld] = await Promise.all([
+        worldSnapshot(pair.host),
+        worldSnapshot(pair.guest),
+      ]);
+      return hostWorld?.fighters.map(({ id }) => id).join(',')
+        === 'leo-violeta,noir-reflexo'
+        && guestWorld?.fighters.map(({ id }) => id).join(',')
+          === 'leo-violeta,noir-reflexo';
+    }).toBe(true);
+
+    await expect.poll(async () => (await fightDebug(pair.host))?.lastHashFrame)
+      .toBeGreaterThanOrEqual(120);
+    await expect.poll(async () => {
+      const [host, guest] = await Promise.all([
+        fightDebug(pair.host),
+        fightDebug(pair.guest),
+      ]);
+      return host?.lastHashFrame === guest?.lastHashFrame
+        && host?.lastHash === guest?.lastHash
+        && host?.lastHash !== null;
+    }).toBe(true);
+
+    const releaseMovement = touch
+      ? await beginTouchAction(pair.host, 'right')
+      : async () => pair.host.keyboard.up('KeyD');
+    if (!touch) await pair.host.keyboard.down('KeyD');
+    await pair.host.waitForTimeout(420);
+    await releaseMovement();
+
+    const hashBefore = (await fightDebug(pair.host))?.lastHashFrame ?? 0;
+    await expect.poll(async () => {
+      const [host, guest] = await Promise.all([
+        fightDebug(pair.host),
+        fightDebug(pair.guest),
+      ]);
+      return (host?.lastHashFrame ?? 0) > hashBefore
+        && host?.lastHashFrame === guest?.lastHashFrame
+        && host?.lastHash === guest?.lastHash;
+    }, { timeout: 15_000 }).toBe(true);
+
+    await pair.host.screenshot({
+      path: resolve(auditRoot, `${testInfo.project.name}-leo-noir-fight.png`),
+    });
+    await assertNoOnlineCacheOrTicket(pair.host);
+    expect(pair.hostDiagnostics).toEqual({ errors: [], notFound: [] });
+    expect(pair.guestDiagnostics).toEqual({ errors: [], notFound: [] });
+
+    await pair.guestContext.close();
+    await waitScene(pair.host, 'ResultScene');
+    expect((await fightDebug(pair.host))?.waitingForPeer ?? null).toBeNull();
   } finally {
     await pair.hostContext.close();
     if (pair.guestContext.pages().length > 0) await pair.guestContext.close();

@@ -155,7 +155,8 @@ quando build, engine, revisão de assets e arena coincidem.
 
 `room_state.players` inclui, para cada slot, `connected`, `selected`, `ready`,
 `fighterId` e `arenaId`. O roster online aceito nesta fase contém somente
-`rafa-mare`, `guto-barba`, `astro-riso` e `dante-sinal`; a arena é
+`rafa-mare`, `guto-barba`, `astro-riso`, `dante-sinal`, `leo-violeta` e
+`noir-reflexo`; a arena é
 `cais-da-cidade`.
 
 O `inputDelay` enviado no `start` vem de `INPUT_DELAY_FRAMES`: default 8,

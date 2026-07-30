@@ -52,6 +52,8 @@ describe('assetManifest', () => {
       'astro-riso': 256,
       'guto-barba': 288,
       'dante-sinal': 256,
+      'leo-violeta': 256,
+      'noir-reflexo': 256,
     };
     for (const fighter of FIGHTER_SPRITE_ASSETS) {
       const frameSize = expectedFrameSize[fighter.fighterId] ?? 0;

@@ -87,6 +87,8 @@ const fighters = new Set<FighterId>([
   'guto-barba',
   'astro-riso',
   'dante-sinal',
+  'leo-violeta',
+  'noir-reflexo',
 ]);
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
