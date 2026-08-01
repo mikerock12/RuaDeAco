@@ -100,8 +100,8 @@ export const rafaMareSpriteAsset: FighterSpriteAsset = {
   origin: { x: 0.5, y: 1 },
   scale: 1,
   visualOffset: { x: 0, y: FIGHTER_OPAQUE_BOTTOM_PADDING['rafa-mare'] },
-  hitboxGuide: [{ x: 16, y: -116, width: 84, height: 56 }],
-  hurtboxGuide: [
+  legacyHitboxGuide: [{ x: 16, y: -116, width: 84, height: 56 }],
+  legacyHurtboxGuide: [
     { x: -22, y: -136, width: 44, height: 44 },
     { x: -30, y: -94, width: 60, height: 94 },
   ],

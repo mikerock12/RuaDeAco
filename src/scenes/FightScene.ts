@@ -575,26 +575,19 @@ export class FightScene extends Phaser.Scene {
   private drawDebug(snapshot: ReturnType<CombatWorld['snapshot']>): void {
     this.debugGraphics.clear();
     if (!this.world.debugBoxes) return;
-    this.world.fighters.forEach((fighter, index) => {
-      const opponent = this.world.fighters[index === 0 ? 1 : 0];
-      const combatHurtboxes = fighter.getHurtboxes();
-      const shownHurtboxes = combatHurtboxes.length > 0
-        && opponent.currentMove?.usesVisualHurtboxes
-        && fighter.definition.visualHurtboxes
-        ? fighter.definition.visualHurtboxes
-        : combatHurtboxes;
+    this.world.fighters.forEach((fighter) => {
       this.debugGraphics.lineStyle(1, 0x38ff80, 0.95);
-      for (const hurtbox of shownHurtboxes) {
+      for (const hurtbox of fighter.getEvaluatedHurtboxes()) {
         const rect = worldRectToScreen(toWorldRect(hurtbox, fighter));
         this.debugGraphics.strokeRect(rect.x, rect.y, rect.width, rect.height);
       }
       this.debugGraphics.lineStyle(2, 0xff3b5c, 0.95);
-      for (const hitbox of fighter.getActiveHitboxes()) {
+      for (const hitbox of fighter.getEvaluatedHitboxes()) {
         const rect = worldRectToScreen(toWorldRect(hitbox, fighter));
         this.debugGraphics.strokeRect(rect.x, rect.y, rect.width, rect.height);
       }
       this.debugGraphics.lineStyle(1, 0xffd55c, 0.9);
-      const pushbox = worldRectToScreen(toWorldRect(fighter.definition.stats.pushbox, fighter));
+      const pushbox = worldRectToScreen(toWorldRect(fighter.getEvaluatedPushbox(), fighter));
       this.debugGraphics.strokeRect(pushbox.x, pushbox.y, pushbox.width, pushbox.height);
     });
     this.debugGraphics.lineStyle(2, 0x29d9ff, 0.95);

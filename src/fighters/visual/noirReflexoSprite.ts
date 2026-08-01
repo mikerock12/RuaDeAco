@@ -103,8 +103,8 @@ export const noirReflexoSpriteAsset: FighterSpriteAsset = {
   origin: { x: 0.5, y: 1 },
   scale: 1,
   visualOffset: { x: 0, y: FIGHTER_OPAQUE_BOTTOM_PADDING['noir-reflexo'] },
-  hitboxGuide: [{ x: 12, y: -118, width: 88, height: 62 }],
-  hurtboxGuide: [
+  legacyHitboxGuide: [{ x: 12, y: -118, width: 88, height: 62 }],
+  legacyHurtboxGuide: [
     { x: -20, y: -133, width: 40, height: 41 },
     { x: -29, y: -92, width: 58, height: 92 },
   ],

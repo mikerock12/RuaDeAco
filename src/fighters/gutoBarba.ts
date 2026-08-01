@@ -28,10 +28,6 @@ export const gutoBarba: FighterDefinition = {
     { x: -18, y: -20, width: 36, height: 20, region: 'legs' },
   ],
   crouchingHurtboxes: CROUCHING_HURTBOXES,
-  visualHurtboxes: [
-    { x: -30, y: -150, width: 60, height: 46, region: 'head' },
-    { x: -42, y: -106, width: 84, height: 106, region: 'body' },
-  ],
   animations: STANDARD_ANIMATIONS,
   visual: {
     body: 0x61488e,
@@ -234,7 +230,6 @@ export const gutoBarba: FighterDefinition = {
       meterCost: 0,
       meterGainOnHit: 16,
       meterGainOnBlock: 8,
-      usesVisualHurtboxes: true,
     },
     muralhaNorte: {
       id: 'muralhaNorte',
@@ -308,7 +303,6 @@ export const gutoBarba: FighterDefinition = {
       meterGainOnHit: 18,
       meterGainOnBlock: 0,
       lockFacing: true,
-      usesVisualHurtboxes: true,
     },
     abracoGlacial: {
       id: 'abracoGlacial',
@@ -359,7 +353,6 @@ export const gutoBarba: FighterDefinition = {
       isSuper: true,
       cinematic: 'freeze',
       lockFacing: true,
-      usesVisualHurtboxes: true,
     },
   },
 };

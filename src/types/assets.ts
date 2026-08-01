@@ -132,8 +132,9 @@ export interface FighterSpriteAsset {
   readonly origin: Readonly<{ x: number; y: number }>;
   readonly scale: number;
   readonly visualOffset: Readonly<{ x: number; y: number }>;
-  readonly hitboxGuide: readonly LocalRect[];
-  readonly hurtboxGuide: readonly LocalRect[];
+  /** Guias históricos de composição; não participam da colisão de runtime. */
+  readonly legacyHitboxGuide: readonly LocalRect[];
+  readonly legacyHurtboxGuide: readonly LocalRect[];
   readonly animations: Readonly<
     Record<SharedFighterAnimationId, FighterAnimationAsset>
     & Partial<Record<FighterAnimationId, FighterAnimationAsset>>

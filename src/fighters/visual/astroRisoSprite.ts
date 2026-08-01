@@ -99,8 +99,8 @@ export const astroRisoSpriteAsset: FighterSpriteAsset = {
   origin: { x: 0.5, y: 1 },
   scale: 1,
   visualOffset: { x: 0, y: FIGHTER_OPAQUE_BOTTOM_PADDING['astro-riso'] },
-  hitboxGuide: [{ x: 12, y: -114, width: 86, height: 58 }],
-  hurtboxGuide: [
+  legacyHitboxGuide: [{ x: 12, y: -114, width: 86, height: 58 }],
+  legacyHurtboxGuide: [
     { x: -21, y: -134, width: 42, height: 42 },
     { x: -28, y: -92, width: 56, height: 92 },
   ],

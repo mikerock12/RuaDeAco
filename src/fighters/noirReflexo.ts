@@ -100,10 +100,6 @@ export const noirReflexo: FighterDefinition = {
   },
   standingHurtboxes: STANDING_HURTBOXES,
   crouchingHurtboxes: CROUCHING_HURTBOXES,
-  visualHurtboxes: [
-    { x: -20, y: -133, width: 40, height: 41, region: 'head' },
-    { x: -29, y: -92, width: 58, height: 92, region: 'body' },
-  ],
   animations: STANDARD_ANIMATIONS,
   visual: {
     body: 0x11151b,

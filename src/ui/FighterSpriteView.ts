@@ -103,18 +103,27 @@ class SpriteFighterView implements FighterView {
       // corporal do grappler durante a sustentação.
       .setDepth(snapshot.grabbedBy === null ? 20 : snapshot.victimDepth === 'front' ? 22 : 19);
 
-    const activeMove = snapshot.activeMoveId ? this.definition.moves[snapshot.activeMoveId] ?? null : null;
-    const resolved = resolveFighterAnimation(snapshot, activeMove, this.asset, this.definition);
+    const poseSnapshot: FighterSnapshot = {
+      ...snapshot,
+      state: snapshot.poseState,
+      stateFrame: snapshot.poseStateFrame,
+      activeMoveId: snapshot.poseMoveId,
+      moveConnected: snapshot.poseMoveConnected,
+    };
+    const activeMove = poseSnapshot.activeMoveId
+      ? this.definition.moves[poseSnapshot.activeMoveId] ?? null
+      : null;
+    const resolved = resolveFighterAnimation(poseSnapshot, activeMove, this.asset, this.definition);
     this.currentAnimation = resolved.id;
     const animation = this.asset.animations[this.currentAnimation];
 
     if (!animation) {
-      console.error(`[Rua de Aço] Animação ausente: key=${this.currentAnimation} fighter=${this.definition.id} state=${snapshot.state} move=${snapshot.activeMoveId}`);
+      console.error(`[Rua de Aço] Animação ausente: key=${this.currentAnimation} fighter=${this.definition.id} state=${snapshot.poseState} move=${snapshot.poseMoveId}`);
       const fallback = this.asset.animations['idle'];
       this.applyAnimationFrame(
         this.sprite,
         fallback,
-        spriteSheetFrameIndex(fallback, snapshot.stateFrame),
+        spriteSheetFrameIndex(fallback, snapshot.poseStateFrame),
       );
     } else {
       this.applyAnimationFrame(
@@ -129,13 +138,13 @@ class SpriteFighterView implements FighterView {
     this.groundShadow.sync(snapshot, roundPixel(worldToScreen(worldX)));
     this.statusPresentation.sync(snapshot, roundPixel(x), roundPixel(y), 18);
 
-    const attachedEffect = resolveAttachedEffect(snapshot, activeMove, this.asset);
+    const attachedEffect = resolveAttachedEffect(poseSnapshot, activeMove, this.asset);
     this.moveEffectActive = attachedEffect !== undefined;
     if (this.moveEffect && attachedEffect) {
       this.applyAnimationFrame(
         this.moveEffect,
         attachedEffect,
-        resolveAttachedEffectFrame(attachedEffect, snapshot.stateFrame),
+        resolveAttachedEffectFrame(attachedEffect, snapshot.poseStateFrame),
       );
 
       const effectX = attachedEffect.attachTo === 'victim'

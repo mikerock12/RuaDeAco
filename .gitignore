@@ -43,6 +43,7 @@ android/capacitor.build.gradle
 # Evidências locais das auditorias de interface e multiplayer
 /tmp/ui-audit/
 /tmp/online-audit/
+/tmp/hitbox-audit/
 
 # Cache local dos scripts Python
 __pycache__/

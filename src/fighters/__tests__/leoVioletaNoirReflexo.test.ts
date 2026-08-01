@@ -41,6 +41,12 @@ function qcfSpecial(world: CombatWorld, side: 'p1' | 'p2' = 'p1'): void {
   }
 }
 
+function forceMove(fighter: FighterRuntime, moveId: string): void {
+  const move = fighter.definition.moves[moveId];
+  if (!move) throw new Error(`Golpe ausente: ${moveId}`);
+  (fighter as unknown as { startMove(value: typeof move): void }).startMove(move);
+}
+
 const testHitbox = (
   kind: HitboxDefinition['kind'],
   level: HitboxDefinition['level'],
@@ -112,6 +118,8 @@ describe('Léo Violeta e Noir Reflexo', () => {
       hitbox: {
         kind: 'projectile',
         level: 'mid',
+        y: -9,
+        airAvoidable: true,
         damage: 40,
         chipDamage: 4,
         hitStun: 23,
@@ -363,7 +371,9 @@ describe('Léo Violeta e Noir Reflexo', () => {
     jumped.fighters[0].x = 280;
     jumped.fighters[1].x = 430;
     const jumpedHealth = jumped.fighters[1].health;
-    qcfSpecial(jumped);
+    // Mesmo caminho de captura determinística usado pelo E2E: início direto
+    // do golpe, sete passos e salto do P2 antes do spawn no frame 9.
+    forceMove(jumped.fighters[0], 'olharFrio');
     for (let frame = 0; frame < 7; frame += 1) jumped.step(empty, empty);
     jumped.step(empty, input(['up'], ['up']));
     for (let frame = 0; frame < 70; frame += 1) jumped.step(empty, empty);

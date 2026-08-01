@@ -27,6 +27,8 @@
     "test:e2e:audio:debug": "playwright test e2e/audio-context.spec.ts --project=chrome-visible-real-policy --debug",
     "test:e2e:ui": "playwright test --ui --project=chrome-visible-real-policy",
     "validate:sprites": "node scripts/audit-fighter-sprites.mjs",
+    "audit:hitboxes": "node scripts/audit-fighter-hitboxes.mjs --stage=both",
+    "test:e2e:hitboxes": "npm run audit:hitboxes && playwright test e2e/hitbox-alignment.spec.ts --project=chrome-visible-real-policy --project=chrome-mobile-landscape",
     "generate:icons": "node scripts/generate-icons.mjs",
     "android:sync": "npx cap sync android",
     "android:open": "npx cap open android",

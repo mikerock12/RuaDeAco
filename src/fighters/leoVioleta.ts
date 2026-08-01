@@ -100,10 +100,6 @@ export const leoVioleta: FighterDefinition = {
   },
   standingHurtboxes: STANDING_HURTBOXES,
   crouchingHurtboxes: CROUCHING_HURTBOXES,
-  visualHurtboxes: [
-    { x: -20, y: -132, width: 40, height: 40, region: 'head' },
-    { x: -30, y: -92, width: 60, height: 92, region: 'body' },
-  ],
   animations: STANDARD_ANIMATIONS,
   visual: {
     body: 0x17151c,
@@ -122,11 +118,14 @@ export const leoVioleta: FighterDefinition = {
       hitbox: {
         id: 'leo-olhar-frio-projectile',
         x: -16,
-        y: 30,
+        // Núcleo alinhado ao código violeta visível (alpha local -10..9).
+        y: -9,
         width: 36,
         height: 18,
         kind: 'projectile',
         level: 'mid',
+        // Projétil horizontal de controle de chão: o salto é uma evasão deliberada.
+        airAvoidable: true,
         damage: 40,
         chipDamage: 4,
         hitStun: 23,

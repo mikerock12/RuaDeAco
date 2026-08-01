@@ -99,8 +99,8 @@ export const leoVioletaSpriteAsset: FighterSpriteAsset = {
   origin: { x: 0.5, y: 1 },
   scale: 1,
   visualOffset: { x: 0, y: FIGHTER_OPAQUE_BOTTOM_PADDING['leo-violeta'] },
-  hitboxGuide: [{ x: 12, y: -118, width: 88, height: 62 }],
-  hurtboxGuide: [
+  legacyHitboxGuide: [{ x: 12, y: -118, width: 88, height: 62 }],
+  legacyHurtboxGuide: [
     { x: -20, y: -132, width: 40, height: 40 },
     { x: -30, y: -92, width: 60, height: 92 },
   ],

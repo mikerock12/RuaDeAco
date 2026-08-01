@@ -120,8 +120,8 @@ export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
   origin: { x: 0.5, y: 1 },
   scale: 1,
   visualOffset: { x: 0, y: FIGHTER_OPAQUE_BOTTOM_PADDING['guto-barba'] },
-  hitboxGuide: [{ x: 8, y: -132, width: 108, height: 84 }],
-  hurtboxGuide: [
+  legacyHitboxGuide: [{ x: 8, y: -132, width: 108, height: 84 }],
+  legacyHurtboxGuide: [
     { x: -30, y: -150, width: 60, height: 46 },
     { x: -42, y: -106, width: 84, height: 106 },
   ],

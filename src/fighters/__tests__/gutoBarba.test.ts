@@ -4,6 +4,7 @@ import { FighterRuntime } from '../../combat/FighterRuntime';
 import { astroRiso } from '../astroRiso';
 import { danteSinal } from '../danteSinal';
 import { gutoBarba } from '../gutoBarba';
+import { buildCalibratedMoveHitboxes } from '../collision/collisionProfiles';
 import { rafaMare } from '../rafaMare';
 import type { FighterDefinition, InputAction, InputFrame } from '../../types/combat';
 import { gutoBarbaSpriteAsset } from '../visual/gutoBarbaSprite';
@@ -87,7 +88,8 @@ describe('contratos dos três golpes de Guto', () => {
     const move = gutoBarba.moves.descendingBlow!;
     expect(move.hitboxes[0]).toEqual(expect.objectContaining({ range: { from: 17, to: 21 } }));
     expect(move.hitboxes[0]?.boxes[0]).toMatchObject({ x: 16, y: -169, width: 93, height: 52 });
-    expect(move.usesVisualHurtboxes).toBe(true);
+    expect(buildCalibratedMoveHitboxes(gutoBarba.id, move)[0]?.boxes[0])
+      .toMatchObject({ x: 16, y: -169, width: 93, height: 52 });
   });
 
   it.each([1, -1] as const)('Chute Pesado acerta, causa dano e hit-stop olhando para %s', (facing) => {
@@ -108,7 +110,9 @@ describe('contratos dos três golpes de Guto', () => {
 
   it('Chute Pesado respeita alcance, agachamento e defesa overhead', () => {
     const miss = setupWorld(rafaMare);
-    miss.fighters[1].x = 440;
+    // A hurtbox raster de Rafa começa 45 px antes do centro; 460 deixa
+    // exatamente um espaço visível além da margem do pé de Guto.
+    miss.fighters[1].x = 460;
     startMove(miss, 'descendingBlow');
     runFrames(miss, 70);
     expect(miss.fighters[1].health).toBe(rafaMare.stats.maxHealth);

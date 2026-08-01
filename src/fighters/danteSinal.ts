@@ -29,11 +29,6 @@ export const danteSinal: FighterDefinition = {
   },
   standingHurtboxes: STANDING_HURTBOXES,
   crouchingHurtboxes: CROUCHING_HURTBOXES,
-  // Espaço visual usado pelos agarrões de Guto (usesVisualHurtboxes).
-  visualHurtboxes: [
-    { x: -22, y: -136, width: 44, height: 44, region: 'head' },
-    { x: -30, y: -94, width: 60, height: 94, region: 'body' },
-  ],
   animations: STANDARD_ANIMATIONS,
   visual: { body: 0x405e78, accent: 0x70ffbf, shadow: 0x172534, skin: 0xba795d },
   projectiles: {
@@ -47,7 +42,7 @@ export const danteSinal: FighterDefinition = {
       spawnMode: 'ownerOffset',
       maxActivePerOwner: 1,
       hitbox: {
-        // y/height: faixa mid ~Y mundo 242–258 com projétil em GROUND_Y-54.
+        // O núcleo é mid, mas a Chave preserva a evasão deliberada agachada.
         id: 'chave-binaria-hit',
         x: -14,
         y: -8,
@@ -55,6 +50,8 @@ export const danteSinal: FighterDefinition = {
         height: 16,
         kind: 'projectile',
         level: 'mid',
+        crouchAvoidable: true,
+        airAvoidable: true,
         damage: 65,
         chipDamage: 4,
         hitStun: 18,

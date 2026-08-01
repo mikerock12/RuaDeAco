@@ -86,6 +86,10 @@ export interface HitboxDefinition extends LocalRect {
   readonly id: string;
   readonly kind: HitKind;
   readonly level: HitLevel;
+  /** Evasão deliberada por pose baixa, mesmo quando o halo visual é maior. */
+  readonly crouchAvoidable?: boolean;
+  /** Evasão deliberada por salto para projéteis de controle de chão. */
+  readonly airAvoidable?: boolean;
   readonly damage: number;
   readonly chipDamage: number;
   readonly hitStun: number;
@@ -225,8 +229,6 @@ export interface MoveDefinition {
   readonly isSuper?: boolean;
   readonly cinematic?: 'rush' | 'freeze';
   readonly lockFacing?: boolean;
-  /** Usa a silhueta raster do alvo para golpes cuja arte excede as hurtboxes físicas legadas. */
-  readonly usesVisualHurtboxes?: boolean;
 }
 
 export interface AnimationDefinition {
@@ -286,8 +288,6 @@ export interface FighterDefinition {
   readonly stats: FighterStats;
   readonly standingHurtboxes: readonly HurtboxDefinition[];
   readonly crouchingHurtboxes: readonly HurtboxDefinition[];
-  /** Silhueta visual estável, usada apenas por golpes explicitamente opt-in. */
-  readonly visualHurtboxes?: readonly HurtboxDefinition[];
   readonly moves: Readonly<Record<string, MoveDefinition>>;
   readonly projectiles?: Readonly<Record<string, ProjectileDefinition>>;
   readonly animations: readonly AnimationDefinition[];

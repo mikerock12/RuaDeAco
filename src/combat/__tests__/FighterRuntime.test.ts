@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GROUND_Y, LANDING_FRAMES } from '../../config/gameConfig';
 import { gutoBarba } from '../../fighters/gutoBarba';
 import { rafaMare } from '../../fighters/rafaMare';
+import { getFighterCollisionProfile } from '../../fighters/collision/collisionProfiles';
 import type { HitboxDefinition, InputAction, InputFrame } from '../../types/combat';
 import { FighterRuntime } from '../FighterRuntime';
 
@@ -136,16 +137,17 @@ describe('pulo e agachamento', () => {
     fighter.beginFrame(input(['down']), 1, 400);
     fighter.finishFrame();
     expect(fighter.state).toBe('crouch');
-    expect(fighter.getHurtboxes()).toEqual(rafaMare.crouchingHurtboxes);
+    const profile = getFighterCollisionProfile(rafaMare.id)!;
+    expect(fighter.getHurtboxes()).toEqual(profile.poses.crouching.hurtboxes);
 
-    const standingTop = Math.min(...rafaMare.standingHurtboxes.map((box) => box.y));
-    const crouchingTop = Math.min(...rafaMare.crouchingHurtboxes.map((box) => box.y));
+    const standingTop = Math.min(...profile.poses.standing.hurtboxes.map((box) => box.y));
+    const crouchingTop = Math.min(...profile.poses.crouching.hurtboxes.map((box) => box.y));
     expect(crouchingTop).toBeGreaterThan(standingTop);
 
     fighter.beginFrame(input(), 2, 400);
     fighter.finishFrame();
     expect(fighter.state).toBe('idle');
-    expect(fighter.getHurtboxes()).toEqual(rafaMare.standingHurtboxes);
+    expect(fighter.getHurtboxes()).toEqual(profile.poses.standing.hurtboxes);
   });
 
   it('caminhar segurando baixo prioriza o agachamento', () => {
@@ -249,7 +251,9 @@ describe('golpes direcionais e agachados', () => {
     const fighter = new FighterRuntime(rafaMare, 200, 1);
     fighter.beginFrame(input(['down', 'heavy'], ['heavy']), 1, 400);
     expect(fighter.currentMove?.id).toBe('rasteira');
-    expect(fighter.getHurtboxes()).toEqual(rafaMare.crouchingHurtboxes);
+    expect(fighter.getHurtboxes()).toEqual(
+      getFighterCollisionProfile(rafaMare.id)!.poses.crouching.hurtboxes,
+    );
   });
 
   it('diagonal baixo-frente ainda aciona o golpe agachado fraco', () => {

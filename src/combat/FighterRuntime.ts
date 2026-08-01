@@ -16,9 +16,18 @@ import type {
   HitboxDefinition,
   HurtboxDefinition,
   InputFrame,
+  LocalRect,
   MoveDefinition,
   MoveEvent,
+  TimedHitbox,
 } from '../types/combat';
+import {
+  buildCalibratedMoveHitboxes,
+  activeHitboxesAtFrame,
+  collisionPoseKind,
+  getFighterCollisionProfile,
+} from '../fighters/collision/collisionProfiles';
+import type { CollisionPoseKind } from '../fighters/collision/collisionProfiles';
 import { applyDamageToHealth, applyEnergy, calculateDamage, calculateHitStun } from './calculations';
 import { CommandBuffer } from './CommandBuffer';
 
@@ -50,6 +59,11 @@ export interface FighterSnapshot {
   readonly facing: 1 | -1;
   readonly state: FighterState;
   readonly stateFrame: number;
+  /** Pose efetivamente avaliada no passo; render e debug usam estes campos. */
+  readonly poseState: FighterState;
+  readonly poseStateFrame: number;
+  readonly poseMoveId: string | null;
+  readonly poseMoveConnected: 'none' | 'hit' | 'block';
   readonly health: number;
   readonly maxHealth: number;
   readonly meter: number;
@@ -180,6 +194,16 @@ export class FighterRuntime {
   private damageTowardPassive = 0;
   private frozen = false;
   private moveConnected: 'none' | 'hit' | 'block' = 'none';
+  private readonly calibratedMoveHitboxes = new Map<string, readonly TimedHitbox[]>();
+  private poseCaptured = false;
+  private poseState: FighterState = 'idle';
+  private poseStateFrame = 0;
+  private poseMoveId: string | null = null;
+  private poseMoveConnected: 'none' | 'hit' | 'block' = 'none';
+  private poseCollisionKind: CollisionPoseKind = 'standing';
+  private evaluatedHitboxes: readonly HitboxDefinition[] = [];
+  private evaluatedHurtboxes: readonly HurtboxDefinition[] = [];
+  private evaluatedPushbox = { x: -15, y: -60, width: 30, height: 60 };
 
   constructor(definition: FighterDefinition, startX: number, facing: 1 | -1) {
     this.definition = definition;
@@ -188,6 +212,12 @@ export class FighterRuntime {
     this.previousX = startX;
     this.facing = facing;
     this.health = definition.stats.maxHealth;
+    for (const move of Object.values(definition.moves)) {
+      this.calibratedMoveHitboxes.set(
+        move.id,
+        buildCalibratedMoveHitboxes(definition.id, move),
+      );
+    }
   }
 
   beginFrame(input: InputFrame, simulationFrame: number, opponentX: number): void {
@@ -444,8 +474,9 @@ export class FighterRuntime {
   getActiveHitboxes(): readonly HitboxDefinition[] {
     if (!this.activeMove) return [];
     if (this.activeMove.air && this.y >= GROUND_Y) return [];
-    const timed = this.activeMove.hitboxes.find(({ range }) => this.stateFrame >= range.from && this.stateFrame <= range.to);
-    return timed?.boxes ?? [];
+    const phases = this.calibratedMoveHitboxes.get(this.activeMove.id)
+      ?? this.activeMove.hitboxes;
+    return activeHitboxesAtFrame(phases, this.stateFrame);
   }
 
   getHurtboxes(): readonly HurtboxDefinition[] {
@@ -456,10 +487,50 @@ export class FighterRuntime {
       || this.state === 'thrown'
       || isHeldVictimState(this.state)
     ) return [];
-    const timed = this.activeMove?.hurtboxes?.find(({ range }) => this.stateFrame >= range.from && this.stateFrame <= range.to);
-    if (timed) return timed.boxes;
+    const profile = getFighterCollisionProfile(this.id);
+    if (profile) {
+      return profile.poses[collisionPoseKind(this.state, this.y, this.activeMove)].hurtboxes;
+    }
+    const timed = this.activeMove?.hurtboxes?.flatMap(({ range, boxes }) =>
+      this.stateFrame >= range.from && this.stateFrame <= range.to ? boxes : []);
+    if (timed && timed.length > 0) return timed;
     const crouching = this.state === 'crouch' || this.state === 'blockCrouching';
-    return crouching ? this.definition.crouchingHurtboxes : this.definition.standingHurtboxes;
+    return crouching
+      ? this.definition.crouchingHurtboxes ?? []
+      : this.definition.standingHurtboxes ?? [];
+  }
+
+  getPushbox() {
+    const profile = getFighterCollisionProfile(this.id);
+    if (profile) {
+      return profile.poses[collisionPoseKind(this.state, this.y, this.activeMove)].pushbox;
+    }
+    return this.definition.stats.pushbox ?? this.evaluatedPushbox;
+  }
+
+  /** Congela a pose examinada antes de qualquer contato ou avanço de frame. */
+  captureCollisionPose(): void {
+    this.poseCaptured = true;
+    this.poseState = this.state;
+    this.poseStateFrame = this.stateFrame;
+    this.poseMoveId = this.activeMove?.id ?? null;
+    this.poseMoveConnected = this.moveConnected;
+    this.poseCollisionKind = collisionPoseKind(this.state, this.y, this.activeMove);
+    this.evaluatedHitboxes = this.getActiveHitboxes();
+    this.evaluatedHurtboxes = this.getHurtboxes();
+    this.evaluatedPushbox = this.getPushbox();
+  }
+
+  getEvaluatedHitboxes(): readonly HitboxDefinition[] {
+    return this.poseCaptured ? this.evaluatedHitboxes : this.getActiveHitboxes();
+  }
+
+  getEvaluatedHurtboxes(): readonly HurtboxDefinition[] {
+    return this.poseCaptured ? this.evaluatedHurtboxes : this.getHurtboxes();
+  }
+
+  getEvaluatedPushbox(): LocalRect {
+    return this.poseCaptured ? this.evaluatedPushbox : this.getPushbox();
   }
 
   canRegisterHit(hitboxId: string, targetId: FighterId): boolean {
@@ -487,6 +558,26 @@ export class FighterRuntime {
     return this.parryFrames > 0
       && hitbox.kind !== 'throw'
       && hitbox.level !== 'low';
+  }
+
+  canReceiveHitbox(hitbox: HitboxDefinition): boolean {
+    // A pose geométrica pertence ao início deste passo, mas estados que
+    // tornaram a vítima inelegível durante o contato (KO, arremesso ou
+    // agarrão) precisam prevalecer antes da resolução de projéteis.
+    if (
+      this.invulnerableFrames > 0
+      || this.state === 'knockdown'
+      || this.state === 'knockout'
+      || this.state === 'thrown'
+      || isHeldVictimState(this.state)
+      || this.grabbedBy !== null
+    ) return false;
+    const poseKind = this.poseCaptured
+      ? this.poseCollisionKind
+      : collisionPoseKind(this.state, this.y, this.activeMove);
+    if (hitbox.crouchAvoidable && poseKind === 'crouching') return false;
+    if (hitbox.airAvoidable && (poseKind === 'airborne' || poseKind === 'landing')) return false;
+    return true;
   }
 
   consumeParry(): number {
@@ -686,6 +777,16 @@ export class FighterRuntime {
     this.frozen = false;
     this.moveConnected = 'none';
     this.transition('idle');
+    // Reset pode ocorrer enquanto a simulação está pausada. Não exponha
+    // por um quadro a pose/caixas capturadas na posição anterior.
+    this.poseCaptured = false;
+    this.poseState = 'idle';
+    this.poseStateFrame = 0;
+    this.poseMoveId = null;
+    this.poseMoveConnected = 'none';
+    this.poseCollisionKind = 'standing';
+    this.evaluatedHitboxes = [];
+    this.evaluatedHurtboxes = [];
   }
 
   resetPosition(startX: number, facing: 1 | -1): void {
@@ -735,6 +836,10 @@ export class FighterRuntime {
       facing: this.facing,
       state: this.state,
       stateFrame: this.stateFrame,
+      poseState: this.poseCaptured ? this.poseState : this.state,
+      poseStateFrame: this.poseCaptured ? this.poseStateFrame : this.stateFrame,
+      poseMoveId: this.poseCaptured ? this.poseMoveId : this.activeMove?.id ?? null,
+      poseMoveConnected: this.poseCaptured ? this.poseMoveConnected : this.moveConnected,
       health: this.health,
       maxHealth: this.definition.stats.maxHealth,
       meter: this.meter,

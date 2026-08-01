@@ -94,6 +94,11 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: false,
   },
+  // Evita que o otimizador de desenvolvimento trate relatórios Playwright,
+  // saídas Android e contact sheets de auditoria como entradas da aplicação.
+  optimizeDeps: {
+    entries: ['index.html'],
+  },
   server: {
     host: true,
   },

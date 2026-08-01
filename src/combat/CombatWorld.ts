@@ -348,6 +348,8 @@ export class CombatWorld {
     two.facing = two.x <= one.x ? 1 : -1;
     one.beginFrame(EMPTY_INPUT, this.frame, two.x);
     two.beginFrame(EMPTY_INPUT, this.frame, one.x);
+    one.captureCollisionPose();
+    two.captureCollisionPose();
     one.finishFrame();
     two.finishFrame();
 
@@ -368,9 +370,10 @@ export class CombatWorld {
     const twoPreviousMove = two.currentMove;
     one.beginFrame(playerOneInput, this.frame, two.x);
     two.beginFrame(playerTwoInput, this.frame, one.x);
+    one.captureCollisionPose();
+    two.captureCollisionPose();
     this.emitMoveStart(one, onePreviousMove);
     this.emitMoveStart(two, twoPreviousMove);
-    this.resolvePushboxes();
 
     this.consumeFighterEvents(one);
     this.consumeFighterEvents(two);
@@ -394,6 +397,9 @@ export class CombatWorld {
     }
 
     this.resolveProjectileContacts();
+    // O contato pertence às posições/poses já avaliadas neste passo. Só
+    // depois separam-se os núcleos corporais, evitando apagar um toque visual.
+    this.resolvePushboxes();
     one.finishFrame();
     two.finishFrame();
     // O snapshot apresenta o stateFrame já finalizado. Atualizar o agarrão
@@ -545,17 +551,13 @@ export class CombatWorld {
   private findContact(attacker: FighterRuntime, defender: FighterRuntime): Contact | null {
     if (attacker.isBeingGrabbed || defender.isBeingGrabbed) return null;
     const move = attacker.currentMove;
-    const combatHurtboxes = defender.getHurtboxes();
-    const targetHurtboxes = combatHurtboxes.length > 0
-      && move?.usesVisualHurtboxes
-      && defender.definition.visualHurtboxes
-      ? defender.definition.visualHurtboxes
-      : combatHurtboxes;
-    const hurtboxes = targetHurtboxes.map((box) => toWorldRect(box, defender));
-    const hitboxes = attacker.getActiveHitboxes()
+    const hurtboxes = defender.getEvaluatedHurtboxes()
+      .map((box) => toWorldRect(box, defender));
+    const hitboxes = attacker.getEvaluatedHitboxes()
       .filter((box) => attacker.canRegisterHit(box.id, defender.id))
       .sort((a, b) => b.priority - a.priority);
     for (const hitbox of hitboxes) {
+      if (!defender.canReceiveHitbox(hitbox)) continue;
       const worldHitbox = toWorldRect(hitbox, attacker);
       if (hurtboxes.some((hurtbox) => intersects(worldHitbox, hurtbox))) {
         return { attacker, defender, hitbox, move };
@@ -763,6 +765,8 @@ export class CombatWorld {
     const [one, two] = this.fighters;
     one.beginFrame(EMPTY_INPUT, this.frame, two.x);
     two.beginFrame(EMPTY_INPUT, this.frame, one.x);
+    one.captureCollisionPose();
+    two.captureCollisionPose();
     one.finishFrame();
     two.finishFrame();
   }
@@ -774,8 +778,10 @@ export class CombatWorld {
 
       const targetIndex: 0 | 1 = projectile.owner === this.fighters[0] ? 1 : 0;
       const target = this.fighters[targetIndex];
+      if (!target.canReceiveHitbox(projectile.hitbox)) continue;
       const projectileRect = this.projectileRect(projectile);
-      const hit = target.getHurtboxes().some((box) => intersects(projectileRect, toWorldRect(box, target)));
+      const hit = target.getEvaluatedHurtboxes()
+        .some((box) => intersects(projectileRect, toWorldRect(box, target)));
       if (!hit) continue;
 
       if (target.canParry(projectile.hitbox)) {
@@ -934,8 +940,8 @@ export class CombatWorld {
       || two.state === 'thrown'
     ) return;
     if (Math.abs(one.y - two.y) > 96) return;
-    const oneBox = toWorldRect(one.definition.stats.pushbox, one);
-    const twoBox = toWorldRect(two.definition.stats.pushbox, two);
+    const oneBox = toWorldRect(one.getEvaluatedPushbox(), one);
+    const twoBox = toWorldRect(two.getEvaluatedPushbox(), two);
     const overlap = horizontalOverlap(oneBox, twoBox);
     if (overlap <= 0 || !intersects(oneBox, twoBox)) return;
 
