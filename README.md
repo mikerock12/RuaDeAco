@@ -1,192 +1,132 @@
 # Rua de Aço
 
-Vertical slice de um jogo de luta 2D para navegador com direção visual de arcade dos anos 1990. O projeto usa Phaser 4.1.0, TypeScript e Vite 8, sem React, servidor ou banco de dados.
+Jogo de luta 2D em pixel art que roda no navegador, com **multiplayer online
+funcionando**: dois jogadores em máquinas diferentes lutam na mesma partida por
+um código de sala.
 
-Rafa Maré e Guto Barba estão jogáveis em uma luta melhor de três rounds no Cais da Cidade. Noir Reflexo, Astro Riso, Dante Sinal e Léo Violeta aparecem na seleção como **Em desenvolvimento** e já possuem definições individuais.
+**▶️ Jogar agora: <https://mikerock12.github.io/RuaDeAco/>**
 
-## Requisitos
+![Menu principal](docs/screenshots/01-menu.png)
 
-- Node.js 20.19 ou superior;
-- npm 10 ou superior;
-- navegador moderno com WebGL ou Canvas 2D;
-- HTTPS em produção para PWA e service worker.
+## O que está pronto
 
-## Instalação e execução
+- **6 lutadores jogáveis** — Rafa Maré, Guto Barba, Noir Reflexo, Astro Riso,
+  Dante Sinal e Léo Violeta, cada um com golpes, especiais e frame data próprios.
+- **4 modos** — contra a CPU, dois jogadores no mesmo teclado, treinamento
+  (hitboxes visíveis, vida e energia infinitas) e **online**.
+- **Luta melhor de três rounds** na arena Cais da Cidade, em passo fixo de 60 Hz.
+- **Multiplayer online** por sala privada, com servidor próprio em produção.
+- **Roda em qualquer lugar** — navegador desktop, celular (controles touch),
+  gamepad, PWA instalável com modo offline e APK Android via Capacitor.
+
+## Como é por dentro
+
+| Camada | Tecnologia |
+| --- | --- |
+| Linguagem | **TypeScript** (cliente e servidor, sem JavaScript solto) |
+| Motor | **Phaser 4.1** com renderização pixel art em 640 × 360 |
+| Build | **Vite 8** — sem React, sem framework de UI |
+| Servidor online | **Cloudflare Workers** + **Durable Objects** com SQLite |
+| Mobile | **Capacitor 8** (APK Android) |
+| Testes | **Vitest** (438 unitários + 66 no servidor) e **Playwright** (E2E) |
+| Publicação | GitHub Pages via GitHub Actions |
+
+O combate é uma simulação determinística própria: dano, alcance, hit stun,
+agarrões e projéteis vivem em `src/combat/`, separados do desenho. O Phaser
+cuida só da tela e da entrada — nada de física automática.
+
+## Telas
+
+| Seleção de lutadores | Luta local |
+| --- | --- |
+| ![Seleção](docs/screenshots/02-selecao.png) | ![Luta](docs/screenshots/03-luta.png) |
+
+## Como funciona o modo online
+
+O servidor **transporta inputs, não simula a luta**. Os dois clientes rodam a
+mesma simulação de 60 Hz e só trocam os botões pressionados — o clássico
+*lockstep* com atraso fixo.
+
+```text
+Jogador 1 ──┐                                        ┌── Jogador 2
+            │  HTTPS + WebSocket                     │
+            └──►  Cloudflare Worker  ◄───────────────┘
+                  sessão HMAC · ticket · CORS
+                          │
+                  Durable Object "GameRoom"
+                  SQLite · slots · relay de inputs
+```
+
+1. **Sala** — um jogador cria a sala e recebe um código de 10 caracteres; o
+   outro entra digitando esse código. Dois jogadores por sala, sem espectadores.
+2. **Autenticação** — o Worker emite uma sessão convidada assinada com HMAC-SHA-256
+   e um ticket de 45 segundos, usado só no subprotocolo do WebSocket (nunca na URL).
+3. **Sincronia** — cada sala é um Durable Object isolado com SQLite, que guarda
+   slots, seleção, seed e prontidão, e hiberna quando ninguém está conectado.
+4. **Inputs** — cada frame vira uma máscara de 8 bits (direções + fraco, forte,
+   especial e defesa) enviada em lotes de até 3 frames. O servidor valida a
+   sequência e repassa ao rival, sem opinar sobre dano ou vitória.
+5. **Atraso** — 8 frames (~133 ms) de input delay dão tempo para o pacote chegar.
+   Quando a rede atrasa mais que isso, o jogo segura o frame e avisa
+   `AGUARDANDO INPUT DO RIVAL` em vez de dessincronizar.
+6. **Verificação** — a cada 60 frames os dois lados enviam um hash canônico do
+   estado completo. Hashes diferentes = divergência detectada na hora.
+
+| Sala online (código + seleção) | Servidor disponível |
+| --- | --- |
+| ![Sala online](docs/screenshots/05-online-lobby.png) | ![Menu online](docs/screenshots/04-online-menu.png) |
+
+A mesma partida, vista pelos dois clientes ao mesmo tempo — repare no HUD com
+`ONLINE`, ping real e o frame do lockstep:
+
+| Jogador 1 | Jogador 2 |
+| --- | --- |
+| ![Online P1](docs/screenshots/06-online-p1.png) | ![Online P2](docs/screenshots/07-online-p2.png) |
+
+Ainda não existem ranking, matchmaking, rollback ou reconexão no meio da luta:
+o online é uma beta privada de duas pessoas por código de sala.
+
+## Rodar localmente
 
 ```bash
 npm install
 npm run dev
 ```
 
-Comandos de validação:
+Validação:
 
 ```bash
-npm run typecheck
-npm test
-npm run build
-npm run preview
+npm run typecheck && npm test && npm run build
 ```
 
-## Renderização 16-bits
-
-- viewport lógico: **640 × 360**;
-- `Phaser.AUTO`, `Scale.FIT` e `Scale.CENTER_BOTH`;
-- `pixelArt: true`, `antialias: false`, `roundPixels: true` e canvas opaco;
-- CSS com `image-rendering: pixelated` e `crisp-edges`;
-- fonte bitmap local dentro do canvas e Press Start 2P local para os controles HTML;
-- sprites em posições inteiras e sem zoom fracionário de câmera.
-
-A simulação de combate continua no espaço 640 × 360 para preservar frame data, alcance, CPU e testes. A camada visual projeta as coordenadas com fator 0,5. O combate roda em passo fixo de 60 Hz e não depende das colisões automáticas do Phaser.
+Para subir também o servidor online na sua máquina, veja
+[`server/README.md`](server/README.md).
 
 ## Controles
 
-### Jogador 1
+| Ação | Jogador 1 | Jogador 2 |
+| --- | --- | --- |
+| Mover | A / D | Setas ← → |
+| Pular / agachar | W / S | Setas ↑ ↓ |
+| Ataque fraco | F | J |
+| Ataque forte | G | K |
+| Especial | H | L |
+| Defesa | R | U |
+| Confirmar / pausar | Enter / Esc | — |
 
-| Ação | Tecla |
-| --- | --- |
-| Esquerda / direita | A / D |
-| Pular / agachar | W / S |
-| Ataque fraco | F |
-| Ataque forte | G |
-| Especial | H |
-| Defesa | R |
-| Confirmar | Enter |
-| Pausar / voltar | Escape |
+As teclas são remapeáveis em Configurações. No celular o jogo mostra direcional
+e botões na tela automaticamente, com suporte a múltiplos toques. Gamepads são
+reconhecidos ao conectar. No treinamento, F1 alterna as hitboxes, F2 reposiciona
+e F3 liga ou desliga a CPU.
 
-### Jogador 2
+## Documentação
 
-| Ação | Tecla |
-| --- | --- |
-| Esquerda / direita | Setas esquerda / direita |
-| Pular / agachar | Setas cima / baixo |
-| Ataque fraco | J |
-| Ataque forte | K |
-| Especial | L |
-| Defesa | U |
+- [Arquitetura do servidor multiplayer](docs/MULTIPLAYER_SERVER_ARCHITECTURE.md)
+- [Arquitetura do cliente online](docs/ONLINE_CLIENT_ARCHITECTURE.md)
+- [Pipeline de arte e sprites](docs/PIPELINE_DE_ARTE.md)
+- [Beta Android](README_ANDROID_BETA.md)
 
-Em aparelhos com toque, o modo automático mostra o direcional à esquerda e os botões A, B, S e escudo à direita. O sistema aceita múltiplos dedos, cancela ações ao sair da área e libera todas as entradas em perda de foco ou mudança de orientação.
+## Requisitos
 
-No treinamento:
-
-- F1 ou **BOXES** alterna hitboxes, hurtboxes e pushboxes;
-- F2 ou **REPOS.** reinicia posições;
-- F3 ou **CPU** ativa/desativa a CPU;
-- vida e energia são infinitas.
-
-## Estrutura principal
-
-```text
-src/
-  assets/      manifesto central de imagens e texturas
-  ai/          máquina de estados e dificuldades da CPU
-  audio/       áudio temporário sintetizado
-  combat/      simulação, frame data, caixas e rounds
-  config/      pixelArtConfig, sessão e preferências
-  fighters/    dados de lutadores e descritores de sprites
-  input/       teclado, comandos e multitouch
-  pwa/         instalação e registro do service worker
-  scenes/      oito cenas Phaser
-  types/       contratos de combate e assets
-  ui/          arena raster, retratos e sprites de luta
-public/
-  assets/
-    fighters/  spritesheets planos de Rafa (256) e Guto (288)
-    fonts/     fonte bitmap e fonte web local licenciada
-    references/ seis conceitos e logo fornecidos
-    stages/    camadas raster do Cais da Cidade
-    ui/        molduras e painéis raster
-  icons/
-  manifest.webmanifest
-  service-worker.js
-scripts/
-  generate-pixel-assets.mjs
-  audit-fighter-sprites.mjs
-```
-
-`src/assets/assetManifest.ts` e `src/fighters/visual/` são as fontes das chaves, caminhos e dimensões. A `PreloadScene` carrega os strips como spritesheets, valida largura, altura, quantidade de frames e layout horizontal, e interrompe a navegação com um painel de diagnóstico se um recurso obrigatório estiver ausente ou mal recortado.
-
-Os conceitos são tratados como `PortraitAsset` e aparecem no menu, seleção, ficha, apresentação versus, HUD e resultado. Eles nunca são usados como corpos durante a luta. Os corpos usam `FighterSpriteAsset` separado.
-
-## Como adicionar um personagem
-
-1. Crie `src/fighters/nomeDoPersonagem.ts` com um `FighterDefinition`.
-2. Defina atributos, hurtboxes, habilidades, animações e movimentos por dados.
-3. Adicione o conceito e seus crops em `src/assets/assetManifest.ts`.
-4. Crie um descritor visual em `src/fighters/visual/` e registre-o no índice.
-5. Coloque os PNGs de animação na pasta do lutador.
-6. Adicione a definição a `src/fighters/index.ts`.
-7. Marque `available: true` somente quando golpes, arte e testes estiverem completos.
-
-Não ajuste tempos ou caixas com base no tamanho visual do PNG. A origem lógica permanece nos pés e as regras ficam no núcleo de combate.
-
-## Contrato dos sprites de Rafa e Guto
-
-Todos os PNGs ficam diretamente em `public/assets/fighters/rafa-mare/` ou `public/assets/fighters/guto-barba/`. Não crie subpastas `sprites`, `specials`, `effects` ou `portraits`.
-
-Os dois lutadores compartilham estes nomes:
-
-```text
-idle.png
-corrida.png
-walk-backward.png
-crouch.png
-jump-neutral.png, jump-forward.png, jump-backward.png
-fall.png, landing.png
-standing-light.png, standing-heavy.png
-forward-light.png, forward-heavy.png
-crouch-light.png, crouch-heavy.png
-air-light-neutral.png, air-heavy-neutral.png
-air-light-forward.png, air-heavy-forward.png
-air-light-backward.png, air-heavy-backward.png
-block-standing.png, block-crouching.png
-hit.png, knockdown.png, wake-up.png
-grabbed-front.png, grabbed-lifted.png, thrown.png, frozen.png
-victory.png, knockout.png
-```
-
-Rafa acrescenta `mao-da-mare`, `chute-da-ressaca` e `eco-tatuado`, cada qual com seu PNG de efeito. Guto acrescenta `muralha-norte` e seu efeito; Gancho do Urso usa os strips `startup`, `grab`, `hold`, `throw` e `recovery`; Abraço Glacial usa `startup`, `grab`, `hold`, `freeze`, `finish` e seu efeito. Guto nunca inclui a vítima dentro do próprio PNG.
-
-Cada strip tem quatro frames horizontais: 256 × 256 por frame para Rafa e 288 × 288 para Guto. Ao substituir uma arte:
-
-1. mantenha nome, transparência e quatro quadros realmente distintos;
-2. preserve a referência conceitual em `public/assets/references/` sem alterá-la;
-3. ajuste dimensões, origem, escala, offsets, efeitos e fases em `src/fighters/visual/`;
-4. rode `node scripts/audit-fighter-sprites.mjs`, typecheck, testes e build.
-
-`scripts/generate-pixel-assets.mjs` gera somente recursos compartilhados (fonte, cenário e UI); ele não escreve nas pastas de Rafa ou Guto. O jogo não executa geração de arte em tempo de execução.
-
-## PWA e publicação
-
-`vite.config.ts` usa `base: './'`, permitindo hospedagem na raiz ou em subdiretório. O build gera `precache-manifest.js`; após a primeira carga completa, o service worker mantém os arquivos disponíveis offline.
-
-Para publicar:
-
-1. execute `npm run build`;
-2. envie todo o conteúdo de `dist/` para um host estático;
-3. use HTTPS;
-4. teste instalação, atualização, recarga e modo offline na URL final.
-
-## Testes
-
-Os testes cobrem dano, energia, hit stun, comandos, passo fixo, defesa, agarrões genéricos, projéteis, rounds, preferências, viewport 640 × 360, manifesto, alpha, baseline e escala visual dos spritesheets.
-
-## Estado dos recursos
-
-Definitivos nesta etapa:
-
-- arquitetura de combate, entrada, CPU, persistência e PWA;
-- resolução lógica e pipeline de renderização 640 × 360;
-- manifesto, validação e separação entre conceitos e sprites;
-- sprites animados e estados de vítima separados de Rafa e Guto;
-- uso correto dos seis conceitos e do logo fornecido;
-- fluxo das oito cenas e integração visual.
-
-Ainda provisórios:
-
-- camadas raster do Cais da Cidade e tiles da interface;
-- ícones PWA e áudio;
-- balanceamento fino e animações cinematográficas.
-
-Não há multiplayer online, replay, rollback netcode ou matchmaking nesta etapa.
-
-Press Start 2P é distribuída localmente sob a SIL Open Font License; a licença está em `public/assets/fonts/PressStart2P-OFL.txt`.
+Node.js 20.19+ e npm 10+ para o jogo; Node 22+ para o servidor. Em produção o
+PWA exige HTTPS.
