@@ -1,858 +1,313 @@
-# CONTEXTO DO PROJETO — JOGO RUA DE AÇO
+# Contexto do projeto — Rua de Aço
 
-> Documento de continuidade do projeto.  
-> Objetivo: permitir que ChatGPT, Codex, Claude Code ou outro agente assuma o projeto sem perder decisões, comandos, estrutura, problemas conhecidos e próximos passos.
-
----
-
-## 1. Identificação do projeto
-
-**Nome do jogo:** Rua de Aço  
-**Tipo:** jogo de luta 2D em pixel art / estética arcade 16-bits  
-**Plataformas planejadas:**
-- Navegador
-- PWA durante o desenvolvimento, embora a opção “Instalar jogo” deva ser removida do menu
-- Windows `.exe` futuramente
-- Android `.apk` futuramente
-
-**Pasta local principal:**
-
-```text
-C:\Projetos\RuaDeAco
-```
-
-**Sessão do Codex associada ao projeto:**
-
-```powershell
-codex resume 019f5ee1-7331-7e92-864c-64a7b52f6e80
-```
-
-Para retomar com acesso amplo:
-
-```powershell
-cd C:\Projetos\RuaDeAco
-codex --yolo resume 019f5ee1-7331-7e92-864c-64a7b52f6e80
-```
-
-**Claude Code no projeto:**
-
-```powershell
-cd C:\Projetos\RuaDeAco
-claude --dangerously-skip-permissions
-```
+> **Arquivo único de continuidade.** Substitui o antigo `GEMINI.md` (cópia
+> idêntica) e a pasta local `RuaDeAco_Contexto_GPTWork/`. Qualquer assistente
+> que assumir o projeto deve ler só este arquivo, e o estado real do Git
+> sempre prevalece sobre o que estiver escrito aqui.
+>
+> Última revisão: **28/08/2026**.
 
 ---
 
-## 2. Stack e arquitetura escolhidas
+## 1. Identidade e endereços
 
-Base atual recomendada e utilizada:
-
-- Phaser
-- TypeScript
-- Vite
-- HTML5/WebGL
-- CSS responsivo
-- PWA na estrutura do projeto
-- Sem React
-- Sem banco de dados
-- Sem servidor obrigatório para o jogo final web
-- Git local
-
-Estrutura aproximada esperada:
+Os nomes abaixo são o mesmo projeto e nunca devem ser tratados como jogos ou
+repositórios diferentes: `RuaDeAco` (pasta e repositório), `Jogo Rua de Aço`
+(históricos e conversas) e `Rua de Aço` (nome oficial).
 
 ```text
-src/
-  main.ts
-  config/
-  scenes/
-  fighters/
-  combat/
-  input/
-  ai/
-  ui/
-  audio/
-  pwa/
-  utils/
-  types/
-
-public/
-  assets/
-    fighters/
-    portraits/
-    references/
-    stages/
-    ui/
-    audio/
-    fonts/
-  icons/
-  manifest.webmanifest
-  service-worker.js
+Pasta local:  D:\PROJETOS\RuaDeAco
+GitHub:       https://github.com/mikerock12/RuaDeAco
+Jogo no ar:   https://mikerock12.github.io/RuaDeAco/
+Servidor:     https://rua-de-aco-game-server.maicon-nunes11.workers.dev
+Branches:     web-beta (trabalho e publicação) e master (padrão do GitHub)
 ```
 
-A arquitetura deve manter separados:
+`master` e `web-beta` são mantidas idênticas. O push em `web-beta` dispara o
+deploy do GitHub Pages; `master` é a branch que o GitHub exibe na página do
+repositório. As duas precisam ser atualizadas.
 
-- `PortraitAsset`: retratos para HUD, seleção, versus e vitória
-- `FighterSpriteAsset`: sprites e spritesheets usados durante a luta
-
-As fichas conceituais não devem ser tratadas como spritesheets.
+Também existem as branches `android-beta` e `combat-air-specials-pass`,
+antigas e sem uso ativo.
 
 ---
 
-## 3. Direção visual
+## 2. Estado atual — verificado em 28/08/2026
 
-O jogo deve ter aparência de arcade dos anos 1990, em pixel art 16-bits.
+O jogo está **funcional e publicado**, com multiplayer online **funcionando em
+produção**. Nada aqui é aspiracional; tudo foi verificado com o jogo rodando.
 
-Requisitos visuais:
+- **6 lutadores jogáveis** (todos com `available: true`).
+- **4 modos**: CPU, dois jogadores no mesmo teclado, treinamento e online.
+- **Online validado** contra o Worker publicado: sala criada por código, dois
+  clientes conectados, `startFingerprint` igual e hash de estado idêntico nos
+  dois lados. Ping medido de 134–203 ms, input delay de 8 frames.
+- **Testes**: 438 unitários no cliente (48 arquivos) e 66 no servidor; typecheck
+  limpo; CI do GitHub Pages verde.
+- **11 cenas** Phaser registradas em `src/main.ts`.
+- Arena única: **Cais da Cidade**. Luta em melhor de três rounds
+  (`ROUNDS_TO_WIN = 2`), round de 99 segundos.
 
-- pixels nítidos
-- sem antialias
-- sem blur
-- sem suavização
-- sem personagens feitos de círculos, retângulos ou bonecos-palito
-- contornos fortes
-- paleta limitada
-- sombras em blocos
-- efeitos especiais pixelados
-- fontes pixeladas locais
-- interface com metal, azul, prata e detalhes dourados
-- cenário urbano noturno em pixel art
-- imagens dos personagens usadas como referência real de identidade
-
-Configuração desejada após ajustes:
-
-```text
-Resolução lógica: 640 × 360
-Apresentação principal: 1280 × 720
-Escala inteira: 2×
-Proporção: 16:9
-```
-
-Configuração Phaser esperada:
-
-```text
-pixelArt: true
-antialias: false
-roundPixels: true
-Scale.FIT
-Scale.CENTER_BOTH
-```
-
-CSS esperado:
-
-```css
-canvas {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-}
-```
-
-Observação importante: o projeto chegou a usar `320 × 180`, mas a resolução foi considerada baixa demais para preservar barba, rosto, tatuagens e detalhes dos personagens. O objetivo atual é `640 × 360`.
+Pendências reconhecidas: sem ranking, matchmaking, rollback ou reconexão no
+meio da luta; o Worker roda fora da América do Sul, o que mantém o ping alto
+para o Brasil; balanceamento fino e animações cinematográficas continuam
+provisórios; áudio e ícones do PWA são temporários.
 
 ---
 
-## 4. Nome e logo
+## 3. Stack e arquitetura
 
-**Nome oficial:** Rua de Aço
+| Camada | Tecnologia |
+| --- | --- |
+| Linguagem | TypeScript no cliente e no servidor |
+| Motor | Phaser 4.1, pixel art em 640 × 360 |
+| Build | Vite 8 — sem React, sem framework de UI, sem banco de dados |
+| Servidor online | Cloudflare Workers + Durable Objects com SQLite |
+| Mobile | Capacitor 8 (APK Android) |
+| Testes | Vitest e Playwright |
+| Publicação | GitHub Pages via GitHub Actions |
 
-Foi criado um logo com estética arcade 16-bits, metal, azul, dourado e faíscas.
+A simulação de combate é própria e determinística, em passo fixo de 60 Hz,
+separada do desenho. O Phaser cuida de tela e entrada; não se usa a física nem
+as colisões automáticas dele.
 
-O logo deve aparecer no menu principal e futuramente será usado em:
+Separação obrigatória de assets, que nunca deve ser quebrada:
 
-- ícone do `.exe`
-- ícone do `.apk`
-- tela de abertura
-- materiais promocionais
+- `PortraitAsset` — retratos conceituais para menu, seleção, ficha, versus, HUD
+  e resultado;
+- `FighterSpriteAsset` — sprites e spritesheets usados durante a luta.
+
+Fichas conceituais **não** são spritesheets e nunca viram corpo em combate.
+
+Estrutura de pastas, contrato de sprites e o passo a passo para adicionar um
+personagem estão em [`docs/PIPELINE_DE_ARTE.md`](docs/PIPELINE_DE_ARTE.md).
+
+---
+
+## 4. Direção visual
+
+Arcade dos anos 1990 em pixel art 16-bits: pixels nítidos, sem antialias, sem
+blur, sem suavização; contornos fortes, paleta limitada, sombras em blocos,
+efeitos pixelados, fontes pixeladas locais. Interface de metal com azul, prata
+e detalhes dourados. Cenário urbano noturno.
+
+Proibido: personagens feitos de círculos, retângulos ou bonecos-palito; upscale
+suavizado; gradientes realistas modernos; fotos borradas. Redimensionamento de
+pixel art sempre em `nearest-neighbor`, com alpha 255 no corpo e transparência
+apenas nos efeitos.
+
+O logo em estética arcade aparece no menu principal e será reaproveitado em
+ícones de `.exe`, `.apk`, abertura e material promocional.
 
 ---
 
 ## 5. Elenco
 
-### 5.1 Rafa Maré
+Todos jogáveis. Os nomes dos golpes abaixo são os que estão no código
+(`src/fighters/`), que prevalece sobre qualquer documento antigo.
 
-**Arquétipo:** Agile / Rushdown
+| Lutador | Arquétipo | Especiais |
+| --- | --- | --- |
+| **Rafa Maré** | Agile / Rushdown | Mão da Maré · Chute da Ressaca · Eco Tatuado |
+| **Guto Barba** | Tank / Grappler | Muralha Norte · Gancho do Urso · Abraço Glacial |
+| **Noir Reflexo** | Counter / Zoner | Reflexo Negro · Quebra-Luz · Impacto Solar |
+| **Astro Riso** | Speed / Mix-up | Sorriso Relâmpago · Rajada Neon · Astro Giro |
+| **Dante Sinal** | Technical / Zoner | Ponto Final · Bomba de Fumaça · Chave Binária |
+| **Léo Violeta** | Pressure / Brawler | Olhar Frio · Impacto Sombrio · Pressão Violeta |
 
-Características visuais:
+**Rafa Maré** — cabelo raspado, bigode e cavanhaque, alargador, tatuagens,
+camisa azul-clara, bermuda escura, tênis, corpo atlético, energia de água azul.
+Velocidade alta, vida média, alcance curto, pressão ofensiva, pulo mais rápido
+e longo que o de Guto.
 
-- cabelo raspado
-- bigode e cavanhaque
-- alargador
-- tatuagens
-- camisa azul-clara
-- bermuda escura
-- tênis
-- corpo atlético
-- energia de água azul
-
-Habilidades:
-
-1. **Mão da Maré**
-   - onda ou projétil curto/médio
-   - dano moderado
-   - comando preferencial: baixo, diagonal para frente, frente + especial
-
-2. **Chute da Ressaca**
-   - avanço rápido seguido de chute
-   - energia azul
-   - comando preferencial: baixo, diagonal para frente, frente + ataque forte
-
-3. **Eco Tatuado**
-   - buff temporário
-   - aumenta velocidade, pressão ou recuperação
-   - comando preferencial: baixo, diagonal para trás, trás + especial
-
-Características de gameplay:
-
-- velocidade alta
-- vida média
-- alcance curto
-- pressão ofensiva
-- pulo mais rápido e longo que Guto
-
-### 5.2 Guto Barba
-
-**Arquétipo:** Tank / Grappler
-
-Características visuais:
-
-- corpo grande, pesado e largo
-- barba longa e volumosa
-- touca escura
-- moletom escuro
-- calça escura
-- botas robustas
-- luvas
-- postura intimidadora
-- golpes pesados
-- efeitos de gelo
-
-Habilidades:
-
-1. **Muralha Norte**
-   - avanço protegido
-   - absorve ou bloqueia um golpe
-   - efeito de gelo/barreira
-   - comando preferencial: baixo, diagonal para frente, frente + especial
-
-2. **Gancho do Urso**
-   - agarrão de curta distância
-   - puxa ou derruba o oponente
-   - comando preferencial: frente, baixo, diagonal para frente + ataque forte
-
-3. **Abraço Glacial**
-   - agarrão especial de alto dano
-   - consome energia
-   - efeito de congelamento
-   - comando preferencial: baixo, diagonal para trás, trás + especial
-
-Características de gameplay:
-
-- muita vida
-- velocidade baixa
-- grande força
-- salto curto e pesado
-- excelente agarrão
-
-### 5.3 Noir Reflexo
-
-**Arquétipo:** Counter / Zoner
-
-Habilidades:
-
-- Reflexo Negro
-- Quebra-Luz
-- Impacto Solar
-
-### 5.4 Astro Riso
-
-**Arquétipo:** Speed / Mix-up
-
-Habilidades:
-
-- Sorriso Relâmpago
-- Rajada Neon
-- Astro Giro
-
-### 5.5 Dante Sinal
-
-**Arquétipo:** Technical / Trapper
-
-Habilidades:
-
-- Ponto Final
-- Cortina Óptica
-- Chave Binária
-
-### 5.6 Léo Violeta
-
-**Arquétipo:** Pressure / Brawler
-
-Habilidades:
-
-- Olhar Frio
-- Impacto Sombrio
-- Pressão Violeta
+**Guto Barba** — corpo grande e largo, barba longa, touca escura, moletom e
+calça escuros, botas robustas, luvas, efeitos de gelo. Muita vida, velocidade
+baixa, salto curto e pesado, agarrão excelente. Nos agarrões, o PNG de Guto
+nunca inclui a vítima: os estados da vítima são sprites separados.
 
 ---
 
-## 6. Escopo atual do protótipo
+## 6. Sistema de combate
 
-O primeiro protótipo deve ter:
+Cada golpe é definido por dados, nunca por números espalhados pelo código:
+startup, frames ativos, recuperação, hitbox, hurtbox, pushbox, dano, hit stun,
+block stun, knockback, prioridade, custo de energia, cancelamentos e
+invulnerabilidade quando aplicável.
 
-- Rafa Maré
-- Guto Barba
-- menu principal
-- seleção de personagens
-- arena Cais da Cidade
-- luta contra CPU
-- dois jogadores no teclado
-- controles touch
-- melhor de três rounds
-- HUD
-- barra de energia
-- cronômetro
-- KO
-- tela de resultado
-- modo de treinamento, se já implementado
-- sprites provisórios ou definitivos, mas reconhecíveis
+Interfaces centrais: `FighterDefinition`, `MoveDefinition`, `AnimationDefinition`,
+`HitboxDefinition`, `HurtboxDefinition`, `InputCommand` e `FighterStats`.
 
-Os outros quatro personagens podem aparecer como “Em desenvolvimento”.
+O input buffer reconhece sequências, aceita diagonais, tem tolerância própria,
+respeita o lado para o qual o lutador está virado, limpa após a execução e
+funciona igual em teclado, touch e gamepad.
+
+Regra permanente: tempos e caixas nunca são ajustados pelo tamanho visual do
+PNG. A origem lógica fica nos pés e as regras ficam no núcleo de combate.
 
 ---
 
-## 7. Controles definidos
+## 7. Controles
 
-### Jogador 1
+| Ação | Jogador 1 | Jogador 2 |
+| --- | --- | --- |
+| Mover | A / D | Setas ← → |
+| Pular / agachar | W / S | Setas ↑ ↓ |
+| Ataque fraco | F | J |
+| Ataque forte | G | K |
+| Especial | H | L |
+| Defesa | R | U |
+| Confirmar / pausar | Enter / Esc | — |
 
-```text
-A / D  → andar
-W      → pular
-S      → agachar
-F      → ataque fraco
-G      → ataque forte
-H      → especial
-R      → defender
-Enter  → confirmar
-Esc    → pausar ou voltar
-```
+Remapeáveis em Configurações. No toque, o jogo mostra direcional à esquerda e
+botões à direita, aceita múltiplos dedos, cancela ao sair da área e libera tudo
+ao perder foco ou girar a tela. Gamepads são reconhecidos ao conectar.
 
-### Jogador 2
-
-```text
-Setas  → movimentação
-J      → ataque fraco
-K      → ataque forte
-L      → especial
-U      → defender
-```
-
-### Touch
-
-Lado esquerdo:
-
-- direcional
-- esquerda
-- direita
-- cima
-- baixo
-- diagonais superiores para pulo diagonal
-
-Lado direito:
-
-- ataque fraco
-- ataque forte
-- especial
-- defesa
-
-O touch deve usar multitouch real e permitir direção + ataque simultaneamente.
+No treinamento: F1 alterna hitboxes/hurtboxes/pushboxes, F2 reposiciona, F3
+liga ou desliga a CPU; vida e energia infinitas.
 
 ---
 
-## 8. Pulo e movimentação desejados
+## 8. Modo online
 
-O jogo deve suportar:
+Beta privada de duas pessoas por código de sala. O servidor **transporta
+inputs e não simula a luta**; os dois clientes rodam a mesma simulação de 60 Hz
+em lockstep com atraso fixo.
 
-- pulo vertical
-- pulo diagonal para frente
-- pulo diagonal para trás
-- queda
-- aterrissagem correta
-- nenhum segundo pulo no ar
-- arco natural
-- facing direction preservado
-- limites da arena respeitados
+1. Um jogador cria a sala e recebe um código de 10 caracteres; o outro entra
+   com esse código. Dois jogadores por sala, sem espectadores.
+2. O Worker emite sessão convidada assinada em HMAC-SHA-256 e um ticket de 45
+   segundos, usado apenas no subprotocolo do WebSocket — nunca na URL.
+3. Cada sala é um Durable Object isolado com SQLite (slots, seleção, seed,
+   prontidão, nonces, deadlines) que hiberna quando ninguém está conectado.
+4. Cada frame vira uma máscara de 8 bits — direções mais fraco, forte, especial
+   e defesa — em lotes de até 3 frames. `pause`, `confirm` e `cancel` não
+   trafegam.
+5. Input delay de 8 frames (`INPUT_DELAY_FRAMES`, mínimo 2 e máximo 12). Quando
+   a rede atrasa mais que isso, o cliente segura o frame e mostra
+   `AGUARDANDO INPUT DO RIVAL` em vez de dessincronizar.
+6. A cada 60 frames os dois lados enviam um hash canônico do estado completo;
+   divergência é detectada na hora.
 
-Estados possíveis:
+O cliente lê `VITE_MULTIPLAYER_URL`. Em desenvolvimento cai para
+`http://127.0.0.1:8787`; em produção sem a variável o modo online é desligado.
+O `TICKET_SECRET` do servidor nunca vai para arquivo versionado, log ou print.
 
-```text
-jumpNeutral
-jumpForward
-jumpBackward
-fall
-landing
-```
-
-Também pode ser mantido um único estado `jump`, desde que velocidades e animações sejam diferenciadas corretamente.
-
-Rafa:
-
-- pulo mais rápido
-- maior alcance horizontal
-
-Guto:
-
-- pulo mais curto
-- sensação mais pesada
+Detalhes completos em [`docs/MULTIPLAYER_SERVER_ARCHITECTURE.md`](docs/MULTIPLAYER_SERVER_ARCHITECTURE.md)
+e [`docs/ONLINE_CLIENT_ARCHITECTURE.md`](docs/ONLINE_CLIENT_ARCHITECTURE.md).
 
 ---
 
-## 9. Golpes normais desejados
-
-Golpes contextuais por direção:
-
-### Em pé
-
-- neutro + ataque fraco: soco rápido
-- frente + ataque fraco: golpe avançando
-- baixo + ataque fraco: golpe baixo rápido
-- neutro + ataque forte: soco pesado
-- frente + ataque forte: chute forte ou golpe de alcance
-- baixo + ataque forte: rasteira ou golpe baixo pesado
-
-### No ar
-
-- pulo + ataque fraco: ataque aéreo rápido
-- pulo + ataque forte: ataque aéreo pesado
-
-### Agachado
-
-- baixo + ataque fraco: ataque agachado rápido
-- baixo + ataque forte: rasteira ou golpe agachado forte
-
-A prioridade de comandos recomendada:
-
-1. super/especial completo
-2. agarrão
-3. ataque aéreo
-4. ataque agachado
-5. ataque direcional
-6. ataque normal
-
-O sistema deve auditar quais animações já existem e quais golpes estão realmente conectados aos controles.
-
----
-
-## 10. Sistema de combate desejado
-
-Cada golpe deve ter:
-
-- startup
-- frames ativos
-- recuperação
-- hitbox
-- hurtbox
-- pushbox
-- dano
-- hit stun
-- block stun
-- knockback
-- prioridade
-- custo de energia
-- cancelamentos
-- invulnerabilidade, quando aplicável
-
-O sistema deve usar dados configuráveis, não números espalhados.
-
-Interfaces esperadas:
-
-```text
-FighterDefinition
-MoveDefinition
-AnimationDefinition
-HitboxDefinition
-HurtboxDefinition
-InputCommand
-FighterStats
-```
-
-O input buffer deve:
-
-- reconhecer sequências
-- aceitar diagonais
-- ter tolerância adequada
-- considerar frente/trás conforme o lado para o qual o lutador está virado
-- limpar buffer após execução
-- funcionar em teclado e touch
-
----
-
-## 11. Arena inicial
-
-**Nome:** Cais da Cidade
-
-Características:
-
-- cidade próxima à água
-- noite
-- pixel art
-- postes
-- prédios
-- água animada
-- parallax
-- chão plano
-- leitura clara
-- sem fotos borradas
-- sem gradientes realistas modernos
-
----
-
-## 12. Problemas encontrados durante os testes
-
-Problemas já observados em diferentes versões:
-
-- resolução `320 × 180` baixa demais
-- personagens transparentes ou com alpha intermediário
-- membros, barba ou roupas vazados
-- HUD muito grande
-- barras de vida grandes demais
-- Guto invadindo visualmente a área do HUD
-- nomes ou elementos cortados
-- pulo não funcionando corretamente
-- agachamento não funcionando corretamente
-- apenas dois golpes aparentemente acessíveis
-- retrato de Guto com olhos desalinhados
-- sprites iniciais avaliados antes de estarem concluídos; não repetir essa avaliação prematura
-
-As causas e correções devem ser verificadas no código, sem presumir.
-
----
-
-## 13. Retrato aprovado do Guto Barba
-
-Foi gerado um novo retrato quadrado em pixel art com:
-
-- rosto baseado em uma foto diferente
-- olhos alinhados
-- olhar sério
-- barba cheia
-- touca
-- moletom
-- moldura pixelada
-- fundo azul
-- nome “GUTO BARBA” na arte
-
-Nome recomendado para o arquivo:
-
-```text
-guto-barba-portrait-final.png
-```
-
-Pasta recomendada:
-
-```text
-C:\Projetos\RuaDeAco\public\assets\references\guto-barba-portrait-final.png
-```
-
-A imagem deve substituir o retrato antigo do Guto em:
-
-- HUD
-- seleção de personagens
-- tela versus
-- tela de vitória
-- card do personagem
-
-Não deve substituir os sprites corporais.
-
----
-
-## 14. Opção “Instalar jogo”
-
-O menu principal possuía a opção:
-
-```text
-Instalar jogo
-```
-
-Essa opção serve para PWA, mas deve ser removida do menu durante o protótipo.
-
-Remover:
-
-- botão visual
-- navegação até o botão
-- clique
-- textos de ajuda
-- fluxo visível de `beforeinstallprompt`
-
-A estrutura PWA pode continuar existindo.
-
-Motivo:
-
-- o projeto ainda está em testes
-- futuramente serão gerados `.exe` e `.apk`
-- não é necessário oferecer instalação PWA ao usuário nesta fase
-
----
-
-## 15. Empacotamento futuro para Windows
-
-Após estabilizar o protótipo:
-
-- usar Electron
-- usar electron-builder
-- preservar versão web
-- gerar:
-
-```text
-Rua-de-Aco-Setup-0.1.0.exe
-Rua-de-Aco-Portable-0.1.0.exe
-```
-
-Pasta de saída esperada:
-
-```text
-C:\Projetos\RuaDeAco\release
-```
-
-Requisitos:
-
-- offline
-- sem Node instalado na máquina do jogador
-- sem servidor local
-- teclado funcionando
-- áudio funcionando
-- tela cheia
-- localStorage
-- assets incluídos
-- ícone do Rua de Aço
-- versão portátil
-- instalador NSIS
-
-Não implementar ainda enquanto jogabilidade e arte estiverem instáveis.
-
----
-
-## 16. Empacotamento futuro para Android
-
-Após estabilizar o protótipo:
-
-- usar Capacitor
-- empacotar a versão web em app Android
-- gerar `.apk`
-- preservar controles touch
-- orientação horizontal
-- funcionamento offline
-- ícone próprio
-- tela cheia
-- safe areas
-- sem depender de servidor
-
-Não implementar ainda.
-
----
-
-## 17. Comandos úteis do projeto
-
-### Rodar no navegador
+## 9. Comandos do projeto
 
 ```powershell
-cd C:\Projetos\RuaDeAco
-npm.cmd run dev
+npm install
+npm run dev                 # jogo em http://127.0.0.1:5173
+npm run typecheck
+npm test
+npm run build
+npm run preview
+npm run validate:sprites
+npm run audit:hitboxes
 ```
 
-Endereço comum:
-
-```text
-http://localhost:5173
-```
-
-### Build
+Servidor online local:
 
 ```powershell
-npm.cmd run build
+npm.cmd --prefix server ci
+npm.cmd --prefix server run dev      # http://127.0.0.1:8787
+npm.cmd --prefix server test
+npm.cmd --prefix server run smoke
 ```
 
-### Preview do build
-
-```powershell
-npm.cmd run preview
-```
-
-### Ver scripts disponíveis
-
-```powershell
-npm.cmd run
-```
-
-### Parar servidor
-
-```text
-Ctrl + C
-```
-
-### Git
-
-```powershell
-git status
-git add .
-git commit -m "mensagem"
-```
-
-### Abrir Claude Code
-
-```powershell
-cd C:\Projetos\RuaDeAco
-claude --dangerously-skip-permissions
-```
-
-### Retomar Codex
-
-```powershell
-cd C:\Projetos\RuaDeAco
-codex --yolo resume 019f5ee1-7331-7e92-864c-64a7b52f6e80
-```
+Para testar o cliente local contra o servidor **de produção**, basta subir o
+Vite com a variável apontada para o Worker — a allowlist de origins já aceita
+`http://127.0.0.1:5173`.
 
 ---
 
-## 18. Git
+## 10. Preferências de trabalho com assistentes
 
-Foi necessário configurar identidade do Git:
+Quando a resposta entregar um prompt, comando ou procedimento para alterar,
+testar, buildar ou publicar o jogo, informar **antes do prompt**:
+
+1. ferramenta recomendada (Codex, Claude Code, Gemini/Antigravity);
+2. modelo exato;
+3. nível de raciocínio, com o nome usado por aquela ferramenta;
+4. motivo curto da escolha;
+5. comando para abrir ou retomar a ferramenta;
+6. o prompt completo, pronto para copiar;
+7. o que será feito;
+8. como testar e o critério de aprovação.
+
+Não entregar só o prompt nem só os comandos.
+
+Critério de raciocínio: **médio** para inspeção, documentação, build, commit,
+push e correções focadas; **alto** para arquitetura, bugs persistentes, sistema
+de combate, pipeline de sprites, agarrões e mudanças que cruzem subsistemas.
+Evitar níveis Ultra em tarefa rotineira por consumo de cota.
+
+Prompts longos devem ir para um `.md` em vez de colados inteiros no terminal.
+Quando os modelos disponíveis mudarem, recomendar o melhor acessível no
+momento em vez de repetir uma indicação antiga.
+
+**Atribuição de IA:** commits e PRs nunca levam `Co-Authored-By: Claude` nem
+assinatura equivalente — o GitHub transforma isso em contribuinte visível. Em
+28/08/2026 esse rastro foi removido de 77 commits em 8 repositórios.
+
+---
+
+## 11. Regras para agentes
+
+Antes de alterar qualquer coisa:
 
 ```powershell
-git config --global user.name "Maicon Nunes"
-git config --global user.email "EMAIL_ESCOLHIDO"
+git status --short --branch
+git diff --stat
+git log -5 --oneline --decorate
 ```
 
-Checkpoint recomendado antes de etapas grandes:
+Nunca iniciar uma tarefa com `git reset --hard`, `git clean -fd`,
+`git restore .`, `git checkout -- .` ou `git push --force`.
 
-```powershell
-git add .
-git commit -m "Checkpoint antes da próxima etapa"
-```
-
----
-
-## 19. Regras para agentes que assumirem o projeto
-
-Ao assumir o projeto:
-
-1. Não recriar do zero.
-2. Ler `package.json`.
-3. Executar `git status`.
-4. Identificar scripts.
-5. Executar build de linha de base.
-6. Preservar versão web.
-7. Não substituir sprites aprovados.
-8. Não inventar conclusão visual sem abrir o jogo.
-9. Não declarar teste visual quando não houver navegador disponível.
-10. Informar claramente o que foi automatizado e o que exige validação manual.
-11. Corrigir apenas o escopo pedido.
-12. Não iniciar Electron ou Capacitor sem solicitação específica.
-13. Não usar imagens conceituais como spritesheets.
-14. Não aplicar upscale suavizado.
-15. Não usar personagens genéricos.
-16. Não remover arquivos sem backup ou Git.
-17. Não alterar retratos dos demais personagens ao corrigir Guto.
-18. Preservar alpha 255 no corpo e usar transparência apenas nos efeitos.
-19. Usar `nearest-neighbor` em redimensionamentos de pixel art.
-20. Manter alinhamento dos pés, origem e linha de chão consistentes.
+1. Não recriar o projeto do zero; ler `package.json` e os scripts antes.
+2. Corrigir apenas o escopo pedido.
+3. Não substituir sprites aprovados nem alterar retratos de outros lutadores ao
+   mexer em um.
+4. Não usar imagens conceituais como spritesheets.
+5. Não declarar validação visual sem realmente abrir o jogo.
+6. Separar claramente o que foi automatizado do que exige conferência manual.
+7. Não remover arquivos sem backup ou sem Git.
+8. Não iniciar Electron ou Capacitor sem pedido explícito.
+9. Manter alinhamento dos pés, origem e linha de chão consistentes.
+10. Rodar `npm run typecheck`, `npm test` e o build antes de publicar.
 
 ---
 
-## 20. Próxima etapa ativa
+## 12. Backup
 
-A última solicitação preparada para o Claude Code inclui:
+O backup canônico fora do computador fica no Google Drive da conta do projeto,
+na pasta `Projetos/Rua de Aço` (o link não é versionado aqui por ser um
+repositório público). O GitHub é o repositório operacional do código; o Drive
+guarda também contexto local, histórico completo, material de produção e
+áudios-mestres.
 
-- remover “Instalar jogo”
-- implementar pulo diagonal
-- auditar golpes existentes
-- conectar golpes dos sprites
-- implementar ataques direcionais
-- implementar ataques aéreos e agachados
-- validar especiais de Rafa e Guto
-- atualizar controles e ajuda
-- testar input buffer, hitboxes e comandos
-- não gerar `.exe` nem `.apk` ainda
-
-Status real dessa etapa deve ser confirmado pelo usuário ou pelo estado atual dos arquivos. Não presumir que já foi concluída.
+Não há backup automático. Renovar o Drive apenas quando o usuário pedir; após
+grandes alterações, lembrar que o backup pode ser atualizado.
 
 ---
 
-## 21. Critério para considerar o protótipo pronto
+## 13. Histórico resumido
 
-Antes de empacotar:
+| Data | Marco |
+| --- | --- |
+| 15/07/2026 | Contexto inicial do projeto registrado |
+| 16–17/07/2026 | Controles remapeáveis, gamepad, touch e menu de pausa |
+| 18/07/2026 | Primeira tentativa de Dante reprovada em auditoria; APK beta 0.2.0 |
+| 22–23/07/2026 | Dante Sinal implementado, escala corrigida, trava Guto × Dante resolvida e publicado |
+| 26/07/2026 | Auditoria de textos e retratos; servidor Cloudflare fase 1; cliente online fase 2; Worker publicado |
+| 29/07/2026 | Léo Violeta e Noir Reflexo implementados, escala e recortes corrigidos, CI ajustado |
+| 01/08/2026 | Correção global de hitboxes auditada e publicada |
+| 28/08/2026 | README reescrito com prints reais; contexto unificado neste arquivo; atribuição de IA removida do histórico |
 
-- menu estável
-- opção PWA removida
-- retratos corretos
-- HUD proporcional
-- barras de vida adequadas
-- Guto não invade HUD
-- pulo vertical funciona
-- pulo diagonal funciona
-- agachamento funciona
-- ataques fracos e fortes funcionam
-- ataques direcionais funcionam
-- ataques aéreos funcionam
-- ataques agachados funcionam
-- três especiais de cada personagem funcionam
-- defesa funciona
-- CPU não trava
-- touch funciona
-- áudio funciona
-- build passa
-- jogo abre sem erros
-- Rafa e Guto visualmente reconhecíveis
-- nenhum sprite transparente indevidamente
-- nenhuma parte do corpo cortada
-- arena legível
-- jogo testado em desktop
-- jogo testado em celular horizontal
-
----
-
-## 22. Recomendação de ferramenta/modelo
-
-Para tarefas de programação neste projeto, sempre recomendar explicitamente ferramenta, modelo e nível de raciocínio, equilibrando qualidade e consumo de cota.
-
-Diretriz geral:
-
-- correções pequenas e localizadas: modelo intermediário, raciocínio médio
-- auditoria de combate, input e arquitetura: modelo forte, raciocínio alto
-- evitar raciocínio máximo para tarefas simples
-- Codex, Claude Code e Gemini CLI podem trabalhar na mesma pasta, desde que o Git tenha checkpoints
-
----
-
-## 23. Observação sobre imagens
-
-As imagens geradas no ChatGPT não aparecem automaticamente no computador.
-
-É necessário:
-
-1. baixar a imagem
-2. salvar dentro da pasta do projeto
-3. usar nome estável
-4. informar o caminho exato ao agente
-5. pedir para atualizar manifest e cenas
-6. executar build e validar no jogo
-
-Pasta recomendada para referências:
-
-```text
-C:\Projetos\RuaDeAco\public\assets\references
-```
-
-Pasta recomendada para sprites:
-
-```text
-C:\Projetos\RuaDeAco\public\assets\fighters
-```
-
----
-
-## 24. Instrução de continuidade
-
-Ao iniciar uma nova sessão com qualquer agente, usar:
-
-```text
-Leia integralmente o arquivo CONTEXTO_PROJETO_RUA_DE_ACO.md antes de alterar o projeto. Em seguida, execute git status, leia package.json, identifique o estado real da implementação e continue apenas a etapa ativa, preservando tudo que já funciona.
-```
+Registrar aqui também tentativas que falharam, para que ninguém repita uma
+solução já rejeitada.
