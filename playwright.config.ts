@@ -1,17 +1,21 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const headless = Boolean(process.env.CI || process.env.PLAYWRIGHT_HEADLESS);
+const browserChannel = process.env.CI ? {} : { channel: 'chrome' as const };
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
 const chromeVisible = {
   ...devices['Desktop Chrome'],
-  channel: 'chrome' as const,
-  headless: false,
+  ...browserChannel,
+  headless,
   viewport: { width: 1280, height: 720 },
   screen: { width: 1280, height: 720 },
 };
 
 const chromeMobileLandscape = {
   ...devices['Desktop Chrome'],
-  channel: 'chrome' as const,
-  headless: false,
+  ...browserChannel,
+  headless,
   viewport: { width: 720, height: 405 },
   screen: { width: 720, height: 405 },
   hasTouch: true,
@@ -21,6 +25,9 @@ const chromeMobileLandscape = {
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: 'online.spec.ts',
+  forbidOnly: Boolean(process.env.CI),
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: false,
   workers: 1,
   timeout: 30_000,
@@ -38,9 +45,9 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm.cmd run dev -- --host 127.0.0.1 --port 5173 --strictPort --force',
+    command: `${npmCommand} run dev -- --host 127.0.0.1 --port 5173 --strictPort --force`,
     url: 'http://127.0.0.1:5173',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
   projects: [

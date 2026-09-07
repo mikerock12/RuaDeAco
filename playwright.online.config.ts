@@ -1,10 +1,15 @@
 import { randomBytes } from 'node:crypto';
 import { defineConfig, devices } from '@playwright/test';
 
+const headless = Boolean(process.env.CI || process.env.PLAYWRIGHT_HEADLESS);
+const browserChannel = process.env.CI ? {} : { channel: 'chrome' as const };
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const ticketSecret = randomBytes(48).toString('base64url');
 
 export default defineConfig({
   testDir: './e2e',
+  forbidOnly: Boolean(process.env.CI),
+  retries: process.env.CI ? 1 : 0,
   testMatch: 'online.spec.ts',
   fullyParallel: false,
   workers: 1,
@@ -25,14 +30,14 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'npm.cmd --prefix server run dev -- --ip 127.0.0.1',
+      command: `${npmCommand} --prefix server run dev -- --ip 127.0.0.1`,
       url: 'http://127.0.0.1:8787/health',
       reuseExistingServer: false,
       timeout: 120_000,
       env: { TICKET_SECRET: ticketSecret },
     },
     {
-      command: 'npm.cmd run dev -- --host 127.0.0.1 --port 5173 --strictPort --force',
+      command: `${npmCommand} run dev -- --host 127.0.0.1 --port 5173 --strictPort --force`,
       url: 'http://127.0.0.1:5173',
       reuseExistingServer: false,
       timeout: 120_000,
@@ -44,8 +49,8 @@ export default defineConfig({
       name: 'online-chrome-desktop',
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome',
-        headless: false,
+        ...browserChannel,
+        headless,
         viewport: { width: 1280, height: 720 },
         screen: { width: 1280, height: 720 },
       },
@@ -54,8 +59,8 @@ export default defineConfig({
       name: 'online-chrome-mobile-landscape',
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome',
-        headless: false,
+        ...browserChannel,
+        headless,
         viewport: { width: 720, height: 405 },
         screen: { width: 720, height: 405 },
         hasTouch: true,

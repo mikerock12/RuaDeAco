@@ -33,7 +33,8 @@
     "android:sync": "npx cap sync android",
     "android:open": "npx cap open android",
     "android:build": "cd android && gradlew.bat assembleDebug",
-    "android:apk": "node scripts/build-android-apk.mjs"
+    "android:apk": "node scripts/build-android-apk.mjs",
+    "test:e2e:ci": "playwright test e2e/mobile-playability.spec.ts e2e/pause-menu.spec.ts e2e/ui-text-portraits.spec.ts e2e/controls-remapping.spec.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",
