@@ -161,8 +161,11 @@ determinada; não é uma medição da rede de produção.
 A validação do CI revelou diferenças entre headless shell e Chromium completo
 no gesto rápido e uma corrida no RPC de logs do pool de testes. A configuração
 final usa Chromium completo e console direto no Vitest do servidor. O teste
-de rotação aguarda o refresh final de layout. Janelas de golpes, tipos, hashes,
-verificações de erro e asserts de gameplay foram preservados.
+de rotação aguarda o refresh final de layout. O gesto de três direções usa
+o relógio controlado do Playwright para que a demora de CDP/trace no runner
+não altere o intervalo entre toques. Ele não mede latência física. Janelas
+de golpes, tipos, hashes, verificações de erro e asserts de gameplay foram
+preservados.
 
 Acompanhar o resultado da versão atual no [PR #1](https://github.com/mikerock12/RuaDeAco/pull/1)
 e em suas checagens; configuração criada não é sinônimo de execução aprovada.

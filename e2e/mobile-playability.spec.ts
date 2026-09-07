@@ -147,6 +147,7 @@ test('andar sem pulo acidental, sair da área e girar soltam o input', async ({ 
 });
 
 test('gesto baixo, diagonal e frente executa a Rajada Neon do Astro', async ({ page, context }) => {
+  await page.clock.install();
   await openTraining(page, true);
   const cdp = await context.newCDPSession(page);
   const box = (await page.locator('.dpad').boundingBox())!;
@@ -154,8 +155,12 @@ test('gesto baixo, diagonal e frente executa a Rajada Neon do Astro', async ({ p
   const down = at(0.5, 0.9);
   const diagonal = at(0.82, 0.82);
   const forward = at(0.9, 0.5);
-  const frames = () => page.evaluate(() => new Promise<void>((resolve) =>
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  const special = { id: 2, ...await center(page, '[data-action="special"]') };
+  // O transporte CDP/trace pode levar mais que os oito frames de tolerância
+  // no runner. Os eventos continuam sendo toques reais; só o relógio do
+  // navegador é controlado para espaçar cada etapa por dois frames.
+  await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now() + 1000)));
+  const frames = () => page.clock.runFor(34);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [down] });
   await frames();
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [diagonal] });
@@ -163,9 +168,11 @@ test('gesto baixo, diagonal e frente executa a Rajada Neon do Astro', async ({ p
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [forward] });
   await frames();
   await cdp.send('Input.dispatchTouchEvent', {
-    type: 'touchStart', touchPoints: [forward, { id: 2, ...await center(page, '[data-action="special"]') }],
+    type: 'touchStart', touchPoints: [forward, special],
   });
-  await expect.poll(() => page.evaluate(() => (window as GameWindow).__ruaWorld!.fighters[0].lastMoveId)).toBe('rajadaNeon');
+  await frames();
+  const result = await page.evaluate(() => (window as GameWindow).__ruaWorld!.fighters[0].exportDeterministicState());
+  expect(result.lastMoveId, JSON.stringify(result.commandBuffer)).toBe('rajadaNeon');
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await expect(page.locator('.touch-button.pressed')).toHaveCount(0);
 });

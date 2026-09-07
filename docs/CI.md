@@ -29,6 +29,11 @@ ao modo usado pelo Chrome local. As configurações escolhem `npm.cmd` no Window
 nos demais sistemas; mantêm Chrome visível localmente, salvo
 `PLAYWRIGHT_HEADLESS=1`. Não reutilizam servidores existentes no CI.
 
+O gesto de três direções usa toques CDP e relógio controlado do Playwright,
+com dois frames entre etapas. Isso verifica a janela do comando sem incluir
+a demora da automação; não mede latência física de um touchscreen. Os demais
+fluxos de navegação, defesa e orientação rodam em tempo real.
+
 As suítes de browser têm uma repetição no CI, proíbem `test.only` e
 guardam relatórios por sete dias. Screenshots/trace de falha ficam no job
 offline. O job online mantém trace de rede desligado porque ele pode
@@ -43,7 +48,8 @@ O Vitest do servidor usa console direto: a captura por RPC apresentou
 EnvironmentTeardownError ao receber logs de fechamento do Worker. Os erros
 não tratados continuam falhando o job; os 66 testes permanecem ativos.
 
-Referências: [sintaxe do GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)
+Referências: [sintaxe do GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax),
 [Playwright no CI](https://playwright.dev/docs/ci-intro),
 [Chromium headless completo](https://playwright.dev/docs/browsers#chromium-new-headless-mode)
+[relógio do Playwright](https://playwright.dev/docs/clock)
 e [console do Vitest](https://vitest.dev/config/disableconsoleintercept).
