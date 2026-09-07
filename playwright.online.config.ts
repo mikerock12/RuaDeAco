@@ -2,7 +2,8 @@ import { randomBytes } from 'node:crypto';
 import { defineConfig, devices } from '@playwright/test';
 
 const headless = Boolean(process.env.CI || process.env.PLAYWRIGHT_HEADLESS);
-const browserChannel = process.env.CI ? {} : { channel: 'chrome' as const };
+// Chromium completo usa o mesmo modo headless do Chrome local.
+const browserChannel = { channel: process.env.CI ? 'chromium' as const : 'chrome' as const };
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const ticketSecret = randomBytes(48).toString('base64url');
 

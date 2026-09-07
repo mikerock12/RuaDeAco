@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import type { CombatWorld } from '../src/combat/CombatWorld';
 import type { UiLayoutDebugEntry } from '../src/utils/text';
+import { VIEWPORT_SETTLE_DELAY_MS } from '../src/utils/viewportLayout';
 
 type GameWindow = Window & {
   __RUA_SCENE_DEBUG__?: () => string[];
@@ -134,6 +135,8 @@ test('andar sem pulo acidental, sair da área e girar soltam o input', async ({ 
   await expect(page.locator('#rotate-warning')).toBeVisible();
   await expect.poll(() => paused(page)).toBe(true);
   await page.setViewportSize({ width: 812, height: 375 });
+  // Aguarda o refresh final do Phaser antes de tocar coordenadas do canvas.
+  await page.waitForTimeout(VIEWPORT_SETTLE_DELAY_MS + 50);
   await expect(page.locator('#rotate-warning')).not.toBeVisible();
   await expect.poll(() => paused(page)).toBe(true);
   await tap(page, 84, 300);

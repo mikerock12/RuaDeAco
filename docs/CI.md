@@ -24,7 +24,8 @@ job falhar; não habilita merge automático.
 | Online | Worker + Vite locais, dois clientes, papéis, inputs, hashes e erros |
 
 Node 24 é usado nas quatro etapas. O CI instala o Chromium e dependências
-do Playwright. As configurações escolhem `npm.cmd` no Windows e `npm`
+do Playwright e seleciona o canal chromium (headless completo), equivalente
+ao modo usado pelo Chrome local. As configurações escolhem `npm.cmd` no Windows e `npm`
 nos demais sistemas; mantêm Chrome visível localmente, salvo
 `PLAYWRIGHT_HEADLESS=1`. Não reutilizam servidores existentes no CI.
 
@@ -38,5 +39,11 @@ sprites, agarrões e casos específicos continuam disponíveis nos scripts
 existentes; não é correto dizer que o CI executa todo teste Playwright do
 repositório. Os unitários e testes de servidor são executados integralmente.
 
+O Vitest do servidor usa console direto: a captura por RPC apresentou
+EnvironmentTeardownError ao receber logs de fechamento do Worker. Os erros
+não tratados continuam falhando o job; os 66 testes permanecem ativos.
+
 Referências: [sintaxe do GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax)
-e [Playwright no CI](https://playwright.dev/docs/ci-intro).
+[Playwright no CI](https://playwright.dev/docs/ci-intro),
+[Chromium headless completo](https://playwright.dev/docs/browsers#chromium-new-headless-mode)
+e [console do Vitest](https://vitest.dev/config/disableconsoleintercept).

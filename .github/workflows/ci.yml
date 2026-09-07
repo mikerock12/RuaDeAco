@@ -60,7 +60,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps --no-shell chromium
       - run: npm run test:e2e:ci
       - name: Relatórios de navegador
         if: ${{ !cancelled() }}
@@ -87,7 +87,7 @@ jobs:
             server/package-lock.json
       - run: npm ci
       - run: npm ci --prefix server
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps --no-shell chromium
       # Secret efêmero gerado pela configuração. Nenhum acesso à produção.
       - run: npx playwright test --config=playwright.online.config.ts
       - name: Relatórios online sem trace de rede

@@ -1,6 +1,6 @@
 # Auditoria independente — jogabilidade mobile
 
-Data: 06/09/2026. Base local: `01aa260` (`web-beta`); o GitHub `master`
+Análise: 06/09/2026; validação complementada em 07/09/2026. Base local: `01aa260` (`web-beta`); o GitHub `master`
 tem também `84328d0`, que reorganiza o README. Nenhuma issue ou PR aberta
 foi encontrada na consulta inicial. Esta análise confronta o plano com o
 código, a execução no Chrome e os testes; não é pesquisa de preferência do público.
@@ -145,13 +145,27 @@ consultável, não um tutorial interativo concluído.
 - Auditoria de hitboxes: 92 fases corporais / 72 normais / 6 projéteis.
 - Novos E2E navegam do início ao treino só com toque; conferem páginas,
   pausa, retorno, múltiplos dedos, diagonais, arraste, orientação e especial.
+- Suíte offline local completa: 16 cenários aprovados e 12 combinações de
+  cenário/dispositivo não aplicáveis ignoradas explicitamente.
 - A suíte de CI também inclui testes existentes de remapeamento, retratos,
   textos e pausa; o job online sobe Vite/Worker locais com secret efêmero.
 - Evidências locais: `tmp/mobile-audit/`, `test-results/` e
   `playwright-report/`. São artefatos de execução, não arte aprovada.
 
-O status exato do CI remoto e da rodada final de E2E deve ser conferido no
-PR/Actions; configuração criada não é sinônimo de execução aprovada.
+Os testes online passaram no runner Linux do GitHub. No Windows desta tarefa,
+o Wrangler local apresentou atraso de inputs: em uma captura ambos os clientes
+concordavam no hash do frame 60, mas tinham captura 774/simulação 75 e ping
+entre 885 e 7192 ms em loopback. A causa desse atraso local ainda não foi
+determinada; não é uma medição da rede de produção.
+
+A validação do CI revelou diferenças entre headless shell e Chromium completo
+no gesto rápido e uma corrida no RPC de logs do pool de testes. A configuração
+final usa Chromium completo e console direto no Vitest do servidor. O teste
+de rotação aguarda o refresh final de layout. Janelas de golpes, tipos, hashes,
+verificações de erro e asserts de gameplay foram preservados.
+
+Acompanhar o resultado da versão atual no [PR #1](https://github.com/mikerock12/RuaDeAco/pull/1)
+e em suas checagens; configuração criada não é sinônimo de execução aprovada.
 
 ## Como decidir se melhorou para quem joga
 
