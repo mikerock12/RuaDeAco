@@ -57,6 +57,10 @@ O Vitest do servidor usa console direto: a captura por RPC apresentou
 EnvironmentTeardownError ao receber logs de fechamento do Worker. Os erros
 não tratados continuam falhando o job; os 66 testes permanecem ativos.
 
+O teste de reagendamento de alarme aguarda a desconexão persistida antes
+de antecipar o prazo; o fechamento assíncrono não pode sobrescrever a
+preparação do cenário. A remoção do slot e o próximo alarme continuam exigidos.
+
 Referências: [sintaxe do GitHub Actions](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax),
 [Playwright no CI](https://playwright.dev/docs/ci-intro),
 [Chromium headless completo](https://playwright.dev/docs/browsers#chromium-new-headless-mode)

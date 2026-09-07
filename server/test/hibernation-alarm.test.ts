@@ -367,6 +367,20 @@ describe("persistência, hibernação e cleanup", () => {
     const stub = env.MATCH_ROOMS.get(
       env.MATCH_ROOMS.idFromName(`room:${hostAdmission.roomCode}`)
     );
+    // close() only requests disconnection. Wait for its persisted deadline
+    // before expiring it, or webSocketClose can overwrite the test fixture.
+    await expect.poll(() => runInDurableObject(stub, (_instance, state) => [
+      ...state.storage.sql.exec<
+        Record<string, SqlStorageValue> & {
+          connected: number;
+          reconnect_deadline: number | null;
+        }
+      >("SELECT connected, reconnect_deadline FROM slots WHERE slot = 'p2'")
+    ][0])).toMatchObject({
+      connected: 0,
+      reconnect_deadline: expect.any(Number)
+    });
+
     const deadlines = await runInDurableObject(
       stub,
       async (_instance, state) => {
@@ -380,7 +394,7 @@ describe("persistência, hibernação e cleanup", () => {
           roomDeadline
         );
         state.storage.sql.exec(
-          `UPDATE slots SET reconnect_deadline = ?, connected = 0
+          `UPDATE slots SET reconnect_deadline = ?
            WHERE slot = 'p2'`,
           reconnectDeadline
         );
