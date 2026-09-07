@@ -34,6 +34,11 @@ com dois frames entre etapas. Isso verifica a janela do comando sem incluir
 a demora da automação; não mede latência física de um touchscreen. Os demais
 fluxos de navegação, defesa e orientação rodam em tempo real.
 
+A preparação dos testes de pausa/remapeamento aguarda as etapas visíveis
+de seleção; o remapeamento só avança após a linha selecionada mudar. Seu
+limite total é 60 s porque inclui duas aberturas completas e persistência,
+mantendo os limites de espera de cada verificação.
+
 As suítes de browser têm uma repetição no CI, proíbem `test.only` e
 guardam relatórios por sete dias. Screenshots/trace de falha ficam no job
 offline. O job online mantém trace de rede desligado porque ele pode

@@ -1,3 +1,4 @@
+import { clickCanvas, confirmTrainingSelection } from './helpers/selection';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 type PauseAction = 'continue' | 'character-select' | 'main-menu';
@@ -85,18 +86,10 @@ async function openTrainingFight(page: Page, testInfo: TestInfo): Promise<void> 
   }
   await waitForScene(page, 'MainMenuScene');
 
-  await page.keyboard.press('KeyS');
-  await page.waitForTimeout(70);
-  await page.keyboard.press('KeyS');
-  await page.waitForTimeout(70);
-  await page.keyboard.press('Enter');
+  await clickCanvas(page, 320, 186, testInfo.project.name === 'chrome-mobile-landscape');
   await waitForScene(page, 'CharacterSelectScene');
 
-  await page.keyboard.press('Enter');
-  await page.waitForTimeout(220);
-  await page.keyboard.press('Enter');
-  await page.waitForTimeout(300);
-  await page.keyboard.press('Enter');
+  await confirmTrainingSelection(page);
   await waitForScene(page, 'FightScene');
 }
 
