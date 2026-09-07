@@ -91,6 +91,9 @@ Para o servidor multiplayer, consulte [`server/README.md`](server/README.md).
 - [Arquitetura do cliente online](docs/ONLINE_CLIENT_ARCHITECTURE.md)
 - [Pipeline de arte e sprites](docs/PIPELINE_DE_ARTE.md)
 - [Beta Android](README_ANDROID_BETA.md)
+- [Plano de melhorias com prioridade mobile](PLANO_MELHORIAS_RUA_DE_ACO.md)
+- [Auditoria de jogabilidade mobile](docs/AUDITORIA_MOBILE_2026-09-06.md)
+- [Testes automatizados no GitHub](docs/CI.md)
 
 ## Autor
 

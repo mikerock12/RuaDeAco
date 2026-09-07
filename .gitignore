@@ -41,6 +41,7 @@ android/capacitor.build.gradle
 /tmp/imagegen/leo-violeta-noir-reflexo/
 
 # Evidências locais das auditorias de interface e multiplayer
+/tmp/mobile-audit/
 /tmp/ui-audit/
 /tmp/online-audit/
 /tmp/hitbox-audit/
