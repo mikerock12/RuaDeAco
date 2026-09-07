@@ -156,6 +156,8 @@ canvas,
 }
 
 .touch-cluster.dpad {
+  pointer-events: auto;
+  touch-action: none;
   left: max(8px, env(safe-area-inset-left, 0px));
 }
 
@@ -194,6 +196,22 @@ canvas,
 
 .buttons .touch-button::before {
   inset: -9px;
+}
+
+.buttons .touch-button {
+  padding-bottom: 12px;
+}
+
+.buttons .touch-button::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  font: 700 9px / 1.1 system-ui, sans-serif;
+  letter-spacing: 0.2px;
+  text-shadow: none;
+  pointer-events: none;
 }
 
 .touch-button.pressed {

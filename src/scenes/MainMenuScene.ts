@@ -8,7 +8,7 @@ import { settingsStore } from '../config/settings';
 import { FIGHTERS } from '../fighters';
 import { keyLabel } from '../input/controlLabels';
 import { controlsStore } from '../input/controlsStore';
-import { inputManager } from '../input/InputManager';
+import { InputManager, inputManager } from '../input/InputManager';
 import type { InputAction, InputFrame } from '../types/combat';
 import type { GameMode } from '../types/game';
 import { createConceptPortrait } from '../ui/PortraitView';
@@ -72,7 +72,7 @@ export class MainMenuScene extends Phaser.Scene {
       this,
       INTERNAL_WIDTH - 8,
       INTERNAL_HEIGHT - 16,
-      `${keyLabel(playerOneKeys.up)}/${keyLabel(playerOneKeys.down)}  ENTER/${keyLabel(playerOneKeys.light)}`,
+      InputManager.shouldShowTouch(settings) ? 'TOQUE EM UMA OPCAO' : `${keyLabel(playerOneKeys.up)}/${keyLabel(playerOneKeys.down)}  ENTER/${keyLabel(playerOneKeys.light)}`,
       {
         size: 8,
         minSize: 8,

@@ -19,6 +19,7 @@ import {
 } from '../ui/moveListPresenter';
 import { PAUSE_MENU_OPTIONS, type PauseMenuAction } from '../ui/pauseMenu';
 import { pixelText, tagLayoutPanel } from '../utils/text';
+import { buildTouchMovePages } from '../ui/touchMoveList';
 
 export interface UISceneData {
   readonly world: CombatWorld;
@@ -60,6 +61,8 @@ export class UIScene extends Phaser.Scene {
   private pauseHint: Phaser.GameObjects.BitmapText | null = null;
   private pauseMoveTexts: Phaser.GameObjects.BitmapText[] = [];
   private pauseOptions: PauseOptionButton[] = [];
+  private touchPage = 0;
+  private touchPageButtons: HudButton[] = [];
   private pauseDevices: [MoveListDevice | null, MoveListDevice | null] = [null, null];
   private selectedPauseAction: PauseMenuAction = 'continue';
   private pauseButton: HudButton | null = null;
@@ -134,6 +137,8 @@ export class UIScene extends Phaser.Scene {
     this.trainingButtons = [];
     this.pauseMoveTexts = [];
     this.pauseOptions = [];
+    this.touchPage = 0;
+    this.touchPageButtons = [];
     this.pauseDevices = [null, null];
     this.selectedPauseAction = 'continue';
     this.wasPaused = false;
@@ -331,12 +336,19 @@ export class UIScene extends Phaser.Scene {
   private rebuildPauseMoveList(visible: boolean): void {
     for (const text of this.pauseMoveTexts) text.destroy();
     this.pauseMoveTexts = [];
+    for (const button of this.touchPageButtons) button.container.destroy();
+    this.touchPageButtons = [];
     this.createPauseMoveList();
+    for (const button of this.touchPageButtons) button.container.setVisible(visible);
     for (const text of this.pauseMoveTexts) text.setVisible(visible);
   }
 
   private createPauseMoveList(): void {
     if (!this.world) return;
+    if (this.pauseDeviceFor(0) === 'touch') {
+      this.createTouchMoveList();
+      return;
+    }
     const legend = pixelText(this, INTERNAL_WIDTH / 2, 94, 'FRENTE = EM DIRECAO AO ADVERSARIO', {
       size: 8,
       maxWidth: 560,
@@ -384,6 +396,37 @@ export class UIScene extends Phaser.Scene {
     }
   }
 
+  private createTouchMoveList(): void {
+    if (!this.world) return;
+    const fighter = this.world.fighters[0].definition;
+    const pages = buildTouchMovePages(fighter);
+    const current = pages[this.touchPage] ?? pages[0]!;
+    const title = pixelText(this, 320, 88, fighter.name.toUpperCase() + ' (TOUCH)', {
+      size: 12, minSize: 12, maxWidth: 400, maxHeight: 16,
+      align: 'center', layoutName: 'touch-moves-fighter', panelName: 'pause-panel',
+    }).setTint(PALETTE.cyan).setDepth(92).setVisible(false);
+    title.setInteractive({ useHandCursor: true });
+    title.on('pointerdown', () => this.cyclePauseDevice(0));
+    this.pauseMoveTexts.push(title);
+    this.touchPageButtons = pages.map((page, index) => {
+      const button = this.createButton(96 + index * 148, 118, 138, 28, page.title, () => {
+        this.touchPage = index;
+        this.rebuildPauseMoveList(true);
+      });
+      button.container.setDepth(96).setVisible(false);
+      button.background.setStrokeStyle(2, index === this.touchPage ? PALETTE.gold : PALETTE.steelLight);
+      return button;
+    });
+    current.lines.forEach((line, index) => {
+      const text = pixelText(this, 40, 154 + index * 21, line, {
+        size: 16, minSize: 14, maxWidth: 560, maxHeight: 20, maxLines: 1,
+        layoutName: 'touch-moves-line-' + index, panelName: 'pause-panel',
+      }).setOrigin(0, 0).setDepth(92).setVisible(false);
+      text.setTint(this.touchPage === 3 && index % 2 === 0 ? PALETTE.gold : PALETTE.ivory);
+      this.pauseMoveTexts.push(text);
+    });
+  }
+
   private createPauseMenu(): void {
     const layout: ReadonlyArray<readonly [PauseMenuAction, number, number]> = [
       ['continue', 84, 128],
@@ -392,7 +435,7 @@ export class UIScene extends Phaser.Scene {
     ];
     this.pauseOptions = layout.map(([action, x, width]) => {
       const option = PAUSE_MENU_OPTIONS.find((candidate) => candidate.action === action)!;
-      const button = this.createButton(x, 295, width, 22, option.label, () => {
+      const button = this.createButton(x, 300, width, 28, option.label, () => {
         this.selectedPauseAction = action;
         this.refreshPauseOptions();
         this.game.events.emit('fight:pause-action', action);
@@ -415,7 +458,8 @@ export class UIScene extends Phaser.Scene {
   }
 
   private createButtons(snapshot: CombatWorldSnapshot): void {
-    this.pauseButton = this.createButton(this.online ? INTERNAL_WIDTH - 24 : INTERNAL_WIDTH / 2, 55, 40, 14, 'II', () => {
+    const touch = InputManager.shouldShowTouch(settingsStore.get());
+    this.pauseButton = this.createButton(touch ? 608 : this.online ? INTERNAL_WIDTH - 24 : INTERNAL_WIDTH / 2, touch ? 82 : 55, 40, touch ? 28 : 14, 'II', () => {
       this.game.events.emit('fight:pause');
     });
     this.pauseButton.container.setDepth(100);
@@ -428,14 +472,15 @@ export class UIScene extends Phaser.Scene {
       [514, 'CPU', 'training:cpu'],
     ];
     this.trainingButtons = controls.map(([x, label, eventName]) => (
-      this.createButton(x, 78, label === 'REPOS.' ? 92 : 76, 24, label, () => this.game.events.emit(eventName))
+      this.createButton(x, 82, label === 'REPOS.' ? 92 : 76, 28, label, () => this.game.events.emit(eventName))
     ));
 
-    this.infoText = pixelText(this, 8, 302, '', {
+    this.infoText = pixelText(this, touch ? 320 : 8, touch ? 342 : 302, '', {
       size: 16,
       minSize: 8,
-      maxWidth: 624,
-      maxHeight: 44,
+      align: touch ? 'center' : 'left',
+      maxWidth: touch ? 264 : 624,
+      maxHeight: touch ? 20 : 44,
       maxLines: 3,
       layoutName: 'training-info',
     })
@@ -471,7 +516,8 @@ export class UIScene extends Phaser.Scene {
       padding: { x: 6, y: 3 },
     }).setTint(PALETTE.ivory);
     const container = this.add.container(x, y, [background, label]);
-    container.setSize(width + 20, height + 16).setInteractive({ useHandCursor: true });
+    container.setName('hud-control:' + text);
+    container.setSize(width + 20, Math.max(height + 16, 44)).setInteractive({ useHandCursor: true });
     container.on('pointerdown', () => background.setFillStyle(PALETTE.panelLight));
     container.on('pointerout', () => background.setFillStyle(PALETTE.metalDark));
     container.on('pointerup', () => {
@@ -567,6 +613,9 @@ export class UIScene extends Phaser.Scene {
     this.pauseHint?.setVisible(paused);
     for (const text of this.pauseMoveTexts) text.setVisible(paused);
     for (const option of this.pauseOptions) option.container.setVisible(paused);
+    for (const button of this.touchPageButtons) button.container.setVisible(paused);
+    for (const button of this.trainingButtons) button.container.setVisible(!paused);
+    this.infoText?.setVisible(!paused);
     if (paused) this.refreshPauseOptions();
     this.pauseButton?.label.setText(paused ? '>' : 'II');
   }
@@ -589,7 +638,10 @@ export class UIScene extends Phaser.Scene {
   private updateTrainingLabels(snapshot: CombatWorldSnapshot): void {
     if (!this.infoText || this.trainingButtons.length === 0) return;
     const [one, two] = snapshot.fighters;
-    this.infoText.setText([
+    const touch = InputManager.shouldShowTouch(settingsStore.get());
+    this.infoText.setText(touch
+      ? 'DANO ' + snapshot.lastDamage + '  COMBO ' + Math.max(...snapshot.combo)
+      : [
       'P1 ' + one.state + (one.activeMoveId ? '/' + one.activeMoveId : ''),
       'P2 ' + two.state + (two.activeMoveId ? '/' + two.activeMoveId : ''),
       'DANO ' + snapshot.lastDamage + '  COMBO ' + Math.max(...snapshot.combo),

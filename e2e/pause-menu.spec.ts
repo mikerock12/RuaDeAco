@@ -130,12 +130,12 @@ test('botões touch continuam e retornam ao menu principal com uma única ação
   test.skip(testInfo.project.name !== 'chrome-mobile-landscape', 'Fluxo exclusivo do projeto mobile touch.');
   await openTrainingFight(page, testInfo);
 
-  await tapInternal(page, 320, 55);
+  await tapInternal(page, 608, 82);
   await expect.poll(() => pauseState(page)).toEqual({ paused: true, selectedAction: 'continue' });
   await tapInternal(page, 84, 295);
   await expect.poll(() => pauseState(page)).toEqual({ paused: false, selectedAction: 'continue' });
 
-  await tapInternal(page, 320, 55);
+  await tapInternal(page, 608, 82);
   await expect.poll(() => pauseState(page)).toEqual({ paused: true, selectedAction: 'continue' });
   await tapInternal(page, 548, 295);
   await waitForScene(page, 'MainMenuScene');
@@ -149,7 +149,7 @@ test('botão touch de seleção encerra a luta e preserva o modo treino', async 
   test.skip(testInfo.project.name !== 'chrome-mobile-landscape', 'Fluxo exclusivo do projeto mobile touch.');
   await openTrainingFight(page, testInfo);
 
-  await tapInternal(page, 320, 55);
+  await tapInternal(page, 608, 82);
   await expect.poll(() => pauseState(page)).toEqual({ paused: true, selectedAction: 'continue' });
   await tapInternal(page, 320, 295);
   await waitForScene(page, 'CharacterSelectScene');

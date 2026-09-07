@@ -28,6 +28,8 @@ export class TouchControls {
   private readonly pointers = new Map<number, Set<InputAction>>();
   private readonly slotButtons = new Map<TouchSlotId, HTMLButtonElement>();
   private dpad: HTMLElement | null = null;
+  private dpadPointer: number | null = null;
+  private readonly captures = new Map<number, HTMLElement>();
   private built = false;
   private gameplayActive = false;
   private unsubscribe: (() => void) | null = null;
@@ -85,8 +87,14 @@ export class TouchControls {
   }
 
   releaseAll = (): void => {
+    const captures = [...this.captures];
+    this.captures.clear();
+    this.dpadPointer = null;
     this.pointers.clear();
     this.syncActions();
+    for (const [id, element] of captures) {
+      if (element.hasPointerCapture(id)) element.releasePointerCapture(id);
+    }
   };
 
   destroy(): void {
@@ -118,6 +126,7 @@ export class TouchControls {
       if (button.dataset.action !== action) changed = true;
       button.dataset.action = action;
       button.textContent = TOUCH_BUTTON_GLYPHS[action];
+      button.dataset.label = { light: 'FRACO', heavy: 'FORTE', special: 'ESPECIAL', block: 'DEFESA' }[action];
       button.setAttribute('aria-label', TOUCH_BUTTON_ARIA[action]);
     }
     // Toques em andamento apontariam para a ação antiga; solte tudo.
@@ -149,18 +158,25 @@ export class TouchControls {
     this.slotButtons.set(slot, button);
 
     button.addEventListener('pointerdown', (event) => {
+      if (!this.gameplayActive) return;
       event.preventDefault();
       event.stopPropagation();
       button.setPointerCapture(event.pointerId);
+      this.captures.set(event.pointerId, button);
       this.pointers.set(event.pointerId, new Set([this.slotAction(slot)]));
       this.syncActions();
     });
     button.addEventListener('pointermove', (event) => {
       if (!this.pointers.has(event.pointerId)) return;
-      const rect = button.getBoundingClientRect();
-      const margin = 40;
-      const inside = event.clientX >= rect.left - margin && event.clientX <= rect.right + margin && event.clientY >= rect.top - margin && event.clientY <= rect.bottom + margin;
-      this.pointers.set(event.pointerId, inside ? new Set([this.slotAction(slot)]) : new Set());
+      // O polegar pode deslizar entre ataques sem levantar; cada dedo mantém
+      // sua própria ação. Fora dos botões, a ação é liberada.
+      const target = [...this.slotButtons].find(([, candidate]) => {
+        const rect = candidate.getBoundingClientRect();
+        const margin = 10;
+        return event.clientX >= rect.left - margin && event.clientX <= rect.right + margin
+          && event.clientY >= rect.top - margin && event.clientY <= rect.bottom + margin;
+      });
+      this.pointers.set(event.pointerId, target ? new Set([this.slotAction(target[0])]) : new Set());
       this.syncActions();
     });
     button.addEventListener('pointerup', this.handlePointerEnd);
@@ -174,13 +190,17 @@ export class TouchControls {
   }
 
   private handleDpadDown = (event: PointerEvent): void => {
+    if (!this.gameplayActive || this.dpadPointer !== null || !this.dpad) return;
     event.preventDefault();
-    this.dpad?.setPointerCapture(event.pointerId);
+    event.stopPropagation();
+    this.dpadPointer = event.pointerId;
+    this.dpad.setPointerCapture(event.pointerId);
+    this.captures.set(event.pointerId, this.dpad);
     this.updateDpadPointer(event);
   };
 
   private handleDpadMove = (event: PointerEvent): void => {
-    if (!this.pointers.has(event.pointerId)) return;
+    if (this.dpadPointer !== event.pointerId) return;
     event.preventDefault();
     this.updateDpadPointer(event);
   };
@@ -199,6 +219,8 @@ export class TouchControls {
   private handlePointerEnd = (event: PointerEvent): void => {
     event.preventDefault();
     this.pointers.delete(event.pointerId);
+    this.captures.delete(event.pointerId);
+    if (this.dpadPointer === event.pointerId) this.dpadPointer = null;
     this.syncActions();
   };
 

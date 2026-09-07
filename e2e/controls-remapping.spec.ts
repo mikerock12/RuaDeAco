@@ -231,7 +231,7 @@ async function openTrainingFight(page: Page, testInfo: TestInfo): Promise<void> 
 
 async function openControlsScene(page: Page, testInfo: TestInfo): Promise<void> {
   await enterMainMenu(page, testInfo);
-  for (let step = 0; step < 3; step += 1) {
+  for (let step = 0; step < 4; step += 1) {
     await page.keyboard.press('KeyS');
     await page.waitForTimeout(60);
   }

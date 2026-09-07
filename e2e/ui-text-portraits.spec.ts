@@ -207,7 +207,7 @@ test('textos e portraits permanecem contidos em todo o fluxo', async ({
     .map(({ fighterId }) => fighterId))).toEqual(new Set(FIGHTER_IDS));
   await screenshot(page, testInfo, 'main-menu');
 
-  await internalTap(page, 320, 230, mobile);
+  await internalTap(page, 320, 246, mobile);
   await waitScene(page, 'SettingsScene');
   await assertLayout(page, 'SettingsScene');
   await screenshot(page, testInfo, 'settings');
@@ -277,19 +277,20 @@ test('textos e portraits permanecem contidos em todo o fluxo', async ({
   await assertLayout(page, 'UIScene');
   await screenshot(page, testInfo, 'fight-hud');
 
-  if (mobile) await internalTap(page, 320, 55, true);
+  if (mobile) await internalTap(page, 608, 82, true);
   else await page.keyboard.press('Escape');
   await page.waitForFunction(() => (
     (window as typeof window & { __RUA_PAUSE_DEBUG__?: () => { paused: boolean } })
       .__RUA_PAUSE_DEBUG__?.().paused === true
   ));
+  if (mobile) await internalTap(page, 540, 118, true);
   await assertLayout(page, 'UIScene');
   const pauseTexts = (await layoutEntries(page))
-    .filter(({ scene, name }) => scene === 'UIScene' && name.startsWith('pause-moves-'))
+    .filter(({ scene, name }) => scene === 'UIScene' && name.startsWith(mobile ? 'touch-moves-line-' : 'pause-moves-'))
     .map(({ text }) => text ?? '');
-  expect(pauseTexts.some((text) => (
-    text.includes(mobile ? '+S ' : '+T ') && text.includes('SORRISO')
-  ))).toBe(true);
+  const pauseCopy = pauseTexts.join(' ');
+  expect(pauseCopy).toContain(mobile ? ' + S' : '+T ');
+  expect(pauseCopy).toContain('SORRISO');
   await screenshot(page, testInfo, 'pause-long-commands');
 
   if (mobile) await internalTap(page, 84, 295, true);
