@@ -44,6 +44,10 @@ sprites, agarrões e casos específicos continuam disponíveis nos scripts
 existentes; não é correto dizer que o CI executa todo teste Playwright do
 repositório. Os unitários e testes de servidor são executados integralmente.
 
+A execução de ataque online é conferida pelo último golpe em ambos os
+clientes, pela vida e por um hash posterior igual. Isso evita depender de
+observar simultaneamente uma animação curta entre duas consultas.
+
 O Vitest do servidor usa console direto: a captura por RPC apresentou
 EnvironmentTeardownError ao receber logs de fechamento do Worker. Os erros
 não tratados continuam falhando o job; os 66 testes permanecem ativos.
