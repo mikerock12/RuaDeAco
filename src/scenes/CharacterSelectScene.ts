@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { ASSET_MANIFEST } from '../assets/assetManifest';
 import { audioManager } from '../audio/AudioManager';
 import { MUSIC_TRACK_BY_SCENE } from '../audio/musicCatalog';
-import { CAIS_DA_CIDADE } from '../config/gameConfig';
+import { ARENAS } from '../config/gameConfig';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { gameSession } from '../config/session';
 import { FIGHTERS } from '../fighters';
@@ -36,6 +36,7 @@ export class CharacterSelectScene extends Phaser.Scene {
   private arenaCard: Phaser.GameObjects.Container | null = null;
   private phase: SelectionPhase = 'playerOne';
   private cursorIndex = 0;
+  private arenaIndex = 0;
   private chosenPlayerOne: FighterDefinition | null = null;
   private chosenOpponent: FighterDefinition | null = null;
   private confirming = false;
@@ -54,6 +55,7 @@ export class CharacterSelectScene extends Phaser.Scene {
     this.cards = [];
     this.detailContainer = null;
     this.arenaCard = null;
+    this.arenaIndex = Math.max(0, ARENAS.findIndex(arena => arena.id === gameSession.selection.arena));
     this.cursorIndex = Math.max(0, FIGHTERS.findIndex((fighter) => fighter.id === gameSession.selection.playerOne));
 
     this.cameras.main.setBackgroundColor(PALETTE.ink);
@@ -103,6 +105,10 @@ export class CharacterSelectScene extends Phaser.Scene {
     if (this.phase === 'arena') {
       if (playerOneInput.pressed.has('cancel')) {
         this.returnToOpponentSelection();
+      } else if (playerOneInput.pressed.has('left')) {
+        this.moveArena(-1);
+      } else if (playerOneInput.pressed.has('right')) {
+        this.moveArena(1);
       } else if (this.isConfirmPressed(playerOneInput)) {
         this.confirmArena();
       }
@@ -429,23 +435,27 @@ export class CharacterSelectScene extends Phaser.Scene {
     const opponent = this.chosenOpponent;
     if (!playerOne || !opponent) return;
 
+    const arena = ARENAS[this.arenaIndex]!;
     this.selectionLayer.setVisible(false);
     this.arenaLayer.removeAll(true);
     this.arenaLayer.setVisible(true);
     this.phaseTitle.setText('ARENA E CONFRONTO');
-    const confirmKey = keyLabel(controlsStore.get().keyboard[0].bindings.light);
+    const bindings = controlsStore.get().keyboard[0].bindings;
+    const confirmKey = keyLabel(bindings.light);
+    const arenaKeys = keyLabel(bindings.left) + '/' + keyLabel(bindings.right);
     this.footerText.setText(InputManager.shouldShowTouch(settingsStore.get())
-      ? 'TOQUE EM LUTAR NO CAIS PARA COMECAR'
-      : `ENTER / ${confirmKey} OU TOQUE PARA LUTAR  |  ESC VOLTA`);
+      ? 'USE AS SETAS PARA TROCAR A ARENA. TOQUE EM LUTAR.'
+      : `${arenaKeys}: ARENA | ENTER / ${confirmKey}: LUTAR | ESC: VOLTAR`);
 
     const panel = this.add.rectangle(0, 0, 616, 272, PALETTE.panel, 1)
       .setStrokeStyle(4, PALETTE.cyan, 1);
     const topRail = this.add.rectangle(0, -132, 608, 8, PALETTE.metalLight, 1);
-    const arenaName = pixelText(this, 0, -112, CAIS_DA_CIDADE.name, {
+    const arenaName = pixelText(this, 0, -112, arena.name, {
       size: 16,
       minSize: 8,
-      maxWidth: 560,
+      maxWidth: 440,
       maxHeight: 22,
+      layoutName: 'arena-name',
       color: '#ffd55c',
       align: 'center',
     });
@@ -453,16 +463,15 @@ export class CharacterSelectScene extends Phaser.Scene {
       this,
       0,
       -90,
-      'NOITE | ZONA PORTUARIA',
+      arena.subtitle,
       {
         size: 16,
         minSize: 8,
-        maxWidth: 540,
+        maxWidth: 440,
         maxHeight: 22,
         color: '#9af7ff',
         align: 'center',
-        layoutName: 'fighter-details-confirm-label',
-        panelName: 'fighter-details-confirm',
+        layoutName: 'arena-subtitle',
         padding: { x: 10, y: 2 },
       },
     );
@@ -494,7 +503,23 @@ export class CharacterSelectScene extends Phaser.Scene {
       align: 'center',
     });
 
-    const stagePreview = this.createCaisPreview();
+    const stagePreview = arena.id === 'cozinha-macabra'
+      ? this.add.container(0, 0, [
+          this.add.image(0, 58, ASSET_MANIFEST.kitchen.background.key).setDisplaySize(152, 86),
+          this.add.rectangle(0, 58, 156, 90, 0x000000, 0).setStrokeStyle(2, PALETTE.pink),
+        ])
+      : this.createCaisPreview();
+    const arenaArrows = [-1, 1].flatMap(direction => {
+      const x = direction * 270;
+      const arrow = this.add.rectangle(x, -102, 48, 48, PALETTE.panelLight)
+        .setStrokeStyle(2, PALETTE.cyan).setInteractive({ useHandCursor: true })
+        .setName(direction < 0 ? 'arena-previous' : 'arena-next');
+      arrow.on('pointerdown', () => this.moveArena(direction));
+      const label = pixelText(this, x, -102, direction < 0 ? '<' : '>', {
+        size: 24, align: 'center', color: '#9af7ff',
+      });
+      return [arrow, label];
+    });
     const versus = pixelText(this, 0, -8, 'VS', {
       size: 32,
       maxWidth: 80,
@@ -505,7 +530,7 @@ export class CharacterSelectScene extends Phaser.Scene {
     const button = this.add.rectangle(0, 118, 184, 28, 0x12364c, 1)
       .setStrokeStyle(2, PALETTE.cyan)
       .setInteractive({ useHandCursor: true });
-    const buttonLabel = pixelText(this, 0, 118, 'LUTAR NO CAIS', {
+    const buttonLabel = pixelText(this, 0, 118, 'LUTAR', {
       size: 16,
       minSize: 8,
       maxWidth: 164,
@@ -533,8 +558,17 @@ export class CharacterSelectScene extends Phaser.Scene {
       nameTwo,
       button,
       buttonLabel,
+      ...arenaArrows,
     ]);
     this.arenaLayer.add(this.arenaCard);
+  }
+
+  private moveArena(direction: number): void {
+    if (this.confirming || this.phase !== 'arena') return;
+    this.arenaIndex = (this.arenaIndex + direction + ARENAS.length) % ARENAS.length;
+    audioManager.unlock();
+    audioManager.play('confirm');
+    this.showArenaSelection();
   }
 
   private createCaisPreview(): Phaser.GameObjects.Container {
@@ -551,7 +585,7 @@ export class CharacterSelectScene extends Phaser.Scene {
   private confirmArena(): void {
     if (this.confirming || !this.arenaCard) return;
     this.confirming = true;
-    gameSession.setSelection({ arena: CAIS_DA_CIDADE.id });
+    gameSession.setSelection({ arena: ARENAS[this.arenaIndex]!.id });
     audioManager.unlock();
     audioManager.play('confirm');
 

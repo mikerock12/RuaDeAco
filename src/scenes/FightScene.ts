@@ -26,7 +26,7 @@ import type { PlayerSlot } from '../online/protocol';
 import { deterministicHash } from '../online/stateHash';
 import type { CombatEvent, InputAction, InputFrame } from '../types/combat';
 import type { FighterEffectAsset } from '../types/assets';
-import { CaisStageView } from '../ui/CaisStageView';
+import { createStageView, type StageView } from '../ui/createStageView';
 import { createFighterView, type FighterView } from '../ui/FighterSpriteView';
 import { PauseMenuModel, type PauseMenuAction, type PauseNavigationTarget } from '../ui/pauseMenu';
 import { pixelText } from '../utils/text';
@@ -46,7 +46,7 @@ export class FightScene extends Phaser.Scene {
   private readonly runner = new FixedStepRunner();
   private cpu: CpuController | null = null;
   private views: readonly [FighterView, FighterView] | null = null;
-  private stageView!: CaisStageView;
+  private stageView!: StageView;
   private projectileSprites: Phaser.GameObjects.Sprite[] = [];
   private debugGraphics!: Phaser.GameObjects.Graphics;
   private debugOverlayEnabled = DEBUG_OVERLAY_DEFAULT;
@@ -223,7 +223,12 @@ export class FightScene extends Phaser.Scene {
         };
       };
     }
-    this.stageView = new CaisStageView(this);
+    this.stageView = createStageView(this, selection.arena);
+    if (import.meta.env.DEV) {
+      (globalThis as typeof globalThis & { __RUA_STAGE_DEBUG__?: () => unknown }).__RUA_STAGE_DEBUG__ = () => ({
+        arena: selection.arena, ambience: this.stageView.snapshot?.(),
+      });
+    }
     this.views = [
       createFighterView(this, playerOne),
       createFighterView(this, playerTwo),
@@ -263,7 +268,7 @@ export class FightScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    this.stageView.update(delta);
+    if (!this.world.paused && !this.capturePaused) this.stageView.update(delta);
     if (this.onlineLockstep) {
       this.updateOnlineClock(delta);
     } else if (!this.capturePaused) {
@@ -705,6 +710,7 @@ export class FightScene extends Phaser.Scene {
       delete debugGlobal.__RUA_CAPTURE_DEBUG__;
       delete debugGlobal.__RUA_FIGHTER_DEBUG__;
       delete debugGlobal.__RUA_ONLINE_FIGHT_DEBUG__;
+      delete (globalThis as typeof globalThis & { __RUA_STAGE_DEBUG__?: () => unknown }).__RUA_STAGE_DEBUG__;
     }
   }
 

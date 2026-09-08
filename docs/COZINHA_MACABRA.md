@@ -1,0 +1,48 @@
+# Cozinha Macabra
+
+Arena baseada na fotografia fornecida pelo usuário, adaptada para a pixel art de Rua de Aço.
+
+## Como jogar
+
+Em CPU, versus local ou treino, confirme os dois lutadores. Na tela **Arena e confronto**, use os botões **< / >** para escolher **Cozinha Macabra** e toque em **Lutar**. Teclado e gamepad usam as direções de P1; no teclado padrão, A/D. A arena escolhida é mantida nas próximas seleções da sessão.
+
+O lobby online continua usando Cais da Cidade, conforme o contrato atual do servidor. Esta entrega não publica alterações no Worker nem muda o protocolo multiplayer.
+
+## Composição e movimento
+
+- A arquitetura da foto foi preservada: churrasqueira de tijolos à esquerda, janela e mesa ao centro, fogão e armários à direita.
+- Bruxa em quatro poses mexendo um panelão verde sobre o fogão, com vapor discreto.
+- Revoadas de 2 a 5 morcegos saem da boca da churrasqueira, em intervalos de 8–14 segundos depois da primeira aparição.
+- Até 3 ratos atravessam o piso em sentidos e faixas variados; novas tentativas aparecem a cada 4–8,5 segundos.
+- As criaturas ficam atrás dos lutadores, sem colisão, dano, alteração de RNG do combate ou participação no hash online.
+- A pausa congela toda a ambientação. A cena libera os objetos ao sair.
+- Pools fixos: 5 morcegos, 3 ratos, 1 bruxa e 6 pequenas partículas de vapor. Retomar uma aba não dispara eventos acumulados.
+
+## Arte e reprodução
+
+A arte foi criada com a ferramenta integrada de geração de imagens, usando a foto como referência. As fontes, a fotografia original e os prompts finais estão em:
+
+- `art-source/stages/cozinha-macabra/reference.jpeg`
+- `art-source/stages/cozinha-macabra/background-source.png`
+- `art-source/stages/cozinha-macabra/witch-source.png`
+- `art-source/stages/cozinha-macabra/fauna-source.png`
+- `art-source/stages/cozinha-macabra/prompts.json`
+
+A foto originalmente recebida como `public/assets/stages/cozinha.jpeg` foi preservada em `art-source`, fora do precache e do pacote web. Nenhum arquivo original de arte do Cais foi substituído.
+
+`npm run assets:kitchen` reproduz o recorte, registro e redução nearest-neighbor a partir dessas fontes, preservando o alpha. A arte consumida pelo jogo fica em `public/assets/stages/cozinha-macabra/`:
+
+| Arquivo | Dimensões | Uso |
+| --- | --- | --- |
+| background.png | 640 × 360 | Fundo |
+| witch.png | 640 × 160 | Quatro poses de 160 × 160 |
+| bat.png | 160 × 32 | Quatro poses de 40 × 32 |
+| rat.png | 160 × 24 | Quatro poses de 40 × 24 |
+
+Os quatro PNGs somam aproximadamente 675 KiB e 1,3 MiB em RGBA decodificado (estimativa das texturas, não uma medição de RAM total). As fontes de geração não são distribuídas no site.
+
+## Verificação
+
+`kitchenAmbience.test.ts` cobre a origem das revoadas, intervalos, sentidos dos ratos, limites de objetos e retomada após tempos inválidos ou muito longos. `kitchen-stage.spec.ts` integra o CI e verifica seleção por toque/teclado, entrada na arena, animações, pausa, retorno e descarte na saída em desktop e celular emulado.
+
+A animação não depende de timers ou tweens externos à atualização da cena. Não foram alterados dano, balanceamento, simulação ou dimensões da área de luta.

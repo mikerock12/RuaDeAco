@@ -20,7 +20,7 @@ job falhar; não habilita merge automático.
 | --- | --- |
 | Cliente | `npm ci`, tipos, todos os unitários e build |
 | Servidor | instalação pelo lockfile próprio, tipos e todos os testes |
-| Navegador | Chromium headless, regressões de mobile/pausa/remapeamento/layout nos dois perfis |
+| Navegador | Chromium headless, regressões de mobile/pausa/remapeamento/layout/cozinha nos dois perfis |
 | Online | Worker + Vite locais, dois clientes, papéis, inputs, hashes e erros |
 
 Node 24 é usado nas quatro etapas. O CI instala o Chromium e dependências
@@ -56,6 +56,9 @@ observar simultaneamente uma animação curta entre duas consultas.
 O Vitest do servidor usa console direto: a captura por RPC apresentou
 EnvironmentTeardownError ao receber logs de fechamento do Worker. Os erros
 não tratados continuam falhando o job; os 66 testes permanecem ativos.
+
+A suíte de navegador inclui a seleção e ambientação da Cozinha Macabra nos
+dois perfis: bruxa/fauna animadas, congelamento na pausa e descarte ao sair.
 
 O teste de reagendamento de alarme aguarda a desconexão persistida antes
 de antecipar o prazo; o fechamento assíncrono não pode sobrescrever a

@@ -36,5 +36,13 @@ export const COLORS = {
 export const CAIS_DA_CIDADE: ArenaDefinition = {
   id: 'cais-da-cidade',
   name: 'CAIS DA CIDADE',
-  subtitle: 'NOITE • ZONA PORTUÁRIA',
+  subtitle: 'NOITE | ZONA PORTUARIA',
 };
+
+export const COZINHA_MACABRA: ArenaDefinition = {
+  id: 'cozinha-macabra',
+  name: 'COZINHA MACABRA',
+  subtitle: 'MEIA-NOITE | O JANTAR ESTA VIVO',
+};
+
+export const ARENAS: readonly ArenaDefinition[] = [CAIS_DA_CIDADE, COZINHA_MACABRA];

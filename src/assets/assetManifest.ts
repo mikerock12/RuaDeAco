@@ -81,6 +81,13 @@ const stage = {
   foreground: { key: 'caisForeground', path: 'assets/stages/cais-da-cidade/foreground.png' },
 } satisfies Record<string, ImageAsset | SpriteSheetAsset>;
 
+const kitchen = {
+  background: { key: 'kitchenBackground', path: 'assets/stages/cozinha-macabra/background.png' },
+  witch: { key: 'kitchenWitch', path: 'assets/stages/cozinha-macabra/witch.png', frameWidth: 160, frameHeight: 160, frames: 4, layout: 'horizontal' },
+  bat: { key: 'kitchenBat', path: 'assets/stages/cozinha-macabra/bat.png', frameWidth: 40, frameHeight: 32, frames: 4, layout: 'horizontal' },
+  rat: { key: 'kitchenRat', path: 'assets/stages/cozinha-macabra/rat.png', frameWidth: 40, frameHeight: 24, frames: 4, layout: 'horizontal' },
+} satisfies Record<string, ImageAsset | SpriteSheetAsset>;
+
 const ui = {
   panel: { key: 'uiPanel', path: 'assets/ui/panel.png' },
   button: { key: 'uiButton', path: 'assets/ui/button.png' },
@@ -98,6 +105,7 @@ export const ASSET_MANIFEST = {
     dataPath: 'assets/fonts/rua-de-aco-pixel.xml',
   },
   stage,
+  kitchen,
   ui,
 } as const;
 
@@ -107,10 +115,11 @@ export const IMAGE_ASSETS: readonly ImageAsset[] = [
   stage.far,
   stage.mid,
   stage.foreground,
+  kitchen.background,
   ...Object.values(ui),
 ];
 
-export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [stage.water];
+export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [stage.water, kitchen.witch, kitchen.bat, kitchen.rat];
 
 export const REQUIRED_TEXTURE_KEYS: readonly string[] = [
   ...IMAGE_ASSETS.map((asset) => asset.key),
