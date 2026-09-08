@@ -14,7 +14,10 @@
 > CI 34211562131 aprovado: 477 testes do cliente, 71 do servidor,
 > 20 cenários de navegador e 9 online. Worker publicado em 08/09/2026,
 > versão 193d2555-d22e-4b80-819b-0ba52b9052d3. Login Cloudflare resolvido.
-> O push em web-beta publica este cliente após o CI; confira a execução no GitHub.
+> Pages publicado e verificado: run 34242529743 aprovado. No site público,
+> duas sessões móveis iniciaram Cozinha e Sítio com hashes iguais no frame 120.
+> Trilha do Sítio confirmada em loop (139,6 s), seleção touch e pausa aprovadas.
+> Restaurador do Drive também validado a partir de uma pasta sem repositório.
 >
 > Nova arena: **Cozinha Macabra**, disponível em CPU, versus local, treino e online.
 > Trilha própria em loop e um único fogão, integrado à bruxa animada.

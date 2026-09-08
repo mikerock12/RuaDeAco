@@ -83,16 +83,15 @@ foreach ($archive in $manifest.files) {
 }
 
 $bundle = Join-Path $assemblyRoot 'RuaDeAco-Historico-Git-Atual.bundle'
-& git bundle verify $bundle | Out-Host
-if ($LASTEXITCODE -ne 0) {
-  throw 'O historico Git nao passou na verificacao.'
-}
-
 New-Item -ItemType Directory -Path (Split-Path -Parent $DestinationRoot) -Force | Out-Null
 & git clone $bundle $DestinationRoot
 if ($LASTEXITCODE -ne 0) {
   throw 'Nao foi possivel restaurar o repositorio a partir do bundle Git.'
 }
+
+# A verificacao exige um repositorio; usar o clone permite restaurar de qualquer pasta.
+& git -C $DestinationRoot bundle verify $bundle | Out-Host
+if ($LASTEXITCODE -ne 0) { throw 'O historico Git restaurado nao passou na verificacao.' }
 
 & tar.exe -xf (Join-Path $assemblyRoot 'RuaDeAco-Projeto-Atual.zip') -C $DestinationRoot
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao extrair o snapshot do projeto.' }
