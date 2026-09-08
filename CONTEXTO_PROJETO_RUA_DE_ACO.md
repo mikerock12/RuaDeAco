@@ -11,7 +11,10 @@
 > ovos, alimentação e disputas decorativas. Trilha própria e seleção online.
 > Detalhes em [docs/SITIO.md](docs/SITIO.md). Tipos, build, 477 testes do cliente,
 > 71 do servidor e E2E do Sítio em computador/celular aprovados localmente.
-> Publicação do Worker depende da nova autorização Cloudflare; confira Git e CI.
+> CI 34211562131 aprovado: 477 testes do cliente, 71 do servidor,
+> 20 cenários de navegador e 9 online. Worker publicado em 08/09/2026,
+> versão 193d2555-d22e-4b80-819b-0ba52b9052d3. Login Cloudflare resolvido.
+> O push em web-beta publica este cliente após o CI; confira a execução no GitHub.
 >
 > Nova arena: **Cozinha Macabra**, disponível em CPU, versus local, treino e online.
 > Trilha própria em loop e um único fogão, integrado à bruxa animada.
