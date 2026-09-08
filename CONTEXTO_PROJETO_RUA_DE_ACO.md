@@ -5,7 +5,14 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
-> Última revisão: **06/09/2026**.
+> Última revisão: **08/09/2026**.
+>
+> Nova arena: **Cozinha Macabra**, disponível em CPU, versus local e treino.
+> Foto adaptada, bruxa com panelão, morcegos e ratos animados; seleção por
+> toque e direções de P1. Arte, prompts e implementação em
+> [docs/COZINHA_MACABRA.md](docs/COZINHA_MACABRA.md). Online mantém o Cais.
+> Validação da cozinha: 467 unitários, 66 testes de servidor, 18 cenários
+> de navegador e 5 online aprovados no CI do commit 1019a98.
 >
 > Rodada mobile: controles touch e pausa revisados; plano e auditoria em
 > [PLANO_MELHORIAS_RUA_DE_ACO.md](PLANO_MELHORIAS_RUA_DE_ACO.md) e
@@ -38,7 +45,7 @@ antigas e sem uso ativo.
 
 ---
 
-## 2. Estado atual — verificado em 28/08/2026
+## 2. Base histórica — verificada em 28/08/2026
 
 O jogo está **funcional e publicado**, com multiplayer online **funcionando em
 produção**. Nada aqui é aspiracional; tudo foi verificado com o jogo rodando.
