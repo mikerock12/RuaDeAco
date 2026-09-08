@@ -197,11 +197,9 @@ export class ResultScene extends Phaser.Scene {
 
   private drawBackground(): void {
     this.cameras.main.setBackgroundColor(PALETTE.black);
-    const { stage } = ASSET_MANIFEST;
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.far.key).setScale(2);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.mid.key).setScale(2);
-    this.add.sprite(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.water.key, 0).setScale(2);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.foreground.key).setScale(2);
+    const { caisRemaster } = ASSET_MANIFEST;
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, caisRemaster.background.key);
+    this.add.image(430, 83, caisRemaster.moon.key);
     this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink, 0.74);
 
     this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, 608, 336, PALETTE.black, 0.78)

@@ -268,7 +268,7 @@ export class FightScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    if (!this.world.paused && !this.capturePaused) this.stageView.update(delta);
+    if (!this.world.paused && !this.capturePaused) this.stageView.update(delta, this.world.fighters[0].x, this.world.fighters[1].x);
     if (this.onlineLockstep) {
       this.updateOnlineClock(delta);
     } else if (!this.capturePaused) {

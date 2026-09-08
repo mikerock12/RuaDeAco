@@ -5,7 +5,7 @@ import { SitioStageView } from './SitioStageView';
 import { KitchenStageView } from './KitchenStageView';
 
 export interface StageView {
-  update(delta: number): void;
+  update(delta: number, playerOneX?: number, playerTwoX?: number): void;
   snapshot?(): unknown;
 }
 

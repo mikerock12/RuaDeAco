@@ -29,7 +29,6 @@ interface MenuRow {
 }
 
 const MENU_WIDTH = 356;
-const STAGE_LAYER_SCALE = 2;
 
 function pressedIn(frames: readonly InputFrame[], action: InputAction): boolean {
   return frames.some((frame) => frame.pressed.has(action));
@@ -103,11 +102,9 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   private drawBackdrop(): void {
-    const { stage } = ASSET_MANIFEST;
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.far.key).setScale(STAGE_LAYER_SCALE);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.mid.key).setScale(STAGE_LAYER_SCALE);
-    this.add.sprite(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.water.key, 1).setScale(STAGE_LAYER_SCALE);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.foreground.key).setScale(STAGE_LAYER_SCALE);
+    const { caisRemaster } = ASSET_MANIFEST;
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, caisRemaster.background.key);
+    this.add.image(430, 83, caisRemaster.moon.key);
     this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink, 0.5);
     const scanlines = this.add.graphics();
     scanlines.fillStyle(PALETTE.black, 0.24);

@@ -68,3 +68,6 @@ __pycache__/
 
 # Prévia local da arena Sítio; fontes finais em art-source.
 /tmp/sitio/
+
+# Auditoria local da remasterização do Cais
+/tmp/cais-audit/

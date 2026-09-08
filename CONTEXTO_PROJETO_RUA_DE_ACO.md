@@ -7,6 +7,12 @@
 >
 > Última revisão: **08/09/2026**.
 >
+> Cais remasterizado: nova arte, água/reflexos, lua independente e cinco
+> encontros decorativos lentos (discos, bruxa, monstro e navio). Intervalos de
+> 18–34 s; sem interferência na simulação. Disponível em todos os modos.
+> Arte, fontes e validação em [docs/CAIS_DA_CIDADE.md](docs/CAIS_DA_CIDADE.md).
+> Cliente: tipos, build e 480 testes aprovados localmente.
+>
 > Sítio implementado: dia ensolarado, galinhas, patos, cobra e lagarto garantidos;
 > ovos, alimentação e disputas decorativas. Trilha própria e seleção online.
 > Detalhes em [docs/SITIO.md](docs/SITIO.md). Tipos, build, 477 testes do cliente,

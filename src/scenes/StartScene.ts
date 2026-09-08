@@ -9,7 +9,6 @@ import { pixelText } from '../utils/text';
 import { StartGate } from './startGate';
 import { StartTransition } from './startTransition';
 
-const STAGE_LAYER_SCALE = 2;
 
 export class StartScene extends Phaser.Scene {
   private gate: StartGate | null = null;
@@ -68,11 +67,9 @@ export class StartScene extends Phaser.Scene {
 
   private drawBackdrop(): void {
     this.cameras.main.setBackgroundColor(PALETTE.black);
-    const { stage } = ASSET_MANIFEST;
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.far.key).setScale(STAGE_LAYER_SCALE);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.mid.key).setScale(STAGE_LAYER_SCALE);
-    this.add.sprite(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.water.key, 1).setScale(STAGE_LAYER_SCALE);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.foreground.key).setScale(STAGE_LAYER_SCALE);
+    const { caisRemaster } = ASSET_MANIFEST;
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, caisRemaster.background.key);
+    this.add.image(430, 83, caisRemaster.moon.key);
     this.add.rectangle(
       INTERNAL_WIDTH / 2,
       INTERNAL_HEIGHT / 2,

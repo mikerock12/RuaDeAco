@@ -9,7 +9,7 @@ Jogo de luta 2D em pixel art para navegador, com modos local, treinamento, CPU e
 ## Destaques
 
 - 6 lutadores jogáveis, cada um com golpes, especiais e frame data próprios;
-- três arenas: Cais da Cidade, [Cozinha Macabra](docs/COZINHA_MACABRA.md) e [Sítio](docs/SITIO.md), com ambientações animadas e seleção também online;
+- três arenas: [Cais da Cidade remasterizado](docs/CAIS_DA_CIDADE.md), [Cozinha Macabra](docs/COZINHA_MACABRA.md) e [Sítio](docs/SITIO.md), com ambientações animadas e seleção também online;
 - melhor de três rounds;
 - suporte a teclado, controles touch e gamepad;
 - PWA instalável e APK Android via Capacitor;

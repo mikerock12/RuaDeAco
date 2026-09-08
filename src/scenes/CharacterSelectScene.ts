@@ -160,11 +160,9 @@ export class CharacterSelectScene extends Phaser.Scene {
   }
 
   private drawBackdrop(): void {
-    const { stage } = ASSET_MANIFEST;
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.far.key).setScale(2);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.mid.key).setScale(2);
-    this.add.sprite(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.water.key, 2).setScale(2);
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, stage.foreground.key).setScale(2);
+    const { caisRemaster } = ASSET_MANIFEST;
+    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, caisRemaster.background.key);
+    this.add.image(430, 83, caisRemaster.moon.key);
     this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink, 0.78);
     this.add.rectangle(180, 188, 356, 272, PALETTE.panel, 0.94).setStrokeStyle(2, PALETTE.steelDark);
     this.add.rectangle(500, 188, 276, 272, PALETTE.ink, 0.94).setStrokeStyle(2, PALETTE.steelDark);
@@ -572,14 +570,10 @@ export class CharacterSelectScene extends Phaser.Scene {
   }
 
   private createCaisPreview(): Phaser.GameObjects.Container {
-    const { stage } = ASSET_MANIFEST;
-    const far = this.add.image(0, 58, stage.far.key).setDisplaySize(152, 86);
-    const mid = this.add.image(0, 58, stage.mid.key).setDisplaySize(152, 86);
-    const water = this.add.sprite(0, 58, stage.water.key, 3).setDisplaySize(152, 86);
-    const foreground = this.add.image(0, 58, stage.foreground.key).setDisplaySize(152, 86);
-    const shade = this.add.rectangle(0, 58, 152, 86, PALETTE.ink, 0.18);
+    const image = this.add.image(0, 58, ASSET_MANIFEST.caisRemaster.background.key).setDisplaySize(152, 86);
+    const moon = this.add.image(26, 38, ASSET_MANIFEST.caisRemaster.moon.key).setDisplaySize(23, 23);
     const frame = this.add.rectangle(0, 58, 156, 90, 0x000000, 0).setStrokeStyle(2, PALETTE.pink);
-    return this.add.container(0, 0, [far, mid, water, foreground, shade, frame]);
+    return this.add.container(0, 0, [image, moon, frame]);
   }
 
   private confirmArena(): void {

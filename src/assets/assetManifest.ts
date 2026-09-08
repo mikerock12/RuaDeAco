@@ -67,18 +67,18 @@ export const CONCEPT_ASSETS: Readonly<Record<FighterId, PortraitAsset>> = {
 
 const logo: ImageAsset = { key: 'ruaDeAcoLogo', path: 'assets/references/rua-de-aco-logo.png' };
 
-const stage = {
-  far: { key: 'caisFar', path: 'assets/stages/cais-da-cidade/far.png' },
-  mid: { key: 'caisMid', path: 'assets/stages/cais-da-cidade/mid.png' },
-  water: {
-    key: 'caisWater',
-    path: 'assets/stages/cais-da-cidade/water.png',
-    frameWidth: 320,
-    frameHeight: 180,
-    frames: 4,
-    layout: 'horizontal',
-  },
-  foreground: { key: 'caisForeground', path: 'assets/stages/cais-da-cidade/foreground.png' },
+const caisRemaster = {
+  background: {key:'caisRemasterBackground',path:'assets/stages/cais-da-cidade/remaster/background.png'},
+  moon: {key:'caisRemasterMoon',path:'assets/stages/cais-da-cidade/remaster/moon.png'},
+  ufo: {key:'caisRemasterUfo',path:'assets/stages/cais-da-cidade/remaster/ufo.png'},
+  witch: {key:'caisRemasterWitch',path:'assets/stages/cais-da-cidade/remaster/witch.png'},
+  ship: {key:'caisRemasterShip',path:'assets/stages/cais-da-cidade/remaster/ship.png'},
+  water0: {key:'caisRemasterWater0',path:'assets/stages/cais-da-cidade/remaster/water-0.png'},
+  water1: {key:'caisRemasterWater1',path:'assets/stages/cais-da-cidade/remaster/water-1.png'},
+  water2: {key:'caisRemasterWater2',path:'assets/stages/cais-da-cidade/remaster/water-2.png'},
+  monster: {key:'caisRemasterMonster',path:'assets/stages/cais-da-cidade/remaster/monster.png',frameWidth:128,frameHeight:144,frames:4,layout:'horizontal'},
+  fire: {key:'caisRemasterFire',path:'assets/stages/cais-da-cidade/remaster/fire.png',frameWidth:64,frameHeight:96,frames:4,layout:'horizontal'},
+  splash: {key:'caisRemasterSplash',path:'assets/stages/cais-da-cidade/remaster/splash.png',frameWidth:112,frameHeight:48,frames:4,layout:'horizontal'},
 } satisfies Record<string, ImageAsset | SpriteSheetAsset>;
 
 const kitchen = {
@@ -112,7 +112,7 @@ export const ASSET_MANIFEST = {
     texturePath: 'assets/fonts/rua-de-aco-pixel.png',
     dataPath: 'assets/fonts/rua-de-aco-pixel.xml',
   },
-  stage,
+  caisRemaster,
   kitchen,
   sitio,
   ui,
@@ -121,15 +121,14 @@ export const ASSET_MANIFEST = {
 export const IMAGE_ASSETS: readonly ImageAsset[] = [
   ...Object.values(CONCEPT_ASSETS),
   logo,
-  stage.far,
-  stage.mid,
-  stage.foreground,
+  caisRemaster.background, caisRemaster.moon, caisRemaster.ufo, caisRemaster.witch, caisRemaster.ship,
+  caisRemaster.water0, caisRemaster.water1, caisRemaster.water2,
   kitchen.background,
   sitio.background,
   ...Object.values(ui),
 ];
 
-export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [stage.water, kitchen.witch, kitchen.bat, kitchen.rat, sitio.hen, sitio.duck, sitio.snake, sitio.lizard];
+export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [caisRemaster.monster, caisRemaster.fire, caisRemaster.splash, kitchen.witch, kitchen.bat, kitchen.rat, sitio.hen, sitio.duck, sitio.snake, sitio.lizard];
 
 export const REQUIRED_TEXTURE_KEYS: readonly string[] = [
   ...IMAGE_ASSETS.map((asset) => asset.key),
