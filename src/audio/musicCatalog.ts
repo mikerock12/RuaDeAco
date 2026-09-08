@@ -1,4 +1,6 @@
-export type MusicTrack = 'main-menu' | 'character-select' | 'cais-da-cidade';
+import type { ArenaDefinition } from '../types/game';
+
+export type MusicTrack = 'main-menu' | 'character-select' | 'cais-da-cidade' | 'cozinha-macabra';
 
 export type MusicFormat = 'ogg' | 'mp3';
 
@@ -39,13 +41,25 @@ export const MUSIC_CATALOG: Readonly<Record<MusicTrack, MusicTrackDefinition>> =
       { format: 'mp3', mimeType: 'audio/mpeg', path: 'assets/audio/music/cais-da-cidade.mp3' },
     ],
   },
+  'cozinha-macabra': {
+    id: 'cozinha-macabra',
+    loop: true,
+    sources: [
+      { format: 'ogg', mimeType: 'audio/ogg; codecs=vorbis', path: 'assets/audio/music/cozinha-macabra.ogg' },
+      { format: 'mp3', mimeType: 'audio/mpeg', path: 'assets/audio/music/cozinha-macabra.mp3' },
+    ],
+  },
 };
+
+export const MUSIC_TRACK_BY_ARENA = {
+  'cais-da-cidade': 'cais-da-cidade',
+  'cozinha-macabra': 'cozinha-macabra',
+} as const satisfies Readonly<Record<ArenaDefinition['id'], MusicTrack>>;
 
 export const MUSIC_TRACK_BY_SCENE = {
   MainMenuScene: 'main-menu',
   CharacterSelectScene: 'character-select',
   OnlineScene: 'character-select',
-  FightScene: 'cais-da-cidade',
 } as const satisfies Readonly<Record<string, MusicTrack>>;
 
 export function musicAssetUrl(path: string, baseUrl = import.meta.env.BASE_URL): string {

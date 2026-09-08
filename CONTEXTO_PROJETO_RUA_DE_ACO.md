@@ -8,6 +8,7 @@
 > Última revisão: **08/09/2026**.
 >
 > Nova arena: **Cozinha Macabra**, disponível em CPU, versus local e treino.
+> Trilha própria em loop e um único fogão, integrado à bruxa animada.
 > Foto adaptada, bruxa com panelão, morcegos e ratos animados; seleção por
 > toque e direções de P1. Arte, prompts e implementação em
 > [docs/COZINHA_MACABRA.md](docs/COZINHA_MACABRA.md). Online mantém o Cais.

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { CpuController } from '../ai/CpuController';
 import { audioManager } from '../audio/AudioManager';
-import { MUSIC_TRACK_BY_SCENE } from '../audio/musicCatalog';
+import { MUSIC_TRACK_BY_ARENA } from '../audio/musicCatalog';
 import { phaserAnimationKey } from '../assets/spriteSheetContract';
 import { resolveProjectileVisualFrame } from '../ui/fighterAnimationResolver';
 import { CombatWorld } from '../combat/CombatWorld';
@@ -71,7 +71,6 @@ export class FightScene extends Phaser.Scene {
   }
 
   create(): void {
-    void audioManager.playMusic(MUSIC_TRACK_BY_SCENE.FightScene);
     this.destroyFightSprites();
     this.resultScheduled = false;
     this.transitionLocked = false;
@@ -86,6 +85,7 @@ export class FightScene extends Phaser.Scene {
     this.cpu = null;
     this.runner.reset();
     const selection = gameSession.selection;
+    void audioManager.playMusic(MUSIC_TRACK_BY_ARENA[selection.arena]);
     const playerOne = getFighterDefinition(selection.playerOne);
     const playerTwo = getFighterDefinition(selection.playerTwo);
     this.world = new CombatWorld(playerOne, playerTwo, selection.mode);

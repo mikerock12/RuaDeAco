@@ -13,6 +13,7 @@ interface StageDebug {
   };
 }
 type GameWindow = Window & {
+  __RUA_AUDIO_DEBUG__?: () => { currentTrack: string | null; contextState: string; activeVoices: number };
   __RUA_SCENE_DEBUG__?: () => string[];
   __RUA_STAGE_DEBUG__?: () => StageDebug;
   __RUA_UI_LAYOUT_DEBUG__?: () => { name: string; text?: string }[];
@@ -58,6 +59,13 @@ test('seleciona a cozinha, anima a fauna e a bruxa, pausa e volta sem objetos re
   await expect.poll(async () => (await stage(page))?.ambience?.batWaves).toBeGreaterThan(0);
   await expect.poll(async () => (await stage(page))?.ambience?.rats.some(rat => rat.visible)).toBe(true);
   await expect.poll(async () => (await stage(page))?.ambience?.bats.some(bat => bat.visible)).toBe(true);
+  await expect.poll(() => page.evaluate(() => (window as GameWindow).__RUA_AUDIO_DEBUG__?.().currentTrack)).toBe('cozinha-macabra');
+  await expect.poll(() => page.evaluate(() => (window as GameWindow).__RUA_AUDIO_DEBUG__?.().contextState)).toBe('running');
+  await page.keyboard.down('KeyA');
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(800);
+  await page.keyboard.up('KeyA');
+  await page.keyboard.up('ArrowRight');
   await page.screenshot({ path: testInfo.outputPath('cozinha-luta.png') });
   if (isMobile) await tap(608, 82);
   else await page.keyboard.press('Escape');
@@ -73,5 +81,7 @@ test('seleciona a cozinha, anima a fauna e a bruxa, pausa e volta sem objetos re
   await tap(548, 300);
   await scene(page, 'MainMenuScene');
   expect(await stage(page)).toBeUndefined();
+  await expect.poll(() => page.evaluate(() => (window as GameWindow).__RUA_AUDIO_DEBUG__?.().currentTrack)).toBe('main-menu');
+  await expect.poll(() => page.evaluate(() => (window as GameWindow).__RUA_AUDIO_DEBUG__?.().activeVoices)).toBe(1);
   expect(errors).toEqual([]);
 });

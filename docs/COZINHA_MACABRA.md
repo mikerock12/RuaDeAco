@@ -11,6 +11,7 @@ O lobby online continua usando Cais da Cidade, conforme o contrato atual do serv
 ## Composição e movimento
 
 - A arquitetura da foto foi preservada: churrasqueira de tijolos à esquerda, janela e mesa ao centro, fogão e armários à direita.
+- O único fogão da arena pertence à animação da bruxa; os fogões estáticos foram removidos do fundo.
 - Bruxa em quatro poses mexendo um panelão verde sobre o fogão, com vapor discreto.
 - Revoadas de 2 a 5 morcegos saem da boca da churrasqueira, em intervalos de 8–14 segundos depois da primeira aparição.
 - Até 3 ratos atravessam o piso em sentidos e faixas variados; novas tentativas aparecem a cada 4–8,5 segundos.
@@ -41,8 +42,21 @@ A foto originalmente recebida como `public/assets/stages/cozinha.jpeg` foi prese
 
 Os quatro PNGs somam aproximadamente 675 KiB e 1,3 MiB em RGBA decodificado (estimativa das texturas, não uma medição de RAM total). As fontes de geração não são distribuídas no site.
 
+## Trilha sonora
+
+A arena toca a música fornecida pelo usuário em loop (cerca de 1min57s), respeitando volume e mute existentes. A trilha depende da arena escolhida; o Cais mantém sua própria música. Ao voltar ao menu, a trilha muda pelo crossfade do AudioManager.
+
+Original preservado: `art-source/audio/cozinha-macabra-original.mpeg`. O arquivo contém áudio MP3 e uma imagem de capa; apenas o áudio é distribuído no jogo. O MP3 foi extraído sem recodificação e o OGG segue o fallback de formatos do catálogo.
+
+Arquivos: `public/assets/audio/music/cozinha-macabra.mp3` e `public/assets/audio/music/cozinha-macabra.ogg`. Reprodução da exportação com FFmpeg:
+
+```sh
+ffmpeg -i art-source/audio/cozinha-macabra-original.mpeg -map 0:a:0 -c:a copy -map_metadata -1 public/assets/audio/music/cozinha-macabra.mp3
+ffmpeg -i art-source/audio/cozinha-macabra-original.mpeg -map 0:a:0 -c:a libvorbis -q:a 4 -map_metadata -1 public/assets/audio/music/cozinha-macabra.ogg
+```
+
 ## Verificação
 
-`kitchenAmbience.test.ts` cobre a origem das revoadas, intervalos, sentidos dos ratos, limites de objetos e retomada após tempos inválidos ou muito longos. `kitchen-stage.spec.ts` integra o CI e verifica seleção por toque/teclado, entrada na arena, animações, pausa, retorno e descarte na saída em desktop e celular emulado.
+`kitchenAmbience.test.ts` cobre a origem das revoadas, intervalos, sentidos dos ratos, limites de objetos e retomada após tempos inválidos ou muito longos. `kitchen-stage.spec.ts` integra o CI e verifica seleção por toque/teclado, entrada na arena, reprodução da trilha da cozinha, troca de música no retorno ao menu, animações, pausa, retorno e descarte na saída em desktop e celular emulado.
 
 A animação não depende de timers ou tweens externos à atualização da cena. Não foram alterados dano, balanceamento, simulação ou dimensões da área de luta.
