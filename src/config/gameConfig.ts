@@ -45,4 +45,8 @@ export const COZINHA_MACABRA: ArenaDefinition = {
   subtitle: 'MEIA-NOITE | O JANTAR ESTA VIVO',
 };
 
-export const ARENAS: readonly ArenaDefinition[] = [CAIS_DA_CIDADE, COZINHA_MACABRA];
+export const SITIO: ArenaDefinition = {
+  id: 'sitio', name: 'SITIO', subtitle: 'DIA | VIDA NO TERREIRO',
+};
+
+export const ARENAS: readonly ArenaDefinition[] = [CAIS_DA_CIDADE, COZINHA_MACABRA, SITIO];

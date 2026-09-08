@@ -18,7 +18,7 @@ export interface GameSettings {
 }
 
 export interface ArenaDefinition {
-  readonly id: 'cais-da-cidade' | 'cozinha-macabra';
+  readonly id: 'cais-da-cidade' | 'cozinha-macabra' | 'sitio';
   readonly name: string;
   readonly subtitle: string;
 }

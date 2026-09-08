@@ -18,7 +18,7 @@ export const ALLOWED_FIGHTERS = new Set([
   "noir-reflexo"
 ]);
 
-export const ALLOWED_ARENAS = new Set(["cais-da-cidade", "cozinha-macabra"]);
+export const ALLOWED_ARENAS = new Set(["cais-da-cidade", "cozinha-macabra", "sitio"]);
 
 export const MAX_BODY_BYTES = 16 * 1024;
 export const MAX_WEBSOCKET_MESSAGE_BYTES = 16 * 1024;

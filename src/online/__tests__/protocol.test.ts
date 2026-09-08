@@ -64,7 +64,7 @@ describe('arenas do protocolo online', () => {
       { slot: otherSlot, fighterId: 'dante-sinal', arenaId: otherArena },
     ],
   });
-  it.each(['cais-da-cidade', 'cozinha-macabra'])('aceita %s em seleção, sala e início', arenaId => {
+  it.each(['cais-da-cidade', 'cozinha-macabra', 'sitio'])('aceita %s em seleção, sala e início', arenaId => {
     for (const message of [
       { protocolVersion: 1, type: 'selection_ack', selection: selection(arenaId) },
       { protocolVersion: 1, type: 'selection', slot: 'p1', selection: selection(arenaId) },

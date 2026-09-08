@@ -1,6 +1,6 @@
 import type { ArenaDefinition } from '../types/game';
 
-export type MusicTrack = 'main-menu' | 'character-select' | 'cais-da-cidade' | 'cozinha-macabra';
+export type MusicTrack = 'main-menu' | 'character-select' | 'cais-da-cidade' | 'cozinha-macabra' | 'sitio';
 
 export type MusicFormat = 'ogg' | 'mp3';
 
@@ -49,11 +49,19 @@ export const MUSIC_CATALOG: Readonly<Record<MusicTrack, MusicTrackDefinition>> =
       { format: 'mp3', mimeType: 'audio/mpeg', path: 'assets/audio/music/cozinha-macabra.mp3' },
     ],
   },
+  sitio: {
+    id: 'sitio', loop: true,
+    sources: [
+      { format: 'ogg', mimeType: 'audio/ogg; codecs=vorbis', path: 'assets/audio/music/sitio.ogg' },
+      { format: 'mp3', mimeType: 'audio/mpeg', path: 'assets/audio/music/sitio.mp3' },
+    ],
+  },
 };
 
 export const MUSIC_TRACK_BY_ARENA = {
   'cais-da-cidade': 'cais-da-cidade',
   'cozinha-macabra': 'cozinha-macabra',
+  sitio: 'sitio',
 } as const satisfies Readonly<Record<ArenaDefinition['id'], MusicTrack>>;
 
 export const MUSIC_TRACK_BY_SCENE = {

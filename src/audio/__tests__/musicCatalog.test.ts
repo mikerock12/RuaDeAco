@@ -7,16 +7,17 @@ import {
 } from '../musicCatalog';
 
 describe('catálogo de músicas', () => {
-  it('declara as quatro faixas reais em loop', () => {
+  it('declara as cinco faixas reais em loop', () => {
     expect(Object.keys(MUSIC_CATALOG)).toEqual([
       'main-menu',
       'character-select',
       'cais-da-cidade',
       'cozinha-macabra',
+      'sitio',
     ]);
     expect(Object.values(MUSIC_CATALOG).every((track) => track.loop)).toBe(true);
     expect(Object.values(MUSIC_CATALOG).flatMap((track) => track.sources).map((source) => source.format))
-      .toEqual(['ogg', 'mp3', 'ogg', 'mp3', 'ogg', 'mp3', 'ogg', 'mp3']);
+      .toEqual(['ogg', 'mp3', 'ogg', 'mp3', 'ogg', 'mp3', 'ogg', 'mp3', 'ogg', 'mp3']);
   });
 
   it('mapeia cada cena que inicia música para a faixa correta', () => {
@@ -31,6 +32,7 @@ describe('catálogo de músicas', () => {
     expect(MUSIC_TRACK_BY_ARENA).toEqual({
       'cais-da-cidade': 'cais-da-cidade',
       'cozinha-macabra': 'cozinha-macabra',
+      sitio: 'sitio',
     });
   });
 

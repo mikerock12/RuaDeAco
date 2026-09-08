@@ -156,7 +156,7 @@ quando build, engine, revisão de assets e arena coincidem.
 `room_state.players` inclui, para cada slot, `connected`, `selected`, `ready`,
 `fighterId` e `arenaId`. O roster online aceito nesta fase contém somente
 `rafa-mare`, `guto-barba`, `astro-riso`, `dante-sinal`, `leo-violeta` e
-`noir-reflexo`; as arenas são `cais-da-cidade` e `cozinha-macabra`.
+`noir-reflexo`; as arenas são `cais-da-cidade`, `cozinha-macabra` e `sitio`.
 
 P1 escolhe a arena da sala. O servidor normaliza a arena de P2 pela escolha de P1, inclusive se uma seleção antiga de P2 chegar depois da troca. Alterar a arena aplica a escolha aos slots selecionados e limpa o pronto dos dois. O campo opcional `arenaId` em `ready` vincula a confirmação à fase exibida pelo cliente; se não coincidir, o servidor retorna `selection_changed`. Mensagens v1 antigas sem esse campo continuam válidas. Nenhuma migração de banco é necessária.
 

@@ -503,9 +503,9 @@ export class CharacterSelectScene extends Phaser.Scene {
       align: 'center',
     });
 
-    const stagePreview = arena.id === 'cozinha-macabra'
+    const stagePreview = arena.id !== 'cais-da-cidade'
       ? this.add.container(0, 0, [
-          this.add.image(0, 58, ASSET_MANIFEST.kitchen.background.key).setDisplaySize(152, 86),
+          this.add.image(0, 58, arena.id === 'sitio' ? ASSET_MANIFEST.sitio.background.key : ASSET_MANIFEST.kitchen.background.key).setDisplaySize(152, 86),
           this.add.rectangle(0, 58, 156, 90, 0x000000, 0).setStrokeStyle(2, PALETTE.pink),
         ])
       : this.createCaisPreview();

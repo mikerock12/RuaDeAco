@@ -115,3 +115,5 @@ isolados do Chrome, exercita desktop e mobile touch, troca inputs reais,
 confere fingerprint do mesmo start, ação dos dois slots, golpe, hash, pausa
 local, reconexão/desconexão de lobby, erros seguros e abandono. Screenshots de
 auditoria ficam somente em `tmp/online-audit/`.
+
+A seleção compartilhada também inclui `sitio`, com trilha própria e fauna decorativa local. A ambientação não participa do hash de combate. Os testes online cobrem Cozinha Macabra e Sítio em computador e celular.

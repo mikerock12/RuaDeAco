@@ -20,7 +20,7 @@ job falhar; não habilita merge automático.
 | --- | --- |
 | Cliente | `npm ci`, tipos, todos os unitários e build |
 | Servidor | instalação pelo lockfile próprio, tipos e todos os testes |
-| Navegador | Chromium headless, regressões de mobile/pausa/remapeamento/layout/cozinha nos dois perfis |
+| Navegador | Chromium headless, regressões de mobile/pausa/remapeamento/layout/cozinha/sítio nos dois perfis |
 | Online | Worker + Vite locais, dois clientes, papéis, inputs, hashes e erros |
 
 Node 24 é usado nas quatro etapas. O CI instala o Chromium e dependências

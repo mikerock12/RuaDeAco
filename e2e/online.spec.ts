@@ -156,15 +156,7 @@ async function openOnline(page: Page, touch = false): Promise<void> {
   }
   await page.keyboard.press('Enter');
   await waitScene(page, 'MainMenuScene');
-  if (touch) {
-    await clickInternal(page, 320, 216, true);
-  } else {
-    for (let index = 0; index < 3; index += 1) {
-      await page.keyboard.press('KeyS');
-      await page.waitForTimeout(50);
-    }
-    await page.keyboard.press('Enter');
-  }
+  await clickInternal(page, 320, 216, touch);
   await waitScene(page, 'OnlineScene');
 }
 
@@ -558,7 +550,8 @@ test('trata sala inexistente e servidor indisponível sem sair da cena', async (
   }
 });
 
-test('P1 escolhe Cozinha Macabra para os dois jogadores e sincroniza a luta', async ({ browser }, testInfo) => {
+for (const arena of [{ id: 'cozinha-macabra', name: 'COZINHA MACABRA', steps: 1 }, { id: 'sitio', name: 'SITIO', steps: 2 }]) {
+test(`P1 escolhe ${arena.name} para os dois jogadores e sincroniza a luta`, async ({ browser }, testInfo) => {
   const pair = await createPair(browser, testInfo);
   const touch = testInfo.project.name.includes('mobile');
   const arenas = async (page: Page) => (await lobbyDebug(page))?.players.map(player => player.arenaId);
@@ -573,22 +566,23 @@ test('P1 escolhe Cozinha Macabra para os dois jogadores e sincroniza a luta', as
     await expect.poll(() => arenas(pair.guest)).toEqual(['cais-da-cidade', 'cais-da-cidade']);
     await clickInternal(pair.guest, 320, 334, touch);
     await expect.poll(async () => (await lobbyDebug(pair.host))?.players[1]?.ready).toBe(true);
-    if (touch) await clickInternal(pair.host, 488, 286, true);
-    else {
-      await pair.host.keyboard.press('KeyW');
-      await pair.host.waitForTimeout(80);
-      await pair.host.keyboard.press('KeyD');
+    if (!touch) { await pair.host.keyboard.press('KeyW'); await pair.host.waitForTimeout(80); }
+    for (let step = 0; step < arena.steps; step++) {
+      if (touch) await clickInternal(pair.host, 488, 286, true);
+      else await pair.host.keyboard.press('KeyD');
+      const chosen = step === 0 ? 'cozinha-macabra' : 'sitio';
+      await expect.poll(() => arenas(pair.host)).toEqual([chosen, chosen]);
     }
     for (const page of [pair.host, pair.guest]) {
-      await expect.poll(() => arenas(page)).toEqual(['cozinha-macabra', 'cozinha-macabra']);
-      await expect.poll(() => arenaLabel(page)).toBe('COZINHA MACABRA');
+      await expect.poll(() => arenas(page)).toEqual([arena.id, arena.id]);
+      await expect.poll(() => arenaLabel(page)).toBe(arena.name);
       await expect.poll(async () => (await lobbyDebug(page))?.players.map(player => player.ready)).toEqual([false, false]);
     }
     // O rival só vê a escolha compartilhada; tocar a posição da seta não muda a fase.
     await clickInternal(pair.guest, 488, 286, touch);
-    expect(await arenas(pair.guest)).toEqual(['cozinha-macabra', 'cozinha-macabra']);
-    await pair.host.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-cozinha-lobby-host.png`) });
-    await pair.guest.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-cozinha-lobby-guest.png`) });
+    expect(await arenas(pair.guest)).toEqual([arena.id, arena.id]);
+    await pair.host.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-${arena.id}-lobby-host.png`) });
+    await pair.guest.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-${arena.id}-lobby-guest.png`) });
     await clickInternal(pair.host, 320, 334, touch);
     await expect.poll(async () => (await lobbyDebug(pair.host))?.players[0]?.ready).toBe(true);
     await clickInternal(pair.guest, 320, 334, touch);
@@ -596,10 +590,10 @@ test('P1 escolhe Cozinha Macabra para os dois jogadores e sincroniza a luta', as
       await waitScene(page, 'FightScene');
       await expect.poll(() => page.evaluate(() => (
         (window as typeof window & { __RUA_STAGE_DEBUG__?: () => { arena: string } }).__RUA_STAGE_DEBUG__?.().arena
-      ))).toBe('cozinha-macabra');
+      ))).toBe(arena.id);
       await expect.poll(() => page.evaluate(() => (
         (window as typeof window & { __RUA_AUDIO_DEBUG__?: () => { currentTrack: string | null } }).__RUA_AUDIO_DEBUG__?.().currentTrack
-      ))).toBe('cozinha-macabra');
+      ))).toBe(arena.id);
     }
     await expect.poll(async () => {
       const [host, guest] = await Promise.all([fightDebug(pair.host), fightDebug(pair.guest)]);
@@ -607,8 +601,17 @@ test('P1 escolhe Cozinha Macabra para os dois jogadores e sincroniza a luta', as
         && (host.lastHashFrame ?? 0) >= 120 && host.lastHashFrame === guest?.lastHashFrame
         && host.lastHash != null && host.lastHash === guest?.lastHash;
     }).toBe(true);
-    await pair.host.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-cozinha-online.png`) });
+    await pair.host.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-${arena.id}-online.png`) });
     expect(pair.hostDiagnostics).toEqual({ errors: [], notFound: [] });
     expect(pair.guestDiagnostics).toEqual({ errors: [], notFound: [] });
+  } catch (error) {
+    await testInfo.attach('arena-sync-diagnostics', {
+      contentType: 'application/json',
+      body: JSON.stringify({ host: await fightDebug(pair.host), guest: await fightDebug(pair.guest),
+        hostScenes: await activeScenes(pair.host), guestScenes: await activeScenes(pair.guest) }),
+    });
+    throw error;
   } finally { await pair.hostContext.close(); await pair.guestContext.close(); }
 });
+
+}

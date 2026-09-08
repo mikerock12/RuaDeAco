@@ -19,7 +19,7 @@ async function pair() {
 }
 
 describe("arena compartilhada no lobby", () => {
-  it.each(["cais-da-cidade", "cozinha-macabra"])("P1 escolhe %s e P2 não substitui a arena", async (arenaId) => {
+  it.each(["cais-da-cidade", "cozinha-macabra", "sitio"])("P1 escolhe %s e P2 não substitui a arena", async (arenaId) => {
     const p = await pair();
     try {
       p.host.send({ ...selectionMessage("rafa-mare"), arenaId });

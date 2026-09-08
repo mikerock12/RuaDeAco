@@ -9,7 +9,7 @@ $ErrorActionPreference = 'Stop'
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $projectsRoot = Split-Path -Parent $projectRoot
-$contextRoot = Join-Path $projectRoot 'RuaDeAco_Contexto_GPTWork'
+$contextRoot = $projectRoot
 $audioMastersRoot = Join-Path $projectsRoot 'RuaDeAco_AudioMasters'
 
 function Assert-Command {
@@ -100,8 +100,8 @@ if (-not (Test-Path -LiteralPath (Join-Path $projectRoot '.git'))) {
   throw "Repositorio Git nao encontrado em: $projectRoot"
 }
 
-if (-not (Test-Path -LiteralPath $contextRoot)) {
-  throw "Pasta de contexto nao encontrada em: $contextRoot"
+if (-not (Test-Path -LiteralPath (Join-Path $contextRoot 'CONTEXTO_PROJETO_RUA_DE_ACO.md'))) {
+  throw 'Arquivo de contexto atual nao encontrado.'
 }
 
 if (-not (Test-Path -LiteralPath $audioMastersRoot)) {
@@ -133,6 +133,12 @@ foreach ($knownOutput in @(
 $branch = (& git -C $projectRoot branch --show-current).Trim()
 $head = (& git -C $projectRoot rev-parse HEAD).Trim()
 $statusLines = @(& git -C $projectRoot status --porcelain=v1)
+if ($statusLines.Count -gt 0) { throw 'Commit as alteracoes antes do backup para preservar o estado completo.' }
+if ($ReuseExisting) {
+  if (-not (Test-Path -LiteralPath $manifestPath)) { throw 'Reuso exige manifesto existente.' }
+  $previous = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+  if ($previous.git.head -ne $head) { throw 'Backup existente pertence a outro commit; use outra pasta.' }
+}
 
 if ($ReuseExisting -and (Test-Path -LiteralPath $projectArchive)) {
   & tar.exe -tf $projectArchive | Out-Null
@@ -143,15 +149,8 @@ if ($ReuseExisting -and (Test-Path -LiteralPath $projectArchive)) {
 else {
   Push-Location $projectRoot
   try {
-    & tar.exe -a -cf $projectArchive `
-      --exclude='./.git' `
-      --exclude='./node_modules' `
-      --exclude='./dist' `
-      --exclude='./test-results' `
-      --exclude='./playwright-report' `
-      --exclude='./RuaDeAco_Contexto_GPTWork' `
-      --exclude='./tmp' `
-      .
+    # Snapshot exato do commit, sem dependencias, credenciais e evidencias locais.
+    & git archive --format=zip --output=$projectArchive HEAD
     if ($LASTEXITCODE -ne 0) {
       throw "Falha ao criar o snapshot do projeto. Codigo: $LASTEXITCODE"
     }
@@ -171,7 +170,8 @@ if ($ReuseExisting -and (Test-Path -LiteralPath $productionArchive)) {
 elseif (Test-Path -LiteralPath $productionRoot) {
   Push-Location $productionRoot
   try {
-    & tar.exe -a -cf $productionArchive .
+    # Somente fontes de arte: nunca incluir traces de rede, tickets ou logs.
+    & tar.exe -a -cf $productionArchive --exclude='*.pyc' --exclude='__pycache__' imagegen
     if ($LASTEXITCODE -ne 0) {
       throw "Falha ao criar o backup do material de producao. Codigo: $LASTEXITCODE"
     }
@@ -205,7 +205,7 @@ if ($ReuseExisting -and (Test-Path -LiteralPath $contextArchive)) {
 else {
   Push-Location $contextRoot
   try {
-    & tar.exe -a -cf $contextArchive .
+    & tar.exe -a -cf $contextArchive CONTEXTO_PROJETO_RUA_DE_ACO.md PLANO_MELHORIAS_RUA_DE_ACO.md docs
     if ($LASTEXITCODE -ne 0) {
       throw "Falha ao criar o backup do contexto. Codigo: $LASTEXITCODE"
     }
@@ -256,6 +256,8 @@ $uploadFiles = @(
 
 $manifest = [ordered]@{
   schemaVersion = 1
+  contextLayout = 'project-root'
+  snapshotSource = 'git archive HEAD; worktree nao commitado nao faz parte do snapshot'
   generatedAt = (Get-Date).ToString('o')
   projectRoot = $projectRoot
   contextRoot = $contextRoot
@@ -268,11 +270,12 @@ $manifest = [ordered]@{
   }
   exclusions = @(
     '.git (preservado separadamente no bundle Git)'
+    'arquivos nao versionados (exceto fontes imagegen, contexto e audios externos explicitamente arquivados)'
     'node_modules'
     'dist'
     'test-results'
     'playwright-report'
-    'tmp (preservado separadamente como material de producao)'
+    'tmp (apenas imagegen preservado separadamente como material de producao)'
     'RuaDeAco_Contexto_GPTWork (preservado separadamente)'
   )
   files = $archives

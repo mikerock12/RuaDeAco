@@ -102,7 +102,9 @@ New-Item -ItemType Directory -Path $productionRoot -Force | Out-Null
 & tar.exe -xf (Join-Path $assemblyRoot 'RuaDeAco-Material-Producao-Atual.zip') -C $productionRoot
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao extrair o material de producao.' }
 
-$contextRoot = Join-Path $DestinationRoot 'RuaDeAco_Contexto_GPTWork'
+$contextRoot = if (($manifest.PSObject.Properties.Name -contains 'contextLayout') -and $manifest.contextLayout -eq 'project-root') {
+  $DestinationRoot
+} else { Join-Path $DestinationRoot 'RuaDeAco_Contexto_GPTWork' }
 New-Item -ItemType Directory -Path $contextRoot -Force | Out-Null
 & tar.exe -xf (Join-Path $assemblyRoot 'RuaDeAco-Contexto-Atual.zip') -C $contextRoot
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao extrair o contexto.' }

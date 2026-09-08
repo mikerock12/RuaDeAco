@@ -7,6 +7,12 @@
 >
 > Última revisão: **08/09/2026**.
 >
+> Sítio implementado: dia ensolarado, galinhas, patos, cobra e lagarto garantidos;
+> ovos, alimentação e disputas decorativas. Trilha própria e seleção online.
+> Detalhes em [docs/SITIO.md](docs/SITIO.md). Tipos, build, 477 testes do cliente,
+> 71 do servidor e E2E do Sítio em computador/celular aprovados localmente.
+> Publicação do Worker depende da nova autorização Cloudflare; confira Git e CI.
+>
 > Nova arena: **Cozinha Macabra**, disponível em CPU, versus local, treino e online.
 > Trilha própria em loop e um único fogão, integrado à bruxa animada.
 > Foto adaptada, bruxa com panelão, morcegos e ratos animados; seleção por

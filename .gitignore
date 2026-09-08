@@ -65,3 +65,6 @@ __pycache__/
 /server/.wrangler/
 /server/.dev.vars
 /server/coverage/
+
+# Prévia local da arena Sítio; fontes finais em art-source.
+/tmp/sitio/

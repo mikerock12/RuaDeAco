@@ -88,6 +88,14 @@ const kitchen = {
   rat: { key: 'kitchenRat', path: 'assets/stages/cozinha-macabra/rat.png', frameWidth: 40, frameHeight: 24, frames: 4, layout: 'horizontal' },
 } satisfies Record<string, ImageAsset | SpriteSheetAsset>;
 
+const sitio = {
+  background: { key: 'sitioBackground', path: 'assets/stages/sitio/background.png' },
+  hen: { key: 'sitioHen', path: 'assets/stages/sitio/hen.png', frameWidth: 64, frameHeight: 48, frames: 4, layout: 'horizontal' },
+  duck: { key: 'sitioDuck', path: 'assets/stages/sitio/duck.png', frameWidth: 64, frameHeight: 48, frames: 4, layout: 'horizontal' },
+  snake: { key: 'sitioSnake', path: 'assets/stages/sitio/snake.png', frameWidth: 64, frameHeight: 48, frames: 4, layout: 'horizontal' },
+  lizard: { key: 'sitioLizard', path: 'assets/stages/sitio/lizard.png', frameWidth: 64, frameHeight: 48, frames: 4, layout: 'horizontal' },
+} satisfies Record<string, ImageAsset | SpriteSheetAsset>;
+
 const ui = {
   panel: { key: 'uiPanel', path: 'assets/ui/panel.png' },
   button: { key: 'uiButton', path: 'assets/ui/button.png' },
@@ -106,6 +114,7 @@ export const ASSET_MANIFEST = {
   },
   stage,
   kitchen,
+  sitio,
   ui,
 } as const;
 
@@ -116,10 +125,11 @@ export const IMAGE_ASSETS: readonly ImageAsset[] = [
   stage.mid,
   stage.foreground,
   kitchen.background,
+  sitio.background,
   ...Object.values(ui),
 ];
 
-export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [stage.water, kitchen.witch, kitchen.bat, kitchen.rat];
+export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [stage.water, kitchen.witch, kitchen.bat, kitchen.rat, sitio.hen, sitio.duck, sitio.snake, sitio.lizard];
 
 export const REQUIRED_TEXTURE_KEYS: readonly string[] = [
   ...IMAGE_ASSETS.map((asset) => asset.key),
