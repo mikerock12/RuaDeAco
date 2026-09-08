@@ -1,3 +1,5 @@
+import { ARENAS } from '../config/gameConfig';
+import type { ArenaDefinition } from '../types/game';
 import type { FighterId } from '../types/combat';
 
 export type PlayerSlot = 'p1' | 'p2';
@@ -25,7 +27,7 @@ export interface RoomPlayer {
   readonly selected: boolean;
   readonly ready: boolean;
   readonly fighterId: FighterId | null;
-  readonly arenaId: 'cais-da-cidade' | null;
+  readonly arenaId: ArenaDefinition['id'] | null;
 }
 
 export interface RoomState {
@@ -37,7 +39,7 @@ export interface RoomState {
 export interface StartPlayer {
   readonly slot: PlayerSlot;
   readonly fighterId: FighterId;
-  readonly arenaId: 'cais-da-cidade';
+  readonly arenaId: ArenaDefinition['id'];
 }
 
 export interface StartMessage {
@@ -76,7 +78,7 @@ export type ServerMessage =
 
 export interface SelectionMessageData {
   readonly fighterId: FighterId;
-  readonly arenaId: 'cais-da-cidade';
+  readonly arenaId: ArenaDefinition['id'];
   readonly clientBuildId: string;
   readonly engineVersion: string;
   readonly assetRevision: string;
@@ -90,6 +92,7 @@ const fighters = new Set<FighterId>([
   'leo-violeta',
   'noir-reflexo',
 ]);
+const isArena = (value: unknown): value is ArenaDefinition['id'] => ARENAS.some(arena => arena.id === value);
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 const isSlot = (value: unknown): value is PlayerSlot => value === 'p1' || value === 'p2';
@@ -103,7 +106,7 @@ function parsePlayer(value: unknown): RoomPlayer | null {
   if (!isRecord(value) || !isSlot(value.slot) || typeof value.connected !== 'boolean'
     || typeof value.selected !== 'boolean' || typeof value.ready !== 'boolean') return null;
   if (value.fighterId !== null && !isFighter(value.fighterId)) return null;
-  if (value.arenaId !== null && value.arenaId !== 'cais-da-cidade') return null;
+  if (value.arenaId !== null && !isArena(value.arenaId)) return null;
   return {
     slot: value.slot,
     connected: value.connected,
@@ -129,7 +132,7 @@ function parseRoomState(value: unknown): RoomState | null {
 
 function parseSelection(value: unknown): SelectionMessageData | null {
   if (!isRecord(value) || !isFighter(value.fighterId)
-    || value.arenaId !== 'cais-da-cidade'
+    || !isArena(value.arenaId)
     || !stringField(value.clientBuildId)
     || !stringField(value.engineVersion)
     || !stringField(value.assetRevision)) return null;
@@ -183,12 +186,13 @@ export function parseServerMessage(raw: string): ServerMessage {
   if (type === 'start' && isSlot(value.slot) && isInteger(value.seed)
     && isInteger(value.startAt) && isInteger(value.inputDelay)
     && value.inputDelay >= 2 && value.inputDelay <= 12 && Array.isArray(value.players)) {
-    const players = value.players.filter(isRecord).map((player) => (
-      isSlot(player.slot) && isFighter(player.fighterId) && player.arenaId === 'cais-da-cidade'
+    const players = value.players.map((player: unknown) => (
+      isRecord(player) && isSlot(player.slot) && isFighter(player.fighterId) && isArena(player.arenaId)
         ? { slot: player.slot, fighterId: player.fighterId, arenaId: player.arenaId }
         : null
     ));
-    if (players.length === 2 && players.every((player) => player !== null)) {
+    if (players.length === 2 && players.every((player) => player !== null)
+      && players[0]!.slot !== players[1]!.slot && players[0]!.arenaId === players[1]!.arenaId) {
       return { protocolVersion: 1, type, slot: value.slot, seed: value.seed, startAt: value.startAt, inputDelay: value.inputDelay, players: players as StartPlayer[] };
     }
   }

@@ -1,10 +1,11 @@
+import type { ArenaDefinition } from '../types/game';
 import type { FighterId } from '../types/combat';
 import { OnlineApiClient, OnlineApiError } from './ApiClient';
 import {
   CLIENT_BUILD_ID,
   COMBAT_ENGINE_VERSION,
   FIGHTER_ASSET_REVISION,
-  ONLINE_ARENA_ID,
+  DEFAULT_ONLINE_ARENA_ID,
   ONLINE_AVAILABLE,
   ONLINE_PROTOCOL_VERSION,
 } from './config';
@@ -49,6 +50,7 @@ const friendlyErrors: Readonly<Record<string, string>> = {
   room_full: 'A sala já está cheia.',
   room_closed: 'A sala foi encerrada.',
   match_in_progress: 'A luta desta sala já começou.',
+  selection_changed: 'A arena mudou. Confira a fase e confirme novamente.',
   client_version_mismatch: 'As versões dos dois jogadores são incompatíveis.',
   reconnect_expired: 'O prazo de reconexão expirou.',
   rate_limited: 'Muitas tentativas. Aguarde um instante.',
@@ -148,12 +150,13 @@ export class OnlineSession {
     await this.admit(() => this.api.joinRoom(roomCode));
   }
 
-  selectFighter(fighterId: FighterId): void {
+  selectFighter(fighterId: FighterId, arenaId: ArenaDefinition['id'] =
+    this.state.room?.players.find(player => player.slot === 'p1')?.arenaId ?? DEFAULT_ONLINE_ARENA_ID): void {
     this.send({
       protocolVersion: ONLINE_PROTOCOL_VERSION,
       type: 'select',
       fighterId,
-      arenaId: ONLINE_ARENA_ID,
+      arenaId,
       clientBuildId: CLIENT_BUILD_ID,
       engineVersion: COMBAT_ENGINE_VERSION,
       assetRevision: FIGHTER_ASSET_REVISION,
@@ -161,7 +164,9 @@ export class OnlineSession {
   }
 
   setReady(ready: boolean): void {
-    this.send({ protocolVersion: ONLINE_PROTOCOL_VERSION, type: 'ready', ready });
+    this.send({ protocolVersion: ONLINE_PROTOCOL_VERSION, type: 'ready', ready,
+      arenaId: this.state.room?.players.find(player => player.slot === 'p1')?.arenaId ?? DEFAULT_ONLINE_ARENA_ID,
+    });
   }
 
   sendInput(message: Record<string, unknown>): void {

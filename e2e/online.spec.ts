@@ -19,6 +19,7 @@ interface OnlineLobbyDebug {
     readonly connected: boolean;
     readonly ready: boolean;
     readonly fighterId: string | null;
+    readonly arenaId: string | null;
   }[];
   readonly inputDelay: number | null;
   readonly reconnectCount: number;
@@ -275,11 +276,11 @@ async function selectAndStart(host: Page, guest: Page, touch: boolean): Promise<
     )).toBe(true);
   }
 
-  await clickInternal(host, 320, 298, touch);
+  await clickInternal(host, 320, 334, touch);
   await expect.poll(async () => (
     (await lobbyDebug(host))?.players.find((player) => player.slot === 'p1')?.ready
   )).toBe(true);
-  await clickInternal(guest, 320, 298, touch);
+  await clickInternal(guest, 320, 334, touch);
   await Promise.all([
     waitScene(host, 'FightScene'),
     waitScene(guest, 'FightScene'),
@@ -454,11 +455,11 @@ test('Léo e Noir iniciam online, sincronizam input/hash e encerram limpo', asyn
       (await lobbyDebug(pair.guest))?.players.find((player) => player.slot === 'p2')?.fighterId
     )).toBe('noir-reflexo');
 
-    await clickInternal(pair.host, 320, 297, touch);
+    await clickInternal(pair.host, 320, 334, touch);
     await expect.poll(async () => (
       (await lobbyDebug(pair.host))?.players.find((player) => player.slot === 'p1')?.ready
     )).toBe(true);
-    await clickInternal(pair.guest, 320, 297, touch);
+    await clickInternal(pair.guest, 320, 334, touch);
     await Promise.all([
       waitScene(pair.host, 'FightScene'),
       waitScene(pair.guest, 'FightScene'),
@@ -555,4 +556,59 @@ test('trata sala inexistente e servidor indisponível sem sair da cena', async (
   } finally {
     await unavailableContext.close();
   }
+});
+
+test('P1 escolhe Cozinha Macabra para os dois jogadores e sincroniza a luta', async ({ browser }, testInfo) => {
+  const pair = await createPair(browser, testInfo);
+  const touch = testInfo.project.name.includes('mobile');
+  const arenas = async (page: Page) => (await lobbyDebug(page))?.players.map(player => player.arenaId);
+  const arenaLabel = (page: Page) => page.evaluate(() => (
+    (window as typeof window & { __RUA_UI_LAYOUT_DEBUG__?: () => { name: string; text?: string }[] })
+      .__RUA_UI_LAYOUT_DEBUG__?.().find(entry => entry.name === 'online-arena-name')?.text
+  ));
+  try {
+    await clickInternal(pair.host, 86, 140, touch);
+    await expect.poll(async () => (await lobbyDebug(pair.host))?.players[0]?.fighterId).toBe('rafa-mare');
+    await clickInternal(pair.guest, 554, 224, touch);
+    await expect.poll(() => arenas(pair.guest)).toEqual(['cais-da-cidade', 'cais-da-cidade']);
+    await clickInternal(pair.guest, 320, 334, touch);
+    await expect.poll(async () => (await lobbyDebug(pair.host))?.players[1]?.ready).toBe(true);
+    if (touch) await clickInternal(pair.host, 488, 286, true);
+    else {
+      await pair.host.keyboard.press('KeyW');
+      await pair.host.waitForTimeout(80);
+      await pair.host.keyboard.press('KeyD');
+    }
+    for (const page of [pair.host, pair.guest]) {
+      await expect.poll(() => arenas(page)).toEqual(['cozinha-macabra', 'cozinha-macabra']);
+      await expect.poll(() => arenaLabel(page)).toBe('COZINHA MACABRA');
+      await expect.poll(async () => (await lobbyDebug(page))?.players.map(player => player.ready)).toEqual([false, false]);
+    }
+    // O rival só vê a escolha compartilhada; tocar a posição da seta não muda a fase.
+    await clickInternal(pair.guest, 488, 286, touch);
+    expect(await arenas(pair.guest)).toEqual(['cozinha-macabra', 'cozinha-macabra']);
+    await pair.host.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-cozinha-lobby-host.png`) });
+    await pair.guest.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-cozinha-lobby-guest.png`) });
+    await clickInternal(pair.host, 320, 334, touch);
+    await expect.poll(async () => (await lobbyDebug(pair.host))?.players[0]?.ready).toBe(true);
+    await clickInternal(pair.guest, 320, 334, touch);
+    for (const page of [pair.host, pair.guest]) {
+      await waitScene(page, 'FightScene');
+      await expect.poll(() => page.evaluate(() => (
+        (window as typeof window & { __RUA_STAGE_DEBUG__?: () => { arena: string } }).__RUA_STAGE_DEBUG__?.().arena
+      ))).toBe('cozinha-macabra');
+      await expect.poll(() => page.evaluate(() => (
+        (window as typeof window & { __RUA_AUDIO_DEBUG__?: () => { currentTrack: string | null } }).__RUA_AUDIO_DEBUG__?.().currentTrack
+      ))).toBe('cozinha-macabra');
+    }
+    await expect.poll(async () => {
+      const [host, guest] = await Promise.all([fightDebug(pair.host), fightDebug(pair.guest)]);
+      return host?.startFingerprint != null && host.startFingerprint === guest?.startFingerprint
+        && (host.lastHashFrame ?? 0) >= 120 && host.lastHashFrame === guest?.lastHashFrame
+        && host.lastHash != null && host.lastHash === guest?.lastHash;
+    }).toBe(true);
+    await pair.host.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-cozinha-online.png`) });
+    expect(pair.hostDiagnostics).toEqual({ errors: [], notFound: [] });
+    expect(pair.guestDiagnostics).toEqual({ errors: [], notFound: [] });
+  } finally { await pair.hostContext.close(); await pair.guestContext.close(); }
 });

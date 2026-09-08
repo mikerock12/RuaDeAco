@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { audioManager } from '../audio/AudioManager';
 import { MUSIC_TRACK_BY_SCENE } from '../audio/musicCatalog';
+import { ARENAS } from '../config/gameConfig';
+import { DEFAULT_ONLINE_ARENA_ID } from '../online/config';
 import { gameSession } from '../config/session';
 import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { AVAILABLE_FIGHTERS, getFighterDefinition } from '../fighters';
@@ -31,6 +33,7 @@ export class OnlineScene extends Phaser.Scene {
   private view: OnlineView = 'home';
   private selectedHome = 0;
   private fighterCursor = 0;
+  private lobbyFocus: 'fighters' | 'arena' = 'fighters';
   private joinCode = '';
   private busy = false;
   private transitioning = false;
@@ -50,6 +53,7 @@ export class OnlineScene extends Phaser.Scene {
     this.view = onlineSession.snapshot.roomCode ? 'lobby' : 'home';
     this.selectedHome = 0;
     this.fighterCursor = 0;
+    this.lobbyFocus = 'fighters';
     this.joinCode = '';
     this.busy = false;
     this.transitioning = false;
@@ -84,6 +88,7 @@ export class OnlineScene extends Phaser.Scene {
             connected: boolean;
             ready: boolean;
             fighterId: string | null;
+            arenaId: string | null;
           }[];
           inputDelay: number | null;
           reconnectCount: number;
@@ -99,6 +104,7 @@ export class OnlineScene extends Phaser.Scene {
           connected: player.connected,
           ready: player.ready,
           fighterId: player.fighterId,
+          arenaId: player.arenaId,
         })) ?? [],
         inputDelay: this.latest.start?.inputDelay ?? null,
         reconnectCount: this.latest.reconnectCount,
@@ -169,7 +175,17 @@ export class OnlineScene extends Phaser.Scene {
 
     const horizontal = Number(frame.pressed.has('right')) - Number(frame.pressed.has('left'));
     const vertical = Number(frame.pressed.has('down')) - Number(frame.pressed.has('up'));
-    if (horizontal !== 0 || vertical !== 0) this.moveFighter(horizontal, vertical);
+    if (this.latest.slot === 'p1' && vertical !== 0 && (
+      this.lobbyFocus === 'arena' || (vertical > 0 && this.fighterCursor >= 3)
+      || (vertical < 0 && this.fighterCursor < 3)
+    )) {
+      const wasArena = this.lobbyFocus === 'arena';
+      this.lobbyFocus = wasArena ? 'fighters' : 'arena';
+      if (wasArena) this.fighterCursor = vertical > 0 ? this.fighterCursor % 3 : 3 + this.fighterCursor % 3;
+      this.render();
+    } else if (this.lobbyFocus === 'arena') {
+      if (horizontal !== 0) this.changeArena(horizontal);
+    } else if (horizontal !== 0 || vertical !== 0) this.moveFighter(horizontal, vertical);
     if (frame.pressed.has('confirm') || frame.pressed.has('light')) this.confirmLobby();
     if (frame.pressed.has('cancel')) this.leaveLobby();
   }
@@ -411,10 +427,10 @@ export class OnlineScene extends Phaser.Scene {
       const column = index % 3;
       const row = Math.floor(index / 3);
       const x = 86 + column * 234;
-      const y = 140 + row * 84;
-      const selected = index === this.fighterCursor;
+      const y = 138 + row * 72;
+      const selected = this.lobbyFocus === 'fighters' && index === this.fighterCursor;
       const chosen = local?.fighterId === fighter.id;
-      const frame = this.add.rectangle(x, y, 132, 76, PALETTE.panel, 0.98)
+      const frame = this.add.rectangle(x, y, 132, 68, PALETTE.panel, 0.98)
         .setStrokeStyle(selected ? 4 : 2, chosen ? PALETTE.gold : selected ? PALETTE.cyan : PALETTE.steel)
         .setInteractive({ useHandCursor: true });
       const portrait = createConceptPortrait(this, x, y - 10, fighter.id, 112, 46, {
@@ -439,13 +455,13 @@ export class OnlineScene extends Phaser.Scene {
     const localLabel = local?.ready ? 'VOCE: PRONTO' : local?.fighterId ? 'VOCE: SELECIONADO' : 'VOCE: ESCOLHENDO';
     const peerName = peer?.fighterId ? getFighterDefinition(peer.fighterId).name.toUpperCase() : 'AGUARDANDO';
     const peerLabel = peer?.ready ? `RIVAL: ${peerName} • PRONTO` : `RIVAL: ${peerName}`;
-    const localStatus = pixelText(this, 18, 270, localLabel, {
+    const localStatus = pixelText(this, 18, 255, localLabel, {
       size: 8,
       maxWidth: 292,
       maxHeight: 16,
       color: local?.ready ? '#ffd55c' : '#9af7ff',
     }).setOrigin(0, 0.5);
-    const peerStatus = pixelText(this, INTERNAL_WIDTH - 18, 270, peerLabel, {
+    const peerStatus = pixelText(this, INTERNAL_WIDTH - 18, 255, peerLabel, {
       size: 8,
       maxWidth: 292,
       maxHeight: 16,
@@ -454,14 +470,33 @@ export class OnlineScene extends Phaser.Scene {
     }).setOrigin(1, 0.5);
     this.dynamic.add([localStatus, peerStatus]);
 
+    const arenaId = room?.players.find(player => player.slot === 'p1')?.arenaId ?? DEFAULT_ONLINE_ARENA_ID;
+    const arena = ARENAS.find(candidate => candidate.id === arenaId)!;
+    const host = this.latest.slot === 'p1';
+    const arenaPanel = this.add.rectangle(320, 286, 280, 44, PALETTE.panel, 0.98)
+      .setStrokeStyle(this.lobbyFocus === 'arena' ? 3 : 1, this.lobbyFocus === 'arena' ? PALETTE.gold : PALETTE.steel);
+    const arenaHint = pixelText(this, 320, 275, host ? 'ARENA · P1 ESCOLHE' : 'ARENA · ESCOLHIDA POR P1', {
+      size: 8, maxWidth: 264, maxHeight: 10, color: '#9af7ff', align: 'center',
+    });
+    const arenaName = pixelText(this, 320, 293, arena.name, {
+      size: 16, minSize: 8, maxWidth: 264, maxHeight: 20,
+      color: '#ffd55c', align: 'center', layoutName: 'online-arena-name',
+    });
+    this.dynamic.add([arenaPanel, arenaHint, arenaName]);
+    if (host) {
+      const previous = this.createButton(152, 286, 44, 44, '<', () => this.changeArena(-1));
+      const next = this.createButton(488, 286, 44, 44, '>', () => this.changeArena(1));
+      this.dynamic.add([previous.container, next.container]);
+    }
+
     const readyLabel = local?.ready ? 'CANCELAR PRONTO' : local?.fighterId ? 'FICAR PRONTO' : 'ESCOLHER LUTADOR';
-    const readyButton = this.createButton(INTERNAL_WIDTH / 2, 297, 260, 32, readyLabel, () => this.confirmLobby());
-    const leaveButton = this.createButton(62, 329, 100, 26, 'SAIR', () => this.leaveLobby());
-    const copyButton = this.createButton(190, 329, 142, 26, 'COPIAR CODIGO', () => void this.copyRoomCode());
+    const readyButton = this.createButton(INTERNAL_WIDTH / 2, 334, 240, 36, readyLabel, () => this.confirmLobby());
+    const leaveButton = this.createButton(62, 334, 100, 36, 'SAIR', () => this.leaveLobby());
+    const copyButton = this.createButton(548, 334, 150, 36, 'COPIAR CODIGO', () => void this.copyRoomCode());
     this.dynamic.add([readyButton.container, leaveButton.container, copyButton.container]);
-    const ping = pixelText(this, INTERNAL_WIDTH - 12, 342, `PING ${this.latest.latencyMs ?? '--'} MS • ${this.latest.slot?.toUpperCase() ?? '--'}`, {
+    const ping = pixelText(this, INTERNAL_WIDTH - 12, 18, `PING ${this.latest.latencyMs ?? '--'} MS • ${this.latest.slot?.toUpperCase() ?? '--'}`, {
       size: 8,
-      maxWidth: 260,
+      maxWidth: 174,
       maxHeight: 14,
       color: '#8796ae',
       align: 'right',
@@ -604,7 +639,22 @@ export class OnlineScene extends Phaser.Scene {
     this.render();
   }
 
+  private changeArena(direction: number): void {
+    if (this.latest.slot !== 'p1' || this.transitioning || this.busy
+      || !['lobby', 'error'].includes(this.latest.status)) return;
+    const local = this.latest.room?.players.find(player => player.slot === 'p1');
+    const current = local?.arenaId ?? DEFAULT_ONLINE_ARENA_ID;
+    const index = ARENAS.findIndex(arena => arena.id === current);
+    const next = ARENAS[(index + Math.sign(direction) + ARENAS.length) % ARENAS.length]!;
+    const fighterId = local?.fighterId ?? AVAILABLE_FIGHTERS[this.fighterCursor]!.id;
+    this.lobbyFocus = 'arena';
+    if (this.latest.status === 'error') onlineSession.dismissError();
+    onlineSession.selectFighter(fighterId, next.id);
+    audioManager.play('confirm');
+  }
+
   private chooseFighter(fighterId: FighterId): void {
+    this.lobbyFocus = 'fighters';
     if (this.latest.status === 'error') onlineSession.dismissError();
     onlineSession.selectFighter(fighterId);
     audioManager.play('confirm');
@@ -639,7 +689,7 @@ export class OnlineScene extends Phaser.Scene {
       mode: 'online',
       playerOne: playerOne.fighterId,
       playerTwo: playerTwo.fighterId,
-      arena: 'cais-da-cidade',
+      arena: playerOne.arenaId,
     });
     gameSession.result = null;
     gameSession.onlineResult = null;

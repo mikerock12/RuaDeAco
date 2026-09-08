@@ -52,3 +52,33 @@ describe('parser do protocolo online', () => {
     }))).toThrow(/start/u);
   });
 });
+
+describe('arenas do protocolo online', () => {
+  const selection = (arenaId: string) => ({
+    fighterId: 'rafa-mare', arenaId, clientBuildId: 'build', engineVersion: 'engine', assetRevision: 'assets',
+  });
+  const start = (arenaId: string, otherArena = arenaId, otherSlot = 'p2') => ({
+    protocolVersion: 1, type: 'start', slot: 'p1', seed: 1, startAt: 2, inputDelay: 8,
+    players: [
+      { slot: 'p1', fighterId: 'rafa-mare', arenaId },
+      { slot: otherSlot, fighterId: 'dante-sinal', arenaId: otherArena },
+    ],
+  });
+  it.each(['cais-da-cidade', 'cozinha-macabra'])('aceita %s em seleção, sala e início', arenaId => {
+    for (const message of [
+      { protocolVersion: 1, type: 'selection_ack', selection: selection(arenaId) },
+      { protocolVersion: 1, type: 'selection', slot: 'p1', selection: selection(arenaId) },
+      { protocolVersion: 1, type: 'room_state', state: { roomCode: 'ABCDE23456', phase: 'ready', players: [
+        { slot: 'p1', connected: true, selected: true, ready: false, fighterId: 'rafa-mare', arenaId },
+      ] } },
+      start(arenaId),
+    ]) expect(parseServerMessage(JSON.stringify(message))).toMatchObject(message);
+  });
+  it('rejeita arena desconhecida, arenas divergentes e slots duplicados no início', () => {
+    for (const message of [
+      { protocolVersion: 1, type: 'selection_ack', selection: selection('inexistente') },
+      start('inexistente'), start('cais-da-cidade', 'cozinha-macabra'),
+      start('cozinha-macabra', 'cozinha-macabra', 'p1'),
+    ]) expect(() => parseServerMessage(JSON.stringify(message))).toThrow();
+  });
+});

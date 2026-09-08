@@ -42,12 +42,18 @@ Estados visuais:
 
 - home: saúde do serviço, criar sala, entrar com código ou voltar;
 - join: código normalizado de dez caracteres e teclado virtual touch;
-- lobby: código/cópia, P1/P2, conexão, quatro lutadores, seleção e ready.
+- lobby: código/cópia, P1/P2, conexão, seis lutadores, arena compartilhada e ready.
 
 O fundo é procedural e leve: estrelas fixas, Júpiter pixelado, estrada de aço
 em perspectiva e um pool fixo de linhas binárias. A animação binária atualiza
 aproximadamente a 4,5 Hz e para quando a página está oculta ou há preferência
 por movimento reduzido. Não há asset online adicional.
+
+## Arena compartilhada
+
+P1 escolhe entre Cais da Cidade e Cozinha Macabra. A linha Arena tem setas touch de 44 × 44 pixels e recebe foco por cima/baixo no teclado/gamepad; esquerda/direita troca a fase. P2 acompanha a seleção do servidor. O menu de pronto fica abaixo da escolha de arena.
+
+O servidor aplica a arena de P1 aos dois slots selecionados, preserva a escolha na reconexão e cancela o pronto dos dois quando ela muda. O cliente envia a arena exibida junto com `ready`; uma confirmação atrasada da fase anterior é recusada. `start.players` precisa conter P1/P2 distintos e a mesma arena válida. `FightScene` usa essa arena e sua trilha. A ambientação da cozinha é visual e permanece fora do hash do combate.
 
 ## Contrato de input e lockstep
 

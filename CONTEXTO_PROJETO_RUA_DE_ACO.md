@@ -7,11 +7,12 @@
 >
 > Última revisão: **08/09/2026**.
 >
-> Nova arena: **Cozinha Macabra**, disponível em CPU, versus local e treino.
+> Nova arena: **Cozinha Macabra**, disponível em CPU, versus local, treino e online.
 > Trilha própria em loop e um único fogão, integrado à bruxa animada.
 > Foto adaptada, bruxa com panelão, morcegos e ratos animados; seleção por
 > toque e direções de P1. Arte, prompts e implementação em
-> [docs/COZINHA_MACABRA.md](docs/COZINHA_MACABRA.md). Online mantém o Cais.
+> [docs/COZINHA_MACABRA.md](docs/COZINHA_MACABRA.md). No online, P1 escolhe a arena para ambos.
+> Trocar a arena cancela o pronto; cada confirmação valida a fase atual.
 > Validação da cozinha: 467 unitários, 66 testes de servidor, 18 cenários
 > de navegador e 5 online aprovados no CI do commit 1019a98.
 >

@@ -861,6 +861,15 @@ export class GameRoom extends DurableObject<Env> {
       );
     }
     const selection = this.validateSelection(value);
+    const previousArena = this.slot("p1")?.arena_id ?? "cais-da-cidade";
+    // P1 define a arena da sala. Seleções atrasadas de P2 nunca desfazem essa escolha.
+    if (attachment.slot === "p2") selection.arenaId = previousArena;
+    if (attachment.slot === "p1" && selection.arenaId !== previousArena) {
+      this.ctx.storage.sql.exec(
+        "UPDATE slots SET arena_id = ?, ready = 0 WHERE fighter_id IS NOT NULL",
+        selection.arenaId
+      );
+    }
     this.ctx.storage.sql.exec(
       `UPDATE slots
        SET fighter_id = ?, arena_id = ?, client_build_id = ?,
@@ -925,10 +934,12 @@ export class GameRoom extends DurableObject<Env> {
     value: Record<string, unknown>,
     now: number
   ): void {
-    if (!hasExactKeys(value, ["protocolVersion", "type", "ready"])) {
+    if (!hasExactKeys(value, ["protocolVersion", "type", "ready"])
+      && !hasExactKeys(value, ["protocolVersion", "type", "ready", "arenaId"])) {
       throw new ApiError(400, "invalid_message", "Ready inválido.");
     }
-    if (typeof value.ready !== "boolean") {
+    if (typeof value.ready !== "boolean"
+      || ("arenaId" in value && (typeof value.arenaId !== "string" || !ALLOWED_ARENAS.has(value.arenaId)))) {
       throw new ApiError(400, "invalid_message", "Ready inválido.");
     }
     const room = this.ensureOpen(this.room(), now);
@@ -946,6 +957,9 @@ export class GameRoom extends DurableObject<Env> {
         "selection_required",
         "Selecione lutador e arena antes de confirmar."
       );
+    }
+    if (value.ready && "arenaId" in value && value.arenaId !== player.arena_id) {
+      throw new ApiError(409, "selection_changed", "A arena mudou. Confira e confirme novamente.");
     }
     this.ctx.storage.sql.exec(
       "UPDATE slots SET ready = ? WHERE slot = ? AND session_id = ?",

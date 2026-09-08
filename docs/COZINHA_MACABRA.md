@@ -6,7 +6,9 @@ Arena baseada na fotografia fornecida pelo usuário, adaptada para a pixel art d
 
 Em CPU, versus local ou treino, confirme os dois lutadores. Na tela **Arena e confronto**, use os botões **< / >** para escolher **Cozinha Macabra** e toque em **Lutar**. Teclado e gamepad usam as direções de P1; no teclado padrão, A/D. A arena escolhida é mantida nas próximas seleções da sessão.
 
-O lobby online continua usando Cais da Cidade, conforme o contrato atual do servidor. Esta entrega não publica alterações no Worker nem muda o protocolo multiplayer.
+No online, o criador da sala (P1) escolhe Cais da Cidade ou Cozinha Macabra pelas setas da linha Arena. No teclado/gamepad, navegue até essa linha com cima/baixo e altere com esquerda/direita. P2 vê a escolha automaticamente. Os dois confirmam em Ficar pronto. Mudar a arena cancela as confirmações; o servidor recusa um pronto atrasado que se refira à arena anterior. A arena persistida também é restaurada ao reconectar no lobby.
+
+Os dois clientes usam a arena do início sincronizado, incluindo sua trilha. Morcegos, ratos e bruxa são ambientação local e não alteram o estado determinístico da luta.
 
 ## Composição e movimento
 
