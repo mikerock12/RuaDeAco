@@ -71,13 +71,26 @@ function attachResponsiveLayout(
     const bounds = bitmap.getTextBounds(true).local;
     return { width: bounds.width, height: bounds.height };
   };
+  let previousSource: string | undefined;
+  let previousText: string | undefined;
+  let previousSize = 0;
+  let previousLetterSpacing = 0;
   const apply = (value: string | string[]): void => {
     const source = Array.isArray(value) ? value.join('\n') : value;
+    // Timer e HUD repetem textos por muitos frames; só refazemos a medição
+    // quando conteúdo ou métricas mudam.
+    if (source === previousSource && bitmap.text === previousText
+      && bitmap.fontSize === previousSize && bitmap.lineSpacing === lineSpacing
+      && bitmap.letterSpacing === previousLetterSpacing) return;
     const layout = fitPixelText(source, options, measure);
     bitmap.setFontSize(layout.size);
     bitmap.setLineSpacing(lineSpacing);
     nativeSetText(layout.text);
     bitmap.setData('pixelTextLayout', layout);
+    previousSource = source;
+    previousText = bitmap.text;
+    previousSize = bitmap.fontSize;
+    previousLetterSpacing = bitmap.letterSpacing;
   };
 
   bitmap.setText = ((value: string | string[]) => {

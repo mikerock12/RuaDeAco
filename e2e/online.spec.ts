@@ -118,6 +118,14 @@ async function worldSnapshot(page: Page): Promise<WorldSnapshot | null> {
   ));
 }
 
+async function lastPlayerOneMove(page: Page): Promise<string | null> {
+  return page.evaluate(() => (
+    (window as typeof window & {
+      __ruaWorld?: { fighters: readonly { lastMoveId: string | null }[] };
+    }).__ruaWorld?.fighters[0]?.lastMoveId ?? null
+  ));
+}
+
 function collectDiagnostics(page: Page): PageDiagnostics {
   const diagnostics: PageDiagnostics = { errors: [], notFound: [] };
   page.on('pageerror', (error) => diagnostics.errors.push(error.message));
@@ -363,18 +371,24 @@ test('duas abas criam sala, mapeiam papéis e mantêm hash lockstep', async ({ b
     expect(afterMovement!.fighters[0]!.x).toBeGreaterThan(beforeMovement!.fighters[0]!.x);
     expect(afterMovement!.fighters[1]!.x).toBeLessThan(beforeMovement!.fighters[1]!.x);
 
+    expect(await Promise.all([lastPlayerOneMove(pair.host), lastPlayerOneMove(pair.guest)]))
+      .toEqual([null, null]);
     const releaseAttack = touch
       ? await beginTouchAction(pair.host, 'light')
       : async () => pair.host.keyboard.up('KeyF');
     if (!touch) await pair.host.keyboard.down('KeyF');
+    // O jab pode terminar entre duas leituras do runner. O último golpe
+    // registra sua execução; a igualdade de vida e o hash posterior
+    // continuam conferindo que ambos os clientes simularam o mesmo resultado.
     await expect.poll(async () => {
-      const [hostWorld, guestWorld] = await Promise.all([
+      const [hostWorld, guestWorld, hostMove, guestMove] = await Promise.all([
         worldSnapshot(pair.host),
         worldSnapshot(pair.guest),
+        lastPlayerOneMove(pair.host),
+        lastPlayerOneMove(pair.guest),
       ]);
       return hostWorld !== null && guestWorld !== null
-        && hostWorld.fighters[0]!.activeMoveId !== null
-        && hostWorld.fighters[0]!.activeMoveId === guestWorld.fighters[0]!.activeMoveId
+        && hostMove !== null && hostMove === guestMove
         && hostWorld.fighters[1]!.health === guestWorld.fighters[1]!.health;
     }, { timeout: 5_000 }).toBe(true);
     await releaseAttack();

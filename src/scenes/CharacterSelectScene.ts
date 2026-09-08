@@ -8,10 +8,11 @@ import { gameSession } from '../config/session';
 import { FIGHTERS } from '../fighters';
 import { keyLabel, movementKeysSummary } from '../input/controlLabels';
 import { controlsStore } from '../input/controlsStore';
-import { inputManager } from '../input/InputManager';
+import { InputManager, inputManager } from '../input/InputManager';
 import type { FighterDefinition, InputFrame } from '../types/combat';
 import { createConceptPortrait } from '../ui/PortraitView';
 import { pixelText, tagLayoutPanel } from '../utils/text';
+import { settingsStore } from '../config/settings';
 
 type SelectionPhase = 'playerOne' | 'opponent' | 'arena';
 
@@ -433,7 +434,9 @@ export class CharacterSelectScene extends Phaser.Scene {
     this.arenaLayer.setVisible(true);
     this.phaseTitle.setText('ARENA E CONFRONTO');
     const confirmKey = keyLabel(controlsStore.get().keyboard[0].bindings.light);
-    this.footerText.setText(`ENTER / ${confirmKey} OU TOQUE PARA LUTAR  |  ESC VOLTA`);
+    this.footerText.setText(InputManager.shouldShowTouch(settingsStore.get())
+      ? 'TOQUE EM LUTAR NO CAIS PARA COMECAR'
+      : `ENTER / ${confirmKey} OU TOQUE PARA LUTAR  |  ESC VOLTA`);
 
     const panel = this.add.rectangle(0, 0, 616, 272, PALETTE.panel, 1)
       .setStrokeStyle(4, PALETTE.cyan, 1);
@@ -599,7 +602,8 @@ export class CharacterSelectScene extends Phaser.Scene {
 
   private updatePhaseCopy(): void {
     const config = controlsStore.get();
-    const playerOneFooter = `${movementKeysSummary(config.keyboard[0])}  |  ENTER / ${keyLabel(config.keyboard[0].bindings.light)} CONFIRMA  |  ESC VOLTA`;
+    const touch = InputManager.shouldShowTouch(settingsStore.get());
+    const playerOneFooter = touch ? 'TOQUE NO LUTADOR E EM CONFIRMAR' : `${movementKeysSummary(config.keyboard[0])}  |  ENTER / ${keyLabel(config.keyboard[0].bindings.light)} CONFIRMA  |  ESC VOLTA`;
     if (this.phase === 'playerOne') {
       this.phaseTitle.setText('JOGADOR 1  |  ESCOLHA SEU LUTADOR');
       this.footerText.setText(playerOneFooter);

@@ -1,3 +1,4 @@
+import { clickCanvas, confirmTrainingSelection } from './helpers/selection';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 /**
@@ -215,33 +216,18 @@ async function enterMainMenu(page: Page, testInfo: TestInfo): Promise<void> {
 
 async function openTrainingFight(page: Page, testInfo: TestInfo): Promise<void> {
   await enterMainMenu(page, testInfo);
-  await page.keyboard.press('KeyS');
-  await page.waitForTimeout(70);
-  await page.keyboard.press('KeyS');
-  await page.waitForTimeout(70);
-  await page.keyboard.press('Enter');
+  await clickCanvas(page, 320, 186, testInfo.project.name === 'chrome-mobile-landscape');
   await waitForScene(page, 'CharacterSelectScene');
-  await page.keyboard.press('Enter');
-  await page.waitForTimeout(220);
-  await page.keyboard.press('Enter');
-  await page.waitForTimeout(300);
-  await page.keyboard.press('Enter');
+  await confirmTrainingSelection(page);
   await waitForScene(page, 'FightScene');
 }
 
 async function openControlsScene(page: Page, testInfo: TestInfo): Promise<void> {
   await enterMainMenu(page, testInfo);
-  for (let step = 0; step < 3; step += 1) {
-    await page.keyboard.press('KeyS');
-    await page.waitForTimeout(60);
-  }
-  await page.keyboard.press('Enter');
+  const touch = testInfo.project.name === 'chrome-mobile-landscape';
+  await clickCanvas(page, 320, 246, touch);
   await waitForScene(page, 'SettingsScene');
-  for (let step = 0; step < 8; step += 1) {
-    await page.keyboard.press('KeyS');
-    await page.waitForTimeout(50);
-  }
-  await page.keyboard.press('Enter');
+  await clickCanvas(page, 500, 296, touch);
   await waitForScene(page, 'ControlsScene');
 }
 
@@ -252,7 +238,8 @@ async function selectRow(page: Page, targetIndex: number): Promise<void> {
   const key = delta >= 0 ? 'KeyS' : 'KeyW';
   for (let step = 0; step < Math.abs(delta); step += 1) {
     await page.keyboard.press(key);
-    await page.waitForTimeout(50);
+    await expect.poll(async () => (await controlsDebug(page))?.selectedIndex)
+      .toBe(state.selectedIndex + Math.sign(delta) * (step + 1));
   }
   await expect.poll(async () => (await controlsDebug(page))?.selectedIndex).toBe(targetIndex);
 }
@@ -307,6 +294,8 @@ test('gamepad mock é detectado, controla a luta, pausa e desconecta sem prender
 });
 
 test('remapeia teclado com conflito determinístico, restaura padrão e persiste', async ({ page }, testInfo) => {
+  // Inclui duas aberturas completas do jogo e o fluxo de remapeamento.
+  test.setTimeout(60_000);
   test.skip(testInfo.project.name === 'chrome-mobile-landscape', 'Cenário coberto no desktop.');
   const errors = watchErrors(page);
   await openControlsScene(page, testInfo);

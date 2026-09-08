@@ -1,3 +1,4 @@
+import { clickCanvas, confirmTrainingSelection } from './helpers/selection';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 type PauseAction = 'continue' | 'character-select' | 'main-menu';
@@ -85,18 +86,10 @@ async function openTrainingFight(page: Page, testInfo: TestInfo): Promise<void> 
   }
   await waitForScene(page, 'MainMenuScene');
 
-  await page.keyboard.press('KeyS');
-  await page.waitForTimeout(70);
-  await page.keyboard.press('KeyS');
-  await page.waitForTimeout(70);
-  await page.keyboard.press('Enter');
+  await clickCanvas(page, 320, 186, testInfo.project.name === 'chrome-mobile-landscape');
   await waitForScene(page, 'CharacterSelectScene');
 
-  await page.keyboard.press('Enter');
-  await page.waitForTimeout(220);
-  await page.keyboard.press('Enter');
-  await page.waitForTimeout(300);
-  await page.keyboard.press('Enter');
+  await confirmTrainingSelection(page);
   await waitForScene(page, 'FightScene');
 }
 
@@ -130,12 +123,12 @@ test('botões touch continuam e retornam ao menu principal com uma única ação
   test.skip(testInfo.project.name !== 'chrome-mobile-landscape', 'Fluxo exclusivo do projeto mobile touch.');
   await openTrainingFight(page, testInfo);
 
-  await tapInternal(page, 320, 55);
+  await tapInternal(page, 608, 82);
   await expect.poll(() => pauseState(page)).toEqual({ paused: true, selectedAction: 'continue' });
   await tapInternal(page, 84, 295);
   await expect.poll(() => pauseState(page)).toEqual({ paused: false, selectedAction: 'continue' });
 
-  await tapInternal(page, 320, 55);
+  await tapInternal(page, 608, 82);
   await expect.poll(() => pauseState(page)).toEqual({ paused: true, selectedAction: 'continue' });
   await tapInternal(page, 548, 295);
   await waitForScene(page, 'MainMenuScene');
@@ -149,7 +142,7 @@ test('botão touch de seleção encerra a luta e preserva o modo treino', async 
   test.skip(testInfo.project.name !== 'chrome-mobile-landscape', 'Fluxo exclusivo do projeto mobile touch.');
   await openTrainingFight(page, testInfo);
 
-  await tapInternal(page, 320, 55);
+  await tapInternal(page, 608, 82);
   await expect.poll(() => pauseState(page)).toEqual({ paused: true, selectedAction: 'continue' });
   await tapInternal(page, 320, 295);
   await waitForScene(page, 'CharacterSelectScene');

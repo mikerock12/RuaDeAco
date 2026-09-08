@@ -5,7 +5,13 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
-> Última revisão: **28/08/2026**.
+> Última revisão: **06/09/2026**.
+>
+> Rodada mobile: controles touch e pausa revisados; plano e auditoria em
+> [PLANO_MELHORIAS_RUA_DE_ACO.md](PLANO_MELHORIAS_RUA_DE_ACO.md) e
+> [docs/AUDITORIA_MOBILE_2026-09-06.md](docs/AUDITORIA_MOBILE_2026-09-06.md).
+> CI em [docs/CI.md](docs/CI.md). A seção de estado abaixo registra a base
+> histórica de agosto; a publicação das melhorias deve ser conferida no GitHub.
 
 ---
 
