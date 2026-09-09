@@ -5,7 +5,13 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
-> Última revisão: **08/09/2026**.
+> Última revisão: **09/09/2026**.
+>
+> Remaster de menus, HUD e controles: [docs/REMASTER_UI_CONTROLES.md](docs/REMASTER_UI_CONTROLES.md).
+> HUD 31,25% menor, analógico radial com dead zone de 18%, diamante H/L/S/D,
+> opacidade inicial de 40%, feedback de contato limitado e online padronizado.
+> Tipos/build e 492 testes de cliente + 71 de servidor aprovados localmente.
+> Validação em navegador desktop/mobile; aparelho Android físico não testado.
 >
 > Cais remasterizado: nova arte, água/reflexos, lua independente e cinco
 > encontros decorativos lentos (discos, bruxa, monstro e navio). Intervalos de

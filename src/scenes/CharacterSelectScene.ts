@@ -10,6 +10,7 @@ import { keyLabel, movementKeysSummary } from '../input/controlLabels';
 import { controlsStore } from '../input/controlsStore';
 import { InputManager, inputManager } from '../input/InputManager';
 import type { FighterDefinition, InputFrame } from '../types/combat';
+import { drawRemasterBackdrop, focusPanel, panelCorners, uiPanel, uiIcon, UI_THEME } from '../ui/remasterTheme';
 import { createConceptPortrait } from '../ui/PortraitView';
 import { pixelText, tagLayoutPanel } from '../utils/text';
 import { settingsStore } from '../config/settings';
@@ -29,6 +30,9 @@ const CARD_ROWS = 2;
 export class CharacterSelectScene extends Phaser.Scene {
   private selectionLayer!: Phaser.GameObjects.Container;
   private arenaLayer!: Phaser.GameObjects.Container;
+  private screenTitle!: Phaser.GameObjects.BitmapText;
+  private menuLogo!: Phaser.GameObjects.Image;
+  private focusTween: Phaser.Tweens.Tween | null = null;
   private phaseTitle!: Phaser.GameObjects.BitmapText;
   private footerText!: Phaser.GameObjects.BitmapText;
   private cards: FighterCard[] = [];
@@ -61,7 +65,8 @@ export class CharacterSelectScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(PALETTE.ink);
     this.drawBackdrop();
 
-    pixelText(this, INTERNAL_WIDTH / 2, 16, 'SELECAO DE LUTADORES', {
+    this.menuLogo = this.add.image(320, 28, ASSET_MANIFEST.logo.key).setDisplaySize(76, 57).setBlendMode(Phaser.BlendModes.SCREEN);
+    this.screenTitle = pixelText(this, INTERNAL_WIDTH / 2, 66, 'SELECAO DE LUTADORES', {
       size: 16,
       maxWidth: 420,
       maxHeight: 22,
@@ -69,7 +74,7 @@ export class CharacterSelectScene extends Phaser.Scene {
       align: 'center',
       layoutName: 'character-select-title',
     });
-    this.phaseTitle = pixelText(this, INTERNAL_WIDTH / 2, 38, '', {
+    this.phaseTitle = pixelText(this, INTERNAL_WIDTH / 2, 84, '', {
       size: 16,
       minSize: 8,
       maxWidth: 500,
@@ -80,6 +85,7 @@ export class CharacterSelectScene extends Phaser.Scene {
     });
 
     this.selectionLayer = this.add.container(0, 0);
+    this.selectionLayer.add([uiPanel(this, 206, 207, 296, 220), panelCorners(this, 206, 207, 298, 222)]);
     this.arenaLayer = this.add.container(0, 0).setVisible(false);
     this.footerText = pixelText(this, INTERNAL_WIDTH / 2, INTERNAL_HEIGHT - 16, '', {
       size: 8,
@@ -159,21 +165,11 @@ export class CharacterSelectScene extends Phaser.Scene {
     background.on('pointerout', release);
   }
 
-  private drawBackdrop(): void {
-    const { caisRemaster } = ASSET_MANIFEST;
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, caisRemaster.background.key);
-    this.add.image(430, 83, caisRemaster.moon.key);
-    this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink, 0.78);
-    this.add.rectangle(180, 188, 356, 272, PALETTE.panel, 0.94).setStrokeStyle(2, PALETTE.steelDark);
-    this.add.rectangle(500, 188, 276, 272, PALETTE.ink, 0.94).setStrokeStyle(2, PALETTE.steelDark);
-    this.add.rectangle(358, 188, 2, 268, PALETTE.gold, 0.5);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 50, INTERNAL_WIDTH, 2, PALETTE.cyan, 0.8);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 324, INTERNAL_WIDTH, 2, PALETTE.pink, 0.65);
-  }
+  private drawBackdrop(): void { drawRemasterBackdrop(this, 0.12); }
 
   private createFighterCards(): void {
-    const xPositions = [62, 178, 294] as const;
-    const yPositions = [116, 238] as const;
+    const xPositions = [112, 206, 300] as const;
+    const yPositions = [150, 252] as const;
 
     FIGHTERS.forEach((fighter, index) => {
       const column = index % CARD_COLUMNS;
@@ -182,16 +178,16 @@ export class CharacterSelectScene extends Phaser.Scene {
       const y = yPositions[row];
       if (x === undefined || y === undefined) return;
 
-      const frame = this.add.rectangle(0, 0, 104, 108, PALETTE.panel, 1)
-        .setStrokeStyle(2, fighter.available ? PALETTE.metalLight : PALETTE.metalDark)
+      const frame = this.add.rectangle(0, 0, 82, 88, UI_THEME.panel, 0.86)
+        .setStrokeStyle(1, UI_THEME.border)
         .setInteractive({ useHandCursor: true });
       const concept = ASSET_MANIFEST.concepts[fighter.id];
       let portrait: Phaser.GameObjects.GameObject;
       if (this.textures.exists(concept.key)) {
-        portrait = createConceptPortrait(this, 0, -16, fighter.id, 92, 64, {
+        portrait = createConceptPortrait(this, 0, -12, fighter.id, 70, 54, {
           crop: 'card',
           locked: !fighter.available,
-          frameColor: fighter.available ? fighter.visual.accent : PALETTE.muted,
+          frameColor: fighter.available ? UI_THEME.cyan : PALETTE.muted,
         });
       } else {
         const missing = this.add.container(0, -16);
@@ -207,17 +203,17 @@ export class CharacterSelectScene extends Phaser.Scene {
         portrait = missing;
       }
 
-      const name = pixelText(this, 0, 26, fighter.name.split(' ')[0] ?? fighter.name, {
+      const name = pixelText(this, 0, 24, fighter.name.split(' ')[0] ?? fighter.name, {
         size: 16,
         minSize: 8,
-        maxWidth: 96,
+        maxWidth: 76,
         maxHeight: 18,
         color: fighter.available ? '#f7f2d0' : '#80889a',
         align: 'center',
       });
-      const status = pixelText(this, 0, 44, fighter.available ? 'OK' : 'DEV', {
-        size: 16,
-        maxWidth: 96,
+      const status = pixelText(this, 0, 38, fighter.available ? 'OK' : 'DEV', {
+        size: 8,
+        maxWidth: 76,
         maxHeight: 18,
         color: fighter.available ? '#29d9ff' : '#e08499',
         align: 'center',
@@ -256,11 +252,12 @@ export class CharacterSelectScene extends Phaser.Scene {
   }
 
   private refreshSelection(): void {
+    this.focusTween?.stop();
     this.cards.forEach((card, index) => {
       const selected = index === this.cursorIndex;
-      const accent = card.fighter.available ? card.fighter.visual.accent : PALETTE.muted;
-      card.frame.setStrokeStyle(selected ? 4 : 2, selected ? accent : PALETTE.metalLight, 1);
-      card.frame.setFillStyle(selected ? PALETTE.panelLight : PALETTE.panel, 1);
+      focusPanel(card.frame, selected);
+      card.frame.setStrokeStyle(selected ? 2 : 1, selected ? UI_THEME.cyan : UI_THEME.border, 1);
+      if (selected && !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) this.focusTween = this.tweens.add({ targets: card.frame, strokeAlpha: 0.6, duration: 700, yoyo: true, repeat: -1 });
       card.container.setAlpha(card.fighter.available ? 1 : selected ? 0.82 : 0.58);
       card.container.setX(card.restingX);
     });
@@ -269,109 +266,36 @@ export class CharacterSelectScene extends Phaser.Scene {
 
   private renderFighterDetails(fighter: FighterDefinition): void {
     this.detailContainer?.destroy();
-
     const panelName = 'fighter-details-panel';
-    const panel = tagLayoutPanel(
-      this.add.rectangle(500, 192, 268, 268, PALETTE.panel, 1)
-        .setStrokeStyle(4, fighter.available ? fighter.visual.accent : PALETTE.muted, 1),
-      panelName,
-      { x: 8, y: 8 },
-    );
-    const metalTop = this.add.rectangle(500, 62, 260, 6, PALETTE.metalLight, 1);
-    const label = pixelText(this, 374, 72, 'FICHA DO LUTADOR', {
-      size: 16,
-      color: '#ffd55c',
+    const panel = tagLayoutPanel(uiPanel(this, 465, 207, 208, 220, UI_THEME.cyan), panelName, { x: 8, y: 8 });
+    const corners = panelCorners(this, 465, 207, 212, 224);
+    const label = pixelText(this, 373, 102, 'FICHA DO LUTADOR', { size: 8, maxWidth: 188, maxHeight: 10, color: UI_THEME.gold });
+    const portrait = createConceptPortrait(this, 402, 148, fighter.id, 62, 78, { crop: 'profile', locked: !fighter.available, frameColor: UI_THEME.cyan });
+    const name = pixelText(this, 444, 120, fighter.name.toUpperCase(), {
+      size: 12, minSize: 8, maxWidth: 116, maxHeight: 20, maxLines: 1, color: UI_THEME.text,
+      layoutName: 'fighter-details-name', panelName,
     });
-    const portrait = createConceptPortrait(this, 410, 132, fighter.id, 72, 96, {
-      crop: 'profile',
-      locked: !fighter.available,
-      frameColor: fighter.available ? fighter.visual.accent : PALETTE.muted,
-    });
-    const name = pixelText(this, 460, 90, fighter.name.toUpperCase(), {
-      size: 16,
-      minSize: 8,
-      maxWidth: 160,
-      maxHeight: 20,
-      maxLines: 1,
-      color: fighter.available ? '#f7f2d0' : '#9aa2b2',
-      layoutName: 'fighter-details-name',
-      panelName,
-    });
-    const archetype = pixelText(this, 460, 112, fighter.archetype.toUpperCase(), {
-      size: 16,
-      minSize: 8,
-      maxWidth: 160,
-      maxHeight: 66,
-      maxLines: 4,
-      lineSpacing: 1,
-      color: fighter.available ? '#29d9ff' : '#80889a',
-      layoutName: 'fighter-details-archetype',
-      panelName,
+    const archetype = pixelText(this, 444, 140, fighter.archetype.toUpperCase(), {
+      size: 12, minSize: 8, maxWidth: 116, maxHeight: 48, maxLines: 4, lineSpacing: 1,
+      color: UI_THEME.cyan, layoutName: 'fighter-details-archetype', panelName,
     }).setOrigin(0, 0);
-    const abilitiesLabel = pixelText(this, 374, 188, 'HABILIDADES', {
-      size: 16,
-      color: '#ffd55c',
-    });
-    const abilityTexts = fighter.abilities.map((ability, index) => pixelText(
-      this,
-      374,
-      210 + index * 22,
-      `> ${ability.toUpperCase()}`,
-      {
-        size: 16,
-        minSize: 8,
-        maxWidth: 238,
-        maxHeight: 20,
-        maxLines: 1,
-        color: fighter.available ? '#f7f2d0' : '#747d90',
-        layoutName: `fighter-details-ability-${index}`,
-        panelName,
-      },
-    ));
-    const children: Phaser.GameObjects.GameObject[] = [
-      panel,
-      metalTop,
-      label,
-      portrait,
-      name,
-      archetype,
-      abilitiesLabel,
-      ...abilityTexts,
-    ];
-
+    const abilitiesLabel = pixelText(this, 373, 202, 'HABILIDADES', { size: 10, maxWidth: 184, color: UI_THEME.gold });
+    const abilities = fighter.abilities.flatMap((ability, index) => [
+      uiIcon(this, 380, 222 + index * 20, index === 0 ? 'light' : index === 1 ? 'special' : 'reset', UI_THEME.cyan, 1),
+      pixelText(this, 392, 222 + index * 20, ability.toUpperCase(), {
+        size: 12, minSize: 8, maxWidth: 166, maxHeight: 18, maxLines: 1, color: UI_THEME.text,
+        layoutName: 'fighter-details-ability-' + index, panelName,
+      }),
+    ]);
+    const children: Phaser.GameObjects.GameObject[] = [panel, corners, label, portrait, name, archetype, abilitiesLabel, ...abilities];
     if (fighter.available) {
-      const button = tagLayoutPanel(
-        this.add.rectangle(502, 302, 224, 28, 0x12364c, 1)
-          .setStrokeStyle(2, PALETTE.cyan)
-          .setInteractive({ useHandCursor: true }),
-        'fighter-details-confirm',
-        { x: 10, y: 2 },
-      );
-      const buttonLabel = pixelText(this, 502, 302, 'CONFIRMAR', {
-        size: 16,
-        maxWidth: 204,
-        maxHeight: 24,
-        color: '#9af7ff',
-        align: 'center',
-      });
-      button.on('pointerover', () => button.setFillStyle(PALETTE.panelLight, 1));
-      button.on('pointerout', () => button.setFillStyle(0x12364c, 1));
-      button.on('pointerdown', () => {
-        button.setFillStyle(0x205e78, 1);
-        this.confirmFighter();
-      });
+      const button = tagLayoutPanel(uiPanel(this, 465, 302, 184, 26, UI_THEME.gold).setInteractive({ useHandCursor: true }), 'fighter-details-confirm', { x: 10, y: 2 });
+      const buttonLabel = pixelText(this, 465, 302, 'CONFIRMAR  >>', { size: 14, minSize: 12, maxWidth: 164, maxHeight: 22, align: 'center', color: UI_THEME.gold });
+      button.on('pointerover', () => focusPanel(button, true, true));
+      button.on('pointerout', () => button.setFillStyle(UI_THEME.panel, 0.86));
+      button.on('pointerdown', () => this.confirmFighter());
       children.push(button, buttonLabel);
-    } else {
-      children.push(pixelText(this, 502, 302, 'EM DESENVOLVIMENTO', {
-        size: 16,
-        minSize: 8,
-        maxWidth: 224,
-        maxHeight: 24,
-        color: '#e08499',
-        align: 'center',
-      }));
     }
-
     this.detailContainer = this.add.container(0, 0, children);
     this.selectionLayer.add(this.detailContainer);
   }
@@ -394,20 +318,12 @@ export class CharacterSelectScene extends Phaser.Scene {
 
     this.confirming = true;
     audioManager.play('confirm');
-    card.frame.setFillStyle(PALETTE.gold, 1);
-    card.container.setX(card.restingX + 4);
-    this.time.delayedCall(45, () => {
-      card.container.setX(card.restingX - 4);
-      card.container.setVisible(false);
-    });
-    this.time.delayedCall(90, () => {
-      card.container.setX(card.restingX);
-      card.container.setVisible(true);
-    });
-    this.time.delayedCall(135, () => {
+    this.focusTween?.stop();
+    card.frame.setStrokeStyle(2, UI_THEME.gold);
+    this.tweens.add({ targets: card.frame, alpha: 0.6, duration: 65, yoyo: true, onComplete: () => {
       this.confirming = false;
       this.acceptFighter(fighter);
-    });
+    } });
   }
 
   private acceptFighter(fighter: FighterDefinition): void {
@@ -433,6 +349,9 @@ export class CharacterSelectScene extends Phaser.Scene {
     const opponent = this.chosenOpponent;
     if (!playerOne || !opponent) return;
 
+    this.screenTitle.setY(16);
+    this.phaseTitle.setY(38);
+    this.menuLogo.setVisible(false);
     const arena = ARENAS[this.arenaIndex]!;
     this.selectionLayer.setVisible(false);
     this.arenaLayer.removeAll(true);
@@ -445,9 +364,9 @@ export class CharacterSelectScene extends Phaser.Scene {
       ? 'USE AS SETAS PARA TROCAR A ARENA. TOQUE EM LUTAR.'
       : `${arenaKeys}: ARENA | ENTER / ${confirmKey}: LUTAR | ESC: VOLTAR`);
 
-    const panel = this.add.rectangle(0, 0, 616, 272, PALETTE.panel, 1)
-      .setStrokeStyle(4, PALETTE.cyan, 1);
-    const topRail = this.add.rectangle(0, -132, 608, 8, PALETTE.metalLight, 1);
+    const panel = this.add.rectangle(0, 0, 560, 256, UI_THEME.panel, 0.88)
+      .setStrokeStyle(1, UI_THEME.cyan, 1);
+    const topRail = this.add.rectangle(0, -126, 552, 1, UI_THEME.cyan, 0.8);
     const arenaName = pixelText(this, 0, -112, arena.name, {
       size: 16,
       minSize: 8,
@@ -474,27 +393,27 @@ export class CharacterSelectScene extends Phaser.Scene {
       },
     );
 
-    const portraitOne = createConceptPortrait(this, -188, 10, playerOne.id, 168, 176, {
+    const portraitOne = createConceptPortrait(this, -166, 8, playerOne.id, 144, 152, {
       crop: 'hero',
       frameColor: playerOne.visual.accent,
     });
-    const portraitTwo = createConceptPortrait(this, 188, 10, opponent.id, 168, 176, {
+    const portraitTwo = createConceptPortrait(this, 166, 8, opponent.id, 144, 152, {
       crop: 'hero',
       frameColor: opponent.visual.accent,
     });
-    const nameOne = pixelText(this, -188, 110, playerOne.name.toUpperCase(), {
+    const nameOne = pixelText(this, -166, 98, playerOne.name.toUpperCase(), {
       size: 16,
       minSize: 8,
-      maxWidth: 168,
+      maxWidth: 156,
       maxHeight: 22,
       maxLines: 1,
       color: '#f7f2d0',
       align: 'center',
     });
-    const nameTwo = pixelText(this, 188, 110, opponent.name.toUpperCase(), {
+    const nameTwo = pixelText(this, 166, 98, opponent.name.toUpperCase(), {
       size: 16,
       minSize: 8,
-      maxWidth: 168,
+      maxWidth: 156,
       maxHeight: 22,
       maxLines: 1,
       color: '#f7f2d0',
@@ -508,7 +427,7 @@ export class CharacterSelectScene extends Phaser.Scene {
         ])
       : this.createCaisPreview();
     const arenaArrows = [-1, 1].flatMap(direction => {
-      const x = direction * 270;
+      const x = direction * 254;
       const arrow = this.add.rectangle(x, -102, 48, 48, PALETTE.panelLight)
         .setStrokeStyle(2, PALETTE.cyan).setInteractive({ useHandCursor: true })
         .setName(direction < 0 ? 'arena-previous' : 'arena-next');
@@ -518,17 +437,17 @@ export class CharacterSelectScene extends Phaser.Scene {
       });
       return [arrow, label];
     });
-    const versus = pixelText(this, 0, -8, 'VS', {
-      size: 32,
+    const versus = pixelText(this, 0, -24, 'VS', {
+      size: 40,
       maxWidth: 80,
-      maxHeight: 42,
+      maxHeight: 48,
       color: '#f64070',
       align: 'center',
     });
-    const button = this.add.rectangle(0, 118, 184, 28, 0x12364c, 1)
-      .setStrokeStyle(2, PALETTE.cyan)
+    const button = this.add.rectangle(0, 118, 184, 30, UI_THEME.panel, 0.98)
+      .setStrokeStyle(2, UI_THEME.gold)
       .setInteractive({ useHandCursor: true });
-    const buttonLabel = pixelText(this, 0, 118, 'LUTAR', {
+    const buttonLabel = pixelText(this, 0, 118, 'LUTAR  >>', {
       size: 16,
       minSize: 8,
       maxWidth: 164,
@@ -629,6 +548,9 @@ export class CharacterSelectScene extends Phaser.Scene {
   }
 
   private updatePhaseCopy(): void {
+    this.screenTitle.setY(66);
+    this.phaseTitle.setY(84);
+    this.menuLogo.setVisible(true);
     const config = controlsStore.get();
     const touch = InputManager.shouldShowTouch(settingsStore.get());
     const playerOneFooter = touch ? 'TOQUE NO LUTADOR E EM CONFIRMAR' : `${movementKeysSummary(config.keyboard[0])}  |  ENTER / ${keyLabel(config.keyboard[0].bindings.light)} CONFIRMA  |  ESC VOLTA`;

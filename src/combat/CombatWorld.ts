@@ -622,7 +622,7 @@ export class CombatWorld {
     if (result.armored) {
       this.comboHits[attackerIndex] = 0;
       this.comboTimers[attackerIndex] = 0;
-      this.emit({ type: 'blocked', frame: this.frame, attacker: attacker.id, defender: defender.id, text: 'ARMOR' });
+      this.emit({ type: 'blocked', frame: this.frame, attacker: attacker.id, attackerIndex: this.fighters.indexOf(attacker) as 0 | 1, defender: defender.id, defenderIndex: this.fighters.indexOf(defender) as 0 | 1, text: 'ARMOR' });
       return;
     }
 
@@ -640,7 +640,9 @@ export class CombatWorld {
         type: 'debuff',
         frame: this.frame,
         attacker: attacker.id,
+        attackerIndex: this.fighters.indexOf(attacker) as 0 | 1,
         defender: defender.id,
+        defenderIndex: this.fighters.indexOf(defender) as 0 | 1,
         value: hitbox.offensiveDebuffFrames,
         text: 'ENFRAQUECIDO',
         ...(move ? { moveId: move.id } : {}),
@@ -658,7 +660,9 @@ export class CombatWorld {
         type: 'blocked',
         frame: this.frame,
         attacker: attacker.id,
+        attackerIndex: this.fighters.indexOf(attacker) as 0 | 1,
         defender: defender.id,
+        defenderIndex: this.fighters.indexOf(defender) as 0 | 1,
         value: result.damage,
         text: move?.label ?? hitbox.id,
         ...(move ? { moveId: move.id, isSuper: move.isSuper ?? false } : {}),
@@ -671,7 +675,9 @@ export class CombatWorld {
         type: 'hit',
         frame: this.frame,
         attacker: attacker.id,
+        attackerIndex: this.fighters.indexOf(attacker) as 0 | 1,
         defender: defender.id,
+        defenderIndex: this.fighters.indexOf(defender) as 0 | 1,
         value: result.damage,
         text: move?.label ?? hitbox.id,
         ...(move ? { moveId: move.id, isSuper: move.isSuper ?? false } : {}),
@@ -679,7 +685,7 @@ export class CombatWorld {
       });
     }
     if (result.passiveActivated) {
-      this.emit({ type: 'passive', frame: this.frame, attacker: defender.id, text: defender.definition.passive?.label ?? 'PASSIVA' });
+      this.emit({ type: 'passive', frame: this.frame, attacker: defender.id, attackerIndex: this.fighters.indexOf(defender) as 0 | 1, text: defender.definition.passive?.label ?? 'PASSIVA' });
     }
   }
 
@@ -808,7 +814,7 @@ export class CombatWorld {
       if (result.armored) {
         this.comboHits[ownerIndex] = 0;
         this.comboTimers[ownerIndex] = 0;
-        this.emit({ type: 'blocked', frame: this.frame, attacker: projectile.owner.id, defender: target.id, text: 'ARMOR' });
+        this.emit({ type: 'blocked', frame: this.frame, attacker: projectile.owner.id, attackerIndex: this.fighters.indexOf(projectile.owner) as 0 | 1, defender: target.id, defenderIndex: this.fighters.indexOf(target) as 0 | 1, text: 'ARMOR' });
         continue;
       }
 
@@ -826,7 +832,9 @@ export class CombatWorld {
           type: 'debuff',
           frame: this.frame,
           attacker: projectile.owner.id,
+          attackerIndex: this.fighters.indexOf(projectile.owner) as 0 | 1,
           defender: target.id,
+          defenderIndex: this.fighters.indexOf(target) as 0 | 1,
           value: projectile.hitbox.offensiveDebuffFrames,
           text: 'ENFRAQUECIDO',
           moveId: projectile.sourceMove.id,
@@ -844,7 +852,9 @@ export class CombatWorld {
           type: 'blocked',
           frame: this.frame,
           attacker: projectile.owner.id,
+          attackerIndex: this.fighters.indexOf(projectile.owner) as 0 | 1,
           defender: target.id,
+          defenderIndex: this.fighters.indexOf(target) as 0 | 1,
           value: result.damage,
           text: projectile.sourceMove.label,
           moveId: projectile.sourceMove.id,
@@ -856,7 +866,9 @@ export class CombatWorld {
           type: 'hit',
           frame: this.frame,
           attacker: projectile.owner.id,
+          attackerIndex: this.fighters.indexOf(projectile.owner) as 0 | 1,
           defender: target.id,
+          defenderIndex: this.fighters.indexOf(target) as 0 | 1,
           value: result.damage,
           text: projectile.sourceMove.label,
           moveId: projectile.sourceMove.id,
@@ -906,7 +918,9 @@ export class CombatWorld {
       type: 'parry',
       frame: this.frame,
       attacker: defender.id,
+      attackerIndex: this.fighters.indexOf(defender) as 0 | 1,
       defender: attacker.id,
+      defenderIndex: this.fighters.indexOf(attacker) as 0 | 1,
       value: result.damage,
       text: 'REFLEXO NEGRO',
       ...(defender.currentMove ? { moveId: defender.currentMove.id } : {}),
@@ -915,7 +929,9 @@ export class CombatWorld {
       type: 'hit',
       frame: this.frame,
       attacker: defender.id,
+      attackerIndex: this.fighters.indexOf(defender) as 0 | 1,
       defender: attacker.id,
+      defenderIndex: this.fighters.indexOf(attacker) as 0 | 1,
       value: result.damage,
       text: 'RIPOSTA',
       ...(defender.currentMove ? { moveId: defender.currentMove.id } : {}),

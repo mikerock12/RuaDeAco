@@ -394,12 +394,12 @@ test('mobile: touch preservado, posições remapeáveis e rótulos atualizados',
   await tapInternal(page, 500, 84);
   await expect.poll(async () => (await controlsDebug(page))?.device).toBe('touch');
 
-  // Posição superior direita (A/fraco) passa a executar o forte.
+  // Posição esquerda (L/fraco) passa a executar o forte.
   await tapInternal(page, 500, 124);
   await expect.poll(async () => (await storedControls(page))?.touch.slots['ne']).toBe('heavy');
   expect((await storedControls(page))?.touch.slots['nw']).toBe('light');
   await expect.poll(() => page.locator('#touch-controls .pos-ne').getAttribute('data-action')).toBe('heavy');
-  await expect.poll(() => page.locator('#touch-controls .pos-ne').textContent()).toBe('B');
+  await expect.poll(() => page.locator('#touch-controls .pos-ne').textContent()).toBe('H');
   await expect.poll(() => page.locator('#touch-controls .pos-nw').getAttribute('data-action')).toBe('light');
 
   // Uma luta nova usa o mapeamento remapeado e o touch continua funcionando.

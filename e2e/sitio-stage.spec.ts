@@ -64,7 +64,7 @@ test('Sítio tem todas as espécies, ovos, alimentação, disputas e pausa sem r
   await page.keyboard.up('KeyA');
   await page.keyboard.up('ArrowRight');
   await page.screenshot({ path: testInfo.outputPath('sitio-luta.png') });
-  if (isMobile) await tap(608, 82);
+  if (isMobile) await tap(608, 58);
   else await page.keyboard.press('Escape');
   await expect.poll(() => page.evaluate(() => (window as GameWindow).__ruaWorld?.paused)).toBe(true);
   const frozen = await stage(page);
@@ -72,7 +72,7 @@ test('Sítio tem todas as espécies, ovos, alimentação, disputas e pausa sem r
   expect(await stage(page)).toEqual(frozen);
   await tap(84, 300);
   await expect.poll(async () => (await stage(page))?.ambience?.elapsed ?? 0).toBeGreaterThan(frozen!.ambience!.elapsed);
-  if (isMobile) await tap(608, 82);
+  if (isMobile) await tap(608, 58);
   else await page.keyboard.press('Escape');
   await expect.poll(() => page.evaluate(() => (window as GameWindow).__ruaWorld?.paused)).toBe(true);
   await tap(548, 300);

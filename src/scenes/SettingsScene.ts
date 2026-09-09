@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
-import { ASSET_MANIFEST } from '../assets/assetManifest';
 import { audioManager } from '../audio/AudioManager';
-import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
+import { INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConfig';
 import { settingsStore } from '../config/settings';
 import { keyLabel } from '../input/controlLabels';
 import { controlsStore } from '../input/controlsStore';
@@ -10,6 +9,7 @@ import { touchControls } from '../input/TouchControls';
 import type { InputAction, InputFrame } from '../types/combat';
 import type { Difficulty, GameSettings, TouchControlsPreference } from '../types/game';
 import { toggleFullscreen } from '../utils/fullscreen';
+import { drawRemasterBackdrop, focusPanel, panelCorners, uiPanel, uiIcon, UI_THEME, type UiIcon } from '../ui/remasterTheme';
 import { pixelText, tagLayoutPanel } from '../utils/text';
 
 type SettingId =
@@ -43,7 +43,7 @@ const SETTINGS_ENTRIES: readonly SettingEntry[] = [
   { id: 'muted', label: 'MUDO' },
   { id: 'difficulty', label: 'DIFICULDADE' },
   { id: 'touchControls', label: 'CONTROLES TOUCH' },
-  { id: 'touchOpacity', label: 'TRANSPARENCIA TOUCH' },
+  { id: 'touchOpacity', label: 'OPACIDADE TOUCH' },
   { id: 'preferFullscreen', label: 'TELA CHEIA' },
   { id: 'controls', label: 'CONTROLES' },
   { id: 'back', label: 'VOLTAR' },
@@ -79,16 +79,16 @@ export class SettingsScene extends Phaser.Scene {
 
     this.drawBackdrop();
     pixelText(this, INTERNAL_WIDTH / 2, 28, 'CONFIGURACOES', {
-      size: 32,
+      size: 20,
       minSize: 16,
       maxWidth: 440,
-      maxHeight: 40,
+      maxHeight: 26,
       align: 'center',
       layoutName: 'settings-title',
     })
       .setTint(PALETTE.ivory);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 50, 300, 4, PALETTE.gold);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 54, 380, 2, PALETTE.cyan);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 50, 180, 1, PALETTE.gold);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 54, 250, 1, PALETTE.cyan);
 
     SETTINGS_ENTRIES.forEach((entry, index) => this.createRow(entry, index));
     this.refreshRows();
@@ -138,26 +138,26 @@ export class SettingsScene extends Phaser.Scene {
     const y = 72 + index * 28;
     const panelName = `settings-row-${index}`;
     const background = tagLayoutPanel(
-      this.add.rectangle(INTERNAL_WIDTH / 2, y, 564, 24, PALETTE.metalDark)
-        .setStrokeStyle(2, PALETTE.steelDark)
+      this.add.rectangle(INTERNAL_WIDTH / 2, y, 372, 24, UI_THEME.panel, 0.82)
+        .setStrokeStyle(1, UI_THEME.border)
         .setInteractive({ useHandCursor: true }),
       panelName,
       { x: 8, y: 3 },
     );
-    const marker = pixelText(this, 44, y, '>', { size: 16, align: 'center' }).setTint(PALETTE.gold);
-    const label = pixelText(this, 60, y, entry.label, {
+    const marker = pixelText(this, 142, y, '>', { size: 16, align: 'center' }).setTint(PALETTE.gold);
+    const label = pixelText(this, 168, y, entry.label, {
       size: 16,
       minSize: 8,
-      maxWidth: 310,
+      maxWidth: 208,
       maxHeight: 20,
       layoutName: `settings-label-${index}`,
       panelName,
       padding: { x: 8, y: 3 },
     }).setTint(PALETTE.steelLight);
-    const value = pixelText(this, 592, y, '', {
+    const value = pixelText(this, 496, y, '', {
       size: 16,
       minSize: 8,
-      maxWidth: 210,
+      maxWidth: 114,
       maxHeight: 20,
       align: 'right',
       layoutName: `settings-value-${index}`,
@@ -165,6 +165,8 @@ export class SettingsScene extends Phaser.Scene {
       padding: { x: 8, y: 3 },
     }).setTint(PALETTE.cyanLight);
 
+    const icons: readonly UiIcon[] = ['volume', 'music', 'effects', 'mute', 'skull', 'touch', 'eye', 'screen', 'gamepad', 'back'];
+    uiIcon(this, 155, y, icons[index]!, UI_THEME.cyan, 1);
     background.on('pointerover', () => this.setSelected(index));
     background.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       audioManager.unlock();
@@ -176,33 +178,9 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   private drawBackdrop(): void {
-    this.cameras.main.setBackgroundColor(PALETTE.black);
-    this.add.rectangle(
-      INTERNAL_WIDTH / 2,
-      INTERNAL_HEIGHT / 2,
-      INTERNAL_WIDTH,
-      INTERNAL_HEIGHT,
-      PALETTE.ink,
-    );
-
-    this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, 612, 344, PALETTE.panel)
-      .setStrokeStyle(4, PALETTE.steelLight);
-    this.add.image(INTERNAL_WIDTH / 2, 194, ASSET_MANIFEST.ui.panel.key).setScale(4);
-
-    const corners = this.add.graphics();
-    corners.fillStyle(PALETTE.gold);
-    corners.fillRect(10, 8, 36, 4);
-    corners.fillRect(10, 8, 4, 36);
-    corners.fillRect(594, 8, 36, 4);
-    corners.fillRect(626, 8, 4, 36);
-    corners.fillRect(10, 348, 36, 4);
-    corners.fillRect(10, 316, 4, 36);
-    corners.fillRect(594, 348, 36, 4);
-    corners.fillRect(626, 316, 4, 36);
-
-    const scanlines = this.add.graphics();
-    scanlines.fillStyle(PALETTE.black, 0.15);
-    for (let y = 2; y < INTERNAL_HEIGHT; y += 8) scanlines.fillRect(0, y, INTERNAL_WIDTH, 2);
+    drawRemasterBackdrop(this, 0.16);
+    uiPanel(this, 320, 194, 392, 286, UI_THEME.cyan);
+    panelCorners(this, 320, 194, 396, 290);
   }
 
   private moveSelection(delta: number): void {
@@ -294,9 +272,7 @@ export class SettingsScene extends Phaser.Scene {
     this.rows.forEach((row, index) => {
       const selected = index === this.selectedIndex;
       const entry = SETTINGS_ENTRIES[index];
-      row.background
-        .setFillStyle(selected ? PALETTE.panelLight : PALETTE.metalDark)
-        .setStrokeStyle(selected ? 4 : 2, selected ? PALETTE.gold : PALETTE.steelDark);
+      focusPanel(row.background, selected, true);
       row.marker.setVisible(selected);
       row.label.setTint(selected ? PALETTE.ivory : PALETTE.steelLight);
       row.value.setTint(selected ? PALETTE.gold : PALETTE.cyanLight);
@@ -334,7 +310,7 @@ export class SettingsScene extends Phaser.Scene {
     this.transitionLocked = true;
     audioManager.unlock();
     audioManager.play('confirm');
-    this.cameras.main.flash(90, 246, 64, 112);
+    this.cameras.main.fadeOut(90, 4, 12, 24);
     this.time.delayedCall(90, () => this.scene.start('ControlsScene'));
   }
 
@@ -343,7 +319,7 @@ export class SettingsScene extends Phaser.Scene {
     this.transitionLocked = true;
     audioManager.unlock();
     audioManager.play('confirm');
-    this.cameras.main.flash(90, 246, 64, 112);
+    this.cameras.main.fadeOut(90, 4, 12, 24);
     this.time.delayedCall(90, () => this.scene.start('MainMenuScene'));
   }
 }

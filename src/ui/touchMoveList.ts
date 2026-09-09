@@ -29,11 +29,11 @@ export function buildTouchMovePages(fighter: FighterDefinition): readonly TouchM
     {
       title: 'COMO JOGAR',
       lines: [
-        'DESLIZE O DIRECIONAL PARA MOVER.',
+        'DESLIZE O ANALOGICO PARA MOVER.',
         'CIMA PULA. BAIXO AGACHA.',
-        'A = FRACO    B = FORTE    S = ESPECIAL',
-        'SEGURE DEFESA PARA BLOQUEAR EM PE.',
-        'BAIXO + DEFESA BLOQUEIA GOLPES BAIXOS.',
+        'L = FRACO    H = FORTE    S = ESPECIAL',
+        'SEGURE D PARA BLOQUEAR EM PE.',
+        'BAIXO + D BLOQUEIA GOLPES BAIXOS.',
         'FRENTE E TRAS ACOMPANHAM O RIVAL.',
       ],
     },
@@ -43,7 +43,7 @@ export function buildTouchMovePages(fighter: FighterDefinition): readonly TouchM
       lines: [
         ...air.map((move) => touchMoveCommand(move) + '   ' + label(move)),
         'O GOLPE MUDA COM A DIRECAO DO PULO.',
-        'USE BAIXO + B PARA TENTAR UMA RASTEIRA.',
+        'USE BAIXO + H PARA TENTAR UMA RASTEIRA.',
       ],
     },
     {

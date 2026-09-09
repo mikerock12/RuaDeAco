@@ -72,11 +72,11 @@ async function openGutoVsDante(page: Page, testInfo: TestInfo): Promise<void> {
 
   if (mobile) {
     // Guto (coluna direita, linha inferior) + Dante (coluna esquerda, linha inferior)
-    await tapInternal(page, 294, 238);
-    await tapInternal(page, 294, 238);
+    await tapInternal(page, 300, 252);
+    await tapInternal(page, 300, 252);
     await page.waitForTimeout(180);
-    await tapInternal(page, 62, 238);
-    await tapInternal(page, 62, 238);
+    await tapInternal(page, 112, 252);
+    await tapInternal(page, 112, 252);
     await page.waitForTimeout(180);
     await tapInternal(page, 320, 306);
   } else {

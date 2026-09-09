@@ -53,7 +53,7 @@ test('Cais remasterizado anima sem interferir na luta, respeita pausa e descarta
   await expect.poll(async () => (await stage(page))?.ambience.eventTime).toBeGreaterThan(3500);
   await page.screenshot({ path: testInfo.outputPath('cais-evento.png') });
   expect(await fighters(page)).toEqual(resting);
-  if (isMobile) await tap(608, 82);
+  if (isMobile) await tap(608, 58);
   else await page.keyboard.press('Escape');
   await expect.poll(() => page.evaluate(() => (window as GameWindow).__ruaWorld?.paused)).toBe(true);
   const frozen = await stage(page);
@@ -69,7 +69,7 @@ test('Cais remasterizado anima sem interferir na luta, respeita pausa e descarta
   expect([quiet.ufo, quiet.witch, quiet.monster, quiet.ship, quiet.cannonball].every(actor => !actor.visible)).toBe(true);
   expect(quiet.beamStrength + quiet.fireStrength).toBe(0);
   expect(await fighters(page)).toEqual(resting);
-  if (isMobile) await tap(608, 82);
+  if (isMobile) await tap(608, 58);
   else await page.keyboard.press('Escape');
   await expect.poll(() => page.evaluate(() => (window as GameWindow).__ruaWorld?.paused)).toBe(true);
   await tap(548, 300);

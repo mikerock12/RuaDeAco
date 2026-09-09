@@ -12,6 +12,7 @@ import { InputManager, inputManager } from '../input/InputManager';
 import type { InputAction, InputFrame } from '../types/combat';
 import type { GameMode } from '../types/game';
 import { createConceptPortrait } from '../ui/PortraitView';
+import { drawRemasterBackdrop, focusPanel, panelCorners, UI_THEME, uiIcon, type UiIcon } from '../ui/remasterTheme';
 import { toggleFullscreen } from '../utils/fullscreen';
 import { pixelText, tagLayoutPanel } from '../utils/text';
 
@@ -28,7 +29,7 @@ interface MenuRow {
   readonly label: Phaser.GameObjects.BitmapText;
 }
 
-const MENU_WIDTH = 356;
+const MENU_WIDTH = 248;
 
 function pressedIn(frames: readonly InputFrame[], action: InputAction): boolean {
   return frames.some((frame) => frame.pressed.has(action));
@@ -102,20 +103,18 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   private drawBackdrop(): void {
-    const { caisRemaster } = ASSET_MANIFEST;
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, caisRemaster.background.key);
-    this.add.image(430, 83, caisRemaster.moon.key);
-    this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, PALETTE.ink, 0.5);
-    const scanlines = this.add.graphics();
-    scanlines.fillStyle(PALETTE.black, 0.24);
-    for (let y = 2; y < INTERNAL_HEIGHT; y += 6) scanlines.fillRect(0, y, INTERNAL_WIDTH, 2);
+    drawRemasterBackdrop(this, 0.1);
+    panelCorners(this, 320, 208, 260, 198);
+    this.add.rectangle(320, 322, 170, 1, UI_THEME.cyan, 0.4);
+    pixelText(this, 320, 334, 'A NOITE APENAS COMECA', { size: 8, maxWidth: 260, align: 'center', color: UI_THEME.muted });
   }
 
   private drawLogo(): void {
     const logoKey = ASSET_MANIFEST.logo.key;
     if (this.textures.exists(logoKey)) {
-      this.add.image(INTERNAL_WIDTH / 2, 46, logoKey)
-        .setDisplaySize(132, 100)
+      this.add.image(INTERNAL_WIDTH / 2, 58, logoKey)
+        .setDisplaySize(148, 112)
+        .setBlendMode(Phaser.BlendModes.SCREEN)
         .setOrigin(0.5);
     } else {
       pixelText(this, INTERNAL_WIDTH / 2, 40, 'LOGO AUSENTE', {
@@ -128,33 +127,25 @@ export class MainMenuScene extends Phaser.Scene {
       });
     }
 
-    pixelText(this, INTERNAL_WIDTH / 2, 100, 'A CIDADE LUTA DE VOLTA', {
-      size: 16,
-      maxWidth: 360,
-      maxHeight: 24,
-      color: '#ffd55c',
-      align: 'center',
-      layoutName: 'main-tagline',
-    });
-    this.add.rectangle(INTERNAL_WIDTH / 2, 112, 224, 2, PALETTE.cyan, 1);
+
   }
 
   private drawRosterGallery(): void {
     FIGHTERS.forEach((fighter, index) => {
       const isLeft = index < 3;
       const slot = index % 3;
-      const x = isLeft ? 38 : INTERNAL_WIDTH - 38;
-      const y = 140 + slot * 72;
+      const x = isLeft ? 48 : INTERNAL_WIDTH - 48;
+      const y = 140 + slot * 62;
       const concept = ASSET_MANIFEST.concepts[fighter.id];
 
       if (this.textures.exists(concept.key)) {
-        createConceptPortrait(this, x, y, fighter.id, 68, 50, {
+        createConceptPortrait(this, x, y, fighter.id, 48, 44, {
           crop: 'card',
           locked: !fighter.available,
-          frameColor: fighter.available ? fighter.visual.accent : PALETTE.muted,
+          frameColor: fighter.available ? UI_THEME.cyan : PALETTE.muted,
         });
       } else {
-        this.add.rectangle(x, y, 68, 50, PALETTE.panel, 1)
+        this.add.rectangle(x, y, 48, 44, PALETTE.panel, 1)
           .setStrokeStyle(2, PALETTE.pink);
         pixelText(this, x, y, 'SEM\nIMAGEM', {
           size: 16,
@@ -166,11 +157,11 @@ export class MainMenuScene extends Phaser.Scene {
         });
       }
 
-      pixelText(this, x, y + 34, fighter.name.split(' ')[0] ?? fighter.name, {
+      pixelText(this, x, y + 28, fighter.name.split(' ')[0] ?? fighter.name, {
         size: 16,
         minSize: 8,
-        maxWidth: 76,
-        maxHeight: 14,
+        maxWidth: 70,
+        maxHeight: 12,
         color: fighter.available ? '#f7f2d0' : '#73829b',
         align: 'center',
       });
@@ -202,21 +193,21 @@ export class MainMenuScene extends Phaser.Scene {
       const y = startY + index * spacing;
       const panelName = `main-menu-row-${index}`;
       const background = tagLayoutPanel(
-        this.add.rectangle(INTERNAL_WIDTH / 2, y, MENU_WIDTH, 26, PALETTE.panel, 1)
-          .setStrokeStyle(2, PALETTE.metalLight)
+        this.add.rectangle(INTERNAL_WIDTH / 2, y, MENU_WIDTH, 26, UI_THEME.panel, 0.85)
+          .setStrokeStyle(1, UI_THEME.border)
           .setInteractive({ useHandCursor: true }),
         panelName,
         { x: 10, y: 3 },
       );
-      const marker = pixelText(this, 164, y, '>', {
+      const marker = pixelText(this, 208, y, '>', {
         size: 16,
         color: '#ffd55c',
         align: 'center',
       });
-      const label = pixelText(this, INTERNAL_WIDTH / 2, y, entry.label, {
+      const label = pixelText(this, INTERNAL_WIDTH / 2 + 10, y, entry.label, {
         size: 16,
         minSize: 8,
-        maxWidth: MENU_WIDTH - 36,
+        maxWidth: MENU_WIDTH - 62,
         maxHeight: 22,
         color: '#f7f2d0',
         align: 'center',
@@ -225,6 +216,8 @@ export class MainMenuScene extends Phaser.Scene {
         padding: { x: 10, y: 3 },
       });
 
+      const icons: readonly UiIcon[] = ['person', 'group', 'gamepad', 'online', 'gear', 'screen'];
+      uiIcon(this, 234, y, icons[index]!, UI_THEME.cyan, 1);
       background.on('pointerover', () => this.setSelected(index));
       background.on('pointerdown', () => {
         audioManager.unlock();
@@ -252,11 +245,9 @@ export class MainMenuScene extends Phaser.Scene {
   private refreshSelection(): void {
     this.rows.forEach((row, index) => {
       const selected = index === this.selectedIndex;
-      row.background
-        .setFillStyle(selected ? PALETTE.panelLight : PALETTE.panel, 1)
-        .setStrokeStyle(2, selected ? PALETTE.cyan : PALETTE.metalLight);
+      focusPanel(row.background, selected);
       row.marker.setVisible(selected);
-      row.label.setTint(selected ? PALETTE.ivory : PALETTE.muted);
+      row.label.setTint(selected ? UI_THEME.text : UI_THEME.muted);
     });
   }
 

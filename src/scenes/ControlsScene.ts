@@ -19,6 +19,7 @@ import {
 import { GamepadManager, gamepadManager } from '../input/GamepadManager';
 import { inputManager } from '../input/InputManager';
 import type { CombatButton, InputAction, InputFrame } from '../types/combat';
+import { drawRemasterBackdrop, focusPanel, panelCorners, uiPanel, uiIcon, UI_THEME, type UiIcon } from '../ui/remasterTheme';
 import { pixelText, tagLayoutPanel } from '../utils/text';
 
 type RowKind = 'player' | 'device' | 'action' | 'touch-slot' | 'reset-profile' | 'reset-all' | 'back';
@@ -32,6 +33,7 @@ interface RowSpec {
 
 interface RowView {
   readonly background: Phaser.GameObjects.Rectangle;
+  readonly icon: Phaser.GameObjects.Graphics;
   readonly marker: Phaser.GameObjects.BitmapText;
   readonly label: Phaser.GameObjects.BitmapText;
   readonly value: Phaser.GameObjects.BitmapText;
@@ -51,10 +53,10 @@ const DEVICE_LABELS: Readonly<Record<ControlDevice, string>> = {
 };
 
 const TOUCH_SLOT_LABELS: Readonly<Record<TouchSlotId, string>> = {
-  nw: 'POS. SUP. ESQ.',
-  ne: 'POS. SUP. DIR.',
-  sw: 'POS. INF. ESQ.',
-  se: 'POS. INF. DIR.',
+  nw: 'POSICAO CIMA',
+  ne: 'POSICAO ESQUERDA',
+  sw: 'POSICAO DIREITA',
+  se: 'POSICAO BAIXO',
 };
 
 const COMBAT_BUTTONS: readonly CombatButton[] = ['light', 'heavy', 'special', 'block'];
@@ -101,17 +103,17 @@ export class ControlsScene extends Phaser.Scene {
 
     this.drawBackdrop();
     pixelText(this, INTERNAL_WIDTH / 2, 24, 'CONTROLES', {
-      size: 32,
+      size: 20,
       minSize: 16,
       maxWidth: 420,
-      maxHeight: 36,
+      maxHeight: 26,
       align: 'center',
       layoutName: 'controls-title',
     })
       .setTint(PALETTE.ivory);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 44, 300, 4, PALETTE.gold);
+    this.add.rectangle(INTERNAL_WIDTH / 2, 36, 180, 1, PALETTE.gold);
 
-    this.gamepadInfoText = pixelText(this, INTERNAL_WIDTH / 2, 54, '', {
+    this.gamepadInfoText = pixelText(this, INTERNAL_WIDTH / 2, 43, '', {
       size: 8,
       maxWidth: 600,
       maxHeight: 14,
@@ -251,6 +253,7 @@ export class ControlsScene extends Phaser.Scene {
   private rebuildRows(): void {
     for (const row of this.rows) {
       row.background.destroy();
+      row.icon.destroy();
       row.marker.destroy();
       row.label.destroy();
       row.value.destroy();
@@ -260,29 +263,29 @@ export class ControlsScene extends Phaser.Scene {
     this.selectedIndex = Math.min(this.selectedIndex, this.specs.length - 1);
 
     this.specs.forEach((spec, index) => {
-      const y = ROW_START_Y + index * ROW_SPACING;
+      const y = ROW_START_Y + index * (this.device === 'gamepad' ? 19 : ROW_SPACING);
       const panelName = `controls-row-${index}`;
       const background = tagLayoutPanel(
-        this.add.rectangle(INTERNAL_WIDTH / 2, y, 564, 18, PALETTE.metalDark)
-          .setStrokeStyle(2, PALETTE.steelDark)
+        this.add.rectangle(INTERNAL_WIDTH / 2, y, 372, 18, UI_THEME.panel, 0.82)
+          .setStrokeStyle(1, UI_THEME.border)
           .setInteractive({ useHandCursor: true }),
         panelName,
         { x: 8, y: 2 },
       );
-      const marker = pixelText(this, 44, y, '>', { size: 16, align: 'center' }).setTint(PALETTE.gold);
-      const label = pixelText(this, 60, y, spec.label, {
+      const marker = pixelText(this, 142, y, '>', { size: 16, align: 'center' }).setTint(PALETTE.gold);
+      const label = pixelText(this, 168, y, spec.label, {
         size: 16,
         minSize: 8,
-        maxWidth: 312,
+        maxWidth: 208,
         maxHeight: 16,
         layoutName: `controls-label-${index}`,
         panelName,
         padding: { x: 8, y: 2 },
       }).setTint(PALETTE.steelLight);
-      const value = pixelText(this, 592, y, '', {
+      const value = pixelText(this, 496, y, '', {
         size: 16,
         minSize: 8,
-        maxWidth: 210,
+        maxWidth: 114,
         maxHeight: 16,
         align: 'right',
         layoutName: `controls-value-${index}`,
@@ -290,6 +293,9 @@ export class ControlsScene extends Phaser.Scene {
         padding: { x: 8, y: 2 },
       }).setTint(PALETTE.cyanLight);
 
+      const iconName: UiIcon = spec.kind === 'player' ? 'person' : spec.kind === 'device' ? 'gamepad' : spec.kind === 'back' ? 'back' : spec.kind.startsWith('reset') ? 'reset' : spec.action && spec.action !== 'pause' ? spec.action : 'touch';
+      const icon = uiIcon(this, 155, y, iconName, UI_THEME.cyan, 1);
+      if (spec.kind.startsWith('reset') || spec.kind === 'back') background.setFillStyle(UI_THEME.selected, 0.65);
       background.on('pointerover', () => this.setSelected(index));
       background.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
         if (this.capture || this.transitionLocked) return;
@@ -302,26 +308,15 @@ export class ControlsScene extends Phaser.Scene {
         }
       });
 
-      this.rows.push({ background, marker, label, value });
+      this.rows.push({ background, icon, marker, label, value });
     });
     this.refreshRows();
   }
 
   private drawBackdrop(): void {
-    this.cameras.main.setBackgroundColor(PALETTE.black);
-    this.add.rectangle(
-      INTERNAL_WIDTH / 2,
-      INTERNAL_HEIGHT / 2,
-      INTERNAL_WIDTH,
-      INTERNAL_HEIGHT,
-      PALETTE.ink,
-    );
-    this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, 612, 344, PALETTE.panel)
-      .setStrokeStyle(4, PALETTE.steelLight);
-
-    const scanlines = this.add.graphics();
-    scanlines.fillStyle(PALETTE.black, 0.15);
-    for (let y = 2; y < INTERNAL_HEIGHT; y += 8) scanlines.fillRect(0, y, INTERNAL_WIDTH, 2);
+    drawRemasterBackdrop(this, 0.16);
+    uiPanel(this, 320, 194, 392, 286, UI_THEME.cyan);
+    panelCorners(this, 320, 194, 396, 290);
   }
 
   private moveSelection(delta: number): void {
@@ -535,9 +530,10 @@ export class ControlsScene extends Phaser.Scene {
     this.rows.forEach((row, index) => {
       const selected = index === this.selectedIndex;
       const spec = this.specs[index];
-      row.background
-        .setFillStyle(selected ? PALETTE.panelLight : PALETTE.metalDark)
-        .setStrokeStyle(selected ? 4 : 2, selected ? PALETTE.gold : PALETTE.steelDark);
+      focusPanel(row.background, selected, true);
+      if (!selected && (spec?.kind.startsWith('reset') || spec?.kind === 'back')) {
+        row.background.setFillStyle(UI_THEME.selected, 0.52).setStrokeStyle(1, UI_THEME.border, 0.4);
+      }
       row.marker.setVisible(selected);
       row.label.setTint(selected ? PALETTE.ivory : PALETTE.steelLight);
       row.value.setTint(selected ? PALETTE.gold : PALETTE.cyanLight);
@@ -574,7 +570,7 @@ export class ControlsScene extends Phaser.Scene {
     this.transitionLocked = true;
     audioManager.unlock();
     audioManager.play('confirm');
-    this.cameras.main.flash(90, 246, 64, 112);
+    this.cameras.main.fadeOut(90, 4, 12, 24);
     this.time.delayedCall(90, () => this.scene.start('SettingsScene'));
   }
 }

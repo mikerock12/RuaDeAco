@@ -5,6 +5,10 @@ import { CAIS_STAGE_DEPTHS as DEPTH, CAIS_STAGE_LAYOUT as LAYOUT } from './stage
 
 /** Arte estática detalhada com poucos objetos reutilizados para os eventos. */
 export class CaisStageView {
+  private readonly moon: Phaser.GameObjects.Image;
+  private readonly moonGlows: Phaser.GameObjects.Ellipse[] = [];
+  private skyOffset = 0;
+  private readonly reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   private readonly water: Phaser.GameObjects.TileSprite[];
   private readonly reflections: Phaser.GameObjects.Rectangle[];
   private readonly ufo: Phaser.GameObjects.Image;
@@ -25,10 +29,10 @@ export class CaisStageView {
     scene.add.image(320, 180 + LAYOUT.backgroundOffsetY, assets.background.key)
       .setDepth(DEPTH.background).setName('cais-remastered-background');
     for (const [diameter, alpha] of [[96, 0.008], [80, 0.012], [66, 0.018]] as const) {
-      scene.add.ellipse(LAYOUT.moon.x, LAYOUT.moon.y, diameter, diameter, 0xa9daf1, alpha)
-        .setDepth(DEPTH.moonGlow).setName('cais-moon-glow-' + diameter);
+      this.moonGlows.push(scene.add.ellipse(LAYOUT.moon.x, LAYOUT.moon.y, diameter, diameter, 0xa9daf1, alpha)
+        .setDepth(DEPTH.moonGlow).setName('cais-moon-glow-' + diameter));
     }
-    scene.add.image(LAYOUT.moon.x, LAYOUT.moon.y, assets.moon.key)
+    this.moon = scene.add.image(LAYOUT.moon.x, LAYOUT.moon.y, assets.moon.key)
       .setDepth(DEPTH.moon).setName('cais-full-moon');
     this.water = [assets.water0, assets.water1, assets.water2].map((asset, i) => scene.add.tileSprite(
       320, 196 + i * 15 + 7 + LAYOUT.backgroundOffsetY, 512, 14, asset.key,
@@ -55,12 +59,18 @@ export class CaisStageView {
   update(delta: number, playerOneX = 220, playerTwoX = 420): void {
     this.ambience.update(delta, playerOneX, playerTwoX);
     const a = this.ambience, time = a.elapsed;
+    // Three-pixel sky parallax; dock and fighter contact plane stay fixed.
+    const target = this.reducedMotion ? 0 : Phaser.Math.Clamp((320 - (playerOneX + playerTwoX) / 2) * 0.025, -3, 3);
+    this.skyOffset += (target - this.skyOffset) * Math.min(1, delta / 240);
+    const moonX = LAYOUT.moon.x + Math.round(this.skyOffset);
+    this.moon.x = moonX;
+    for (const glow of this.moonGlows) glow.x = moonX;
     this.water.forEach((band, i) => {
       band.tilePositionX = Math.round(Math.sin(time / (3100 + i * 900) + i) * (2 + i));
       band.setAlpha(0.16 + (1 + Math.sin(time / 2400 + i)) * 0.035);
     });
     this.reflections.forEach((segment, i) => {
-      segment.x = Math.round(LAYOUT.moon.x + Math.sin(time / 2400 + i * 2.4) * (4 + i * 0.65));
+      segment.x = Math.round(moonX + Math.sin(time / 2400 + i * 2.4) * (4 + i * 0.65));
       segment.setAlpha(0.06 + (1 + Math.sin(time / 1700 + i)) * 0.055);
     });
     this.sync(this.ufo, a.ufo); this.sync(this.witch, a.witch); this.sync(this.ship, a.ship);
