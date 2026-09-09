@@ -10,6 +10,7 @@ import { inputManager } from '../input/InputManager';
 import { onlineSession, type OnlineSnapshot } from '../online/OnlineSession';
 import type { FighterId } from '../types/combat';
 import { createConceptPortrait } from '../ui/PortraitView';
+import { UI_THEME, focusPanel, uiIcon } from '../ui/remasterTheme';
 import { pixelText, tagLayoutPanel } from '../utils/text';
 
 type OnlineView = 'home' | 'join' | 'lobby';
@@ -247,12 +248,12 @@ export class OnlineScene extends Phaser.Scene {
 
     tagLayoutPanel(
       this.add.rectangle(230, 34, 430, 48, PALETTE.black, 0.82)
-        .setStrokeStyle(2, PALETTE.cyan),
+        .setStrokeStyle(1, UI_THEME.cyan),
       'online-header',
       { x: 12, y: 5 },
     );
     pixelText(this, 230, 26, 'RUA DE ACO // ONLINE', {
-      size: 24,
+      size: 20,
       minSize: 16,
       maxWidth: 420,
       maxHeight: 30,
@@ -278,8 +279,8 @@ export class OnlineScene extends Phaser.Scene {
     this.binaryRows.forEach((row, index) => {
       row.setAlpha(0.24 + ((tick + index) % 4) * 0.12);
       row.x += index % 2 === 0 ? 1 : -1;
-      if (row.x > 170) row.x = 10;
-      if (row.x < 450) row.x = 600;
+      if (index % 2 === 0 && row.x > 170) row.x = -140;
+      if (index % 2 !== 0 && row.x < 450) row.x = 640;
     });
   }
 
@@ -315,14 +316,13 @@ export class OnlineScene extends Phaser.Scene {
       const button = this.createButton(
         INTERNAL_WIDTH / 2,
         154 + index * 54,
-        330,
+        index === 2 ? 240 : 280,
         38,
         label,
         () => this.activateHome(HOME_ACTIONS[index] ?? 'back'),
       );
-      button.background
-        .setFillStyle(selected ? PALETTE.panelLight : PALETTE.panel, 0.96)
-        .setStrokeStyle(selected ? 4 : 2, selected ? PALETTE.gold : PALETTE.steelLight);
+      focusPanel(button.background, selected, index === 0);
+      button.container.add(uiIcon(this, -116, 0, index === 0 ? 'group' : index === 1 ? 'online' : 'back', selected ? UI_THEME.gold : UI_THEME.cyan, 1));
       this.dynamic.add(button.container);
     });
     this.dynamic.add(pixelText(this, INTERNAL_WIDTH / 2, 328, 'W/S ESCOLHE • ENTER CONFIRMA', {
@@ -337,7 +337,7 @@ export class OnlineScene extends Phaser.Scene {
   private renderJoin(): void {
     const panel = tagLayoutPanel(
       this.add.rectangle(INTERNAL_WIDTH / 2, 205, 600, 270, PALETTE.panel, 0.98)
-        .setStrokeStyle(4, PALETTE.cyan),
+        .setStrokeStyle(1, UI_THEME.cyan),
       'online-join-panel',
       { x: 18, y: 12 },
     );
@@ -430,8 +430,8 @@ export class OnlineScene extends Phaser.Scene {
       const y = 138 + row * 72;
       const selected = this.lobbyFocus === 'fighters' && index === this.fighterCursor;
       const chosen = local?.fighterId === fighter.id;
-      const frame = this.add.rectangle(x, y, 132, 68, PALETTE.panel, 0.98)
-        .setStrokeStyle(selected ? 4 : 2, chosen ? PALETTE.gold : selected ? PALETTE.cyan : PALETTE.steel)
+      const frame = this.add.rectangle(x, y, 132, 68, UI_THEME.panel, 0.88)
+        .setStrokeStyle(selected || chosen ? 2 : 1, chosen ? UI_THEME.gold : selected ? UI_THEME.cyan : UI_THEME.border)
         .setInteractive({ useHandCursor: true });
       const portrait = createConceptPortrait(this, x, y - 10, fighter.id, 112, 46, {
         crop: 'card',
@@ -450,9 +450,15 @@ export class OnlineScene extends Phaser.Scene {
         this.chooseFighter(fighter.id);
       });
       this.dynamic.add([frame, portrait, name]);
+      if (chosen) {
+        const tag = this.add.rectangle(x + 46, y - 24, 30, 14, UI_THEME.panel).setStrokeStyle(1, UI_THEME.gold);
+        const label = pixelText(this, x + 46, y - 24, this.latest.slot?.toUpperCase() ?? '--', {size: 8, align: 'center', color: '#ffd269'});
+        this.dynamic.add([tag, label]);
+      }
     });
 
-    const localLabel = local?.ready ? 'VOCE: PRONTO' : local?.fighterId ? 'VOCE: SELECIONADO' : 'VOCE: ESCOLHENDO';
+    const localTag = `${this.latest.slot?.toUpperCase() ?? '--'} VOCE`;
+    const localLabel = `${localTag}: ${local?.ready ? 'PRONTO' : local?.fighterId ? 'SELECIONADO' : 'ESCOLHENDO'}`;
     const peerName = peer?.fighterId ? getFighterDefinition(peer.fighterId).name.toUpperCase() : 'AGUARDANDO';
     const peerLabel = peer?.ready ? `RIVAL: ${peerName} • PRONTO` : `RIVAL: ${peerName}`;
     const localStatus = pixelText(this, 18, 255, localLabel, {
@@ -474,7 +480,7 @@ export class OnlineScene extends Phaser.Scene {
     const arena = ARENAS.find(candidate => candidate.id === arenaId)!;
     const host = this.latest.slot === 'p1';
     const arenaPanel = this.add.rectangle(320, 286, 280, 44, PALETTE.panel, 0.98)
-      .setStrokeStyle(this.lobbyFocus === 'arena' ? 3 : 1, this.lobbyFocus === 'arena' ? PALETTE.gold : PALETTE.steel);
+      .setStrokeStyle(this.lobbyFocus === 'arena' ? 2 : 1, this.lobbyFocus === 'arena' ? PALETTE.gold : PALETTE.steel);
     const arenaHint = pixelText(this, 320, 275, host ? 'ARENA · P1 ESCOLHE' : 'ARENA · ESCOLHIDA POR P1', {
       size: 8, maxWidth: 264, maxHeight: 10, color: '#9af7ff', align: 'center',
     });
@@ -493,6 +499,7 @@ export class OnlineScene extends Phaser.Scene {
     const readyButton = this.createButton(INTERNAL_WIDTH / 2, 334, 240, 36, readyLabel, () => this.confirmLobby());
     const leaveButton = this.createButton(62, 334, 100, 36, 'SAIR', () => this.leaveLobby());
     const copyButton = this.createButton(548, 334, 150, 36, 'COPIAR CODIGO', () => void this.copyRoomCode());
+    focusPanel(readyButton.background, true, true);
     this.dynamic.add([readyButton.container, leaveButton.container, copyButton.container]);
     const ping = pixelText(this, INTERNAL_WIDTH - 12, 18, `PING ${this.latest.latencyMs ?? '--'} MS • ${this.latest.slot?.toUpperCase() ?? '--'}`, {
       size: 8,
@@ -501,7 +508,15 @@ export class OnlineScene extends Phaser.Scene {
       color: '#8796ae',
       align: 'right',
     }).setOrigin(1, 0.5);
-    this.dynamic.add(ping);
+    const latency = this.latest.latencyMs;
+    const quality = latency === null ? 0 : latency < 100 ? 3 : latency < 200 ? 2 : 1;
+    const signal = this.add.graphics();
+    for (let bar = 0; bar < 3; bar += 1) {
+      signal.fillStyle(bar < quality ? quality === 1 ? UI_THEME.danger : quality === 2 ? UI_THEME.gold : UI_THEME.cyan : UI_THEME.border);
+      signal.fillRect(463 + bar * 5, 23 - (bar + 1) * 3, 3, (bar + 1) * 3);
+    }
+    ping.setTint(quality === 1 ? UI_THEME.danger : quality === 2 ? UI_THEME.gold : UI_THEME.muted);
+    this.dynamic.add([signal, ping]);
   }
 
   private createButton(
@@ -512,8 +527,8 @@ export class OnlineScene extends Phaser.Scene {
     label: string,
     action: () => void,
   ): Button {
-    const background = this.add.rectangle(0, 0, width, height, PALETTE.panel, 0.98)
-      .setStrokeStyle(2, PALETTE.steelLight);
+    const background = this.add.rectangle(0, 0, width, height, UI_THEME.panel, 0.9)
+      .setStrokeStyle(1, UI_THEME.border);
     const text = pixelText(this, 0, 0, label, {
       size: 16,
       minSize: 8,
@@ -525,8 +540,8 @@ export class OnlineScene extends Phaser.Scene {
     const container = this.add.container(x, y, [background, text])
       .setSize(width, height)
       .setInteractive({ useHandCursor: true });
-    container.on('pointerover', () => background.setStrokeStyle(4, PALETTE.gold));
-    container.on('pointerout', () => background.setStrokeStyle(2, PALETTE.steelLight));
+    container.on('pointerover', () => focusPanel(background, true));
+    container.on('pointerout', () => focusPanel(background, false));
     container.on('pointerdown', () => {
       audioManager.unlock();
       audioManager.play('confirm');

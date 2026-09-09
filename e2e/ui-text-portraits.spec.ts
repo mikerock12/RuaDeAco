@@ -32,12 +32,12 @@ interface PortraitEntry {
 }
 
 const CARD_POINTS: readonly (readonly [number, number])[] = [
-  [62, 116],
-  [178, 116],
-  [294, 116],
-  [62, 238],
-  [178, 238],
-  [294, 238],
+  [112, 150],
+  [206, 150],
+  [300, 150],
+  [112, 252],
+  [206, 252],
+  [300, 252],
 ];
 const FIGHTER_IDS = [
   'rafa-mare',
@@ -277,7 +277,7 @@ test('textos e portraits permanecem contidos em todo o fluxo', async ({
   await assertLayout(page, 'UIScene');
   await screenshot(page, testInfo, 'fight-hud');
 
-  if (mobile) await internalTap(page, 608, 82, true);
+  if (mobile) await internalTap(page, 608, 58, true);
   else await page.keyboard.press('Escape');
   await page.waitForFunction(() => (
     (window as typeof window & { __RUA_PAUSE_DEBUG__?: () => { paused: boolean } })
@@ -330,7 +330,7 @@ test('textos e portraits permanecem contidos em todo o fluxo', async ({
   await screenshot(page, testInfo, 'training-hud');
 
   if (mobile) {
-    const up = page.locator('.touch-cluster.dpad .touch-button.up');
+    const up = page.locator('.touch-cluster.dpad .stick-direction.up');
     const upBox = await up.boundingBox();
     expect(upBox).not.toBeNull();
     if (upBox) {

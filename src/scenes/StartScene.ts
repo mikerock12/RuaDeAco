@@ -6,6 +6,7 @@ import { INTERNAL_HEIGHT, INTERNAL_WIDTH, PALETTE } from '../config/pixelArtConf
 import { gamepadManager } from '../input/GamepadManager';
 import { InputManager, inputManager } from '../input/InputManager';
 import { pixelText } from '../utils/text';
+import { drawRemasterBackdrop, UI_THEME } from '../ui/remasterTheme';
 import { StartGate } from './startGate';
 import { StartTransition } from './startTransition';
 
@@ -66,33 +67,15 @@ export class StartScene extends Phaser.Scene {
   }
 
   private drawBackdrop(): void {
-    this.cameras.main.setBackgroundColor(PALETTE.black);
-    const { caisRemaster } = ASSET_MANIFEST;
-    this.add.image(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, caisRemaster.background.key);
-    this.add.image(430, 83, caisRemaster.moon.key);
-    this.add.rectangle(
-      INTERNAL_WIDTH / 2,
-      INTERNAL_HEIGHT / 2,
-      INTERNAL_WIDTH,
-      INTERNAL_HEIGHT,
-      PALETTE.ink,
-      0.72,
-    );
-
-    const scanlines = this.add.graphics();
-    scanlines.fillStyle(PALETTE.black, 0.28);
-    for (let y = 2; y < INTERNAL_HEIGHT; y += 6) scanlines.fillRect(0, y, INTERNAL_WIDTH, 2);
-
-    this.add.rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, 552, 300, PALETTE.black, 0.54)
-      .setStrokeStyle(4, PALETTE.steelLight);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 30, 500, 4, PALETTE.cyan);
-    this.add.rectangle(INTERNAL_WIDTH / 2, 36, 420, 2, PALETTE.gold);
+    drawRemasterBackdrop(this, 0.2);
+    this.add.rectangle(320, 180, 420, 290, UI_THEME.panel, 0.68).setStrokeStyle(1, UI_THEME.border);
+    this.add.rectangle(320, 35, 240, 1, UI_THEME.gold);
   }
 
   private drawPrompt(): void {
     if (this.textures.exists(ASSET_MANIFEST.logo.key)) {
       this.add.image(INTERNAL_WIDTH / 2, 112, ASSET_MANIFEST.logo.key)
-        .setDisplaySize(238, 178)
+        .setDisplaySize(218, 163).setBlendMode(Phaser.BlendModes.SCREEN)
         .setOrigin(0.5);
     } else {
       pixelText(this, INTERNAL_WIDTH / 2, 106, 'RUA DE ACO', {

@@ -27,7 +27,7 @@ async function openTraining(page: Page, astro = false) {
   await scene(page, 'MainMenuScene');
   await tap(page, 320, 186);
   await scene(page, 'CharacterSelectScene');
-  if (astro) await tap(page, 294, 116);
+  if (astro) await tap(page, 300, 150);
   await tap(page, 502, 302);
   await expect.poll(() => page.evaluate(() =>
     (window as GameWindow).__RUA_UI_LAYOUT_DEBUG__?.().find((item) => item.name === 'character-select-phase')?.text,
@@ -62,7 +62,7 @@ for (const viewport of [{ width: 640, height: 360 }, { width: 812, height: 375 }
       expect(button.x).toBeGreaterThanOrEqual(0);
       expect(button.y + button.h).toBeLessThanOrEqual(viewport.height);
     }
-    await tap(page, 608, 82);
+    await tap(page, 608, 58);
     await expect.poll(() => paused(page)).toBe(true);
     await expect(page.locator('#touch-controls')).not.toBeVisible();
     const timer = await page.evaluate(() => (window as GameWindow).__ruaWorld?.snapshot().timeSeconds);
@@ -82,7 +82,7 @@ for (const viewport of [{ width: 640, height: 360 }, { width: 812, height: 375 }
     await tap(page, 84, 300);
     await expect.poll(() => paused(page)).toBe(false);
     await expect(page.locator('#touch-controls')).toBeVisible();
-    await tap(page, 608, 82);
+    await tap(page, 608, 58);
     await tap(page, 548, 300);
     await scene(page, 'MainMenuScene');
   });
@@ -119,7 +119,7 @@ test('multitouch: diagonal direta, defesa baixa, arraste entre golpes e cancelam
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 });
 
-test('andar sem pulo acidental, sair da área e girar soltam o input', async ({ page, context }) => {
+test('analógico sem pulo acidental, knob limitado e giro sem input preso', async ({ page, context }) => {
   await openTraining(page);
   const cdp = await context.newCDPSession(page);
   const dpad = (await page.locator('.dpad').boundingBox())!;
@@ -128,9 +128,16 @@ test('andar sem pulo acidental, sair da área e girar soltam o input', async ({ 
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] });
   await expect.poll(() => page.evaluate(() => (window as GameWindow).__ruaWorld!.fighters[0].x)).toBeGreaterThan(before);
   expect(await page.evaluate(() => (window as GameWindow).__ruaWorld!.fighters[0].grounded)).toBe(true);
-  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ id: 1, x: 360, y: 180 }] });
-  await expect(page.locator('.touch-button.pressed')).toHaveCount(0);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ id: 1, x: 360, y: dpad.y + dpad.height / 2 }] });
+  await expect(page.locator('.stick-direction.right')).toHaveClass(/pressed/);
+  const knob = await page.locator('.dpad').evaluate(element => ({
+    x: parseFloat((element as HTMLElement).style.getPropertyValue('--knob-x')),
+    y: parseFloat((element as HTMLElement).style.getPropertyValue('--knob-y')),
+    width: element.getBoundingClientRect().width,
+  }));
+  expect(Math.hypot(knob.x, knob.y)).toBeLessThanOrEqual(knob.width * 0.31 + 0.1);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect(page.locator('.stick-direction.pressed')).toHaveCount(0);
   await page.setViewportSize({ width: 375, height: 812 });
   await expect(page.locator('#rotate-warning')).toBeVisible();
   await expect.poll(() => paused(page)).toBe(true);
@@ -142,6 +149,7 @@ test('andar sem pulo acidental, sair da área e girar soltam o input', async ({ 
   await tap(page, 84, 300);
   await expect.poll(() => paused(page)).toBe(false);
   await expect(page.locator('.touch-button.pressed')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => (window as GameWindow).__ruaWorld!.fighters[0].grounded)).toBe(true);
   await page.locator('[data-action="special"]').tap();
   await expect.poll(() => page.evaluate(() => (window as GameWindow).__ruaWorld!.fighters[0].lastMoveId)).toBe('maoDaMare');
 });
@@ -175,4 +183,38 @@ test('gesto baixo, diagonal e frente executa a Rajada Neon do Astro', async ({ p
   expect(result.lastMoveId, JSON.stringify(result.commandBuffer)).toBe('rajadaNeon');
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await expect(page.locator('.touch-button.pressed')).toHaveCount(0);
+});
+
+
+test('remaster: diamante, opacidade, dead zone radial e limpeza ao perder foco', async ({ page, context }) => {
+  await openTraining(page);
+  const dpad = page.locator('.dpad');
+  const box = (await dpad.boundingBox())!;
+  await expect(dpad).toHaveCSS('opacity', '0.4');
+  for (const [action, label] of [['light', 'L'], ['heavy', 'H'], ['special', 'S'], ['block', 'D']]) {
+    await expect(page.locator('.touch-button[data-action="' + action + '"]')).toHaveText(label!);
+  }
+  const light = await center(page, '.touch-button[data-action="light"]');
+  const heavy = await center(page, '.touch-button[data-action="heavy"]');
+  const special = await center(page, '.touch-button[data-action="special"]');
+  const block = await center(page, '.touch-button[data-action="block"]');
+  expect(heavy.y).toBeLessThan(light.y);
+  expect(light.x).toBeLessThan(special.x);
+  expect(block.y).toBeGreaterThan(light.y);
+  const cdp = await context.newCDPSession(page);
+  const at = (x: number, y: number) => ({ id: 1, x: box.x + box.width * x, y: box.y + box.height * y });
+  await cdp.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [at(0.58, 0.5)]});
+  await expect(page.locator('.stick-direction.pressed')).toHaveCount(0);
+  expect(await dpad.evaluate(el => parseFloat((el as HTMLElement).style.getPropertyValue('--knob-x')))).toBeGreaterThan(0);
+  await cdp.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [at(0.7, 0.6)]});
+  await expect(page.locator('.stick-direction.right')).toHaveClass(/pressed/);
+  await expect(page.locator('.stick-direction.down')).toHaveClass(/pressed/);
+  const moved = (await dpad.boundingBox())!;
+  expect(moved.x).toBe(box.x);
+  expect(moved.y).toBe(box.y);
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await expect(page.locator('.stick-direction.pressed')).toHaveCount(0);
+  await expect(dpad).not.toHaveClass(/active/);
+  expect(await dpad.evaluate(el => (el as HTMLElement).style.getPropertyValue('--knob-x'))).toBe('0px');
+  await cdp.send('Input.dispatchTouchEvent', {type: 'touchCancel', touchPoints: []});
 });

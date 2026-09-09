@@ -59,11 +59,11 @@ export function createConceptPortrait(
   const children: Phaser.GameObjects.GameObject[] = [];
   const outerWidth = Math.max(1, Math.round(width));
   const outerHeight = Math.max(1, Math.round(height));
-  const innerWidth = Math.max(1, outerWidth - 8);
-  const innerHeight = Math.max(1, outerHeight - 8);
+  const innerWidth = Math.max(1, outerWidth - 4);
+  const innerHeight = Math.max(1, outerHeight - 4);
 
   const backing = scene.add.rectangle(0, 0, outerWidth, outerHeight, PALETTE.black)
-    .setStrokeStyle(2, frameColor);
+    .setStrokeStyle(1, frameColor);
   children.push(backing);
 
   if (scene.textures.exists(asset.key)) {

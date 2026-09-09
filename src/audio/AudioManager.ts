@@ -5,7 +5,7 @@ import {
   type MusicTrack,
 } from './musicCatalog';
 
-export type SoundEffect = 'confirm' | 'hit' | 'block' | 'special' | 'ko' | 'round';
+export type SoundEffect = 'confirm' | 'hitHeavy' | 'swing' | 'hit' | 'block' | 'special' | 'ko' | 'round';
 
 interface Tone {
   readonly frequency: number;
@@ -40,6 +40,8 @@ export interface AudioDebugState {
 const TONES: Readonly<Record<SoundEffect, Tone>> = {
   confirm: { frequency: 520, endFrequency: 760, duration: 0.09, wave: 'square', gain: 0.16 },
   hit: { frequency: 120, endFrequency: 55, duration: 0.11, wave: 'sawtooth', gain: 0.28 },
+  hitHeavy: { frequency: 92, endFrequency: 32, duration: 0.15, wave: 'sawtooth', gain: 0.3 },
+  swing: { frequency: 260, endFrequency: 90, duration: 0.07, wave: 'triangle', gain: 0.07 },
   block: { frequency: 740, endFrequency: 310, duration: 0.08, wave: 'square', gain: 0.15 },
   special: { frequency: 180, endFrequency: 680, duration: 0.28, wave: 'sawtooth', gain: 0.22 },
   ko: { frequency: 180, endFrequency: 42, duration: 0.7, wave: 'square', gain: 0.3 },

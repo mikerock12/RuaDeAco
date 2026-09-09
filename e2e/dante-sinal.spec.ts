@@ -64,11 +64,11 @@ async function openDanteTraining(page: Page, testInfo: TestInfo): Promise<void> 
   await waitForScene(page, 'CharacterSelectScene');
 
   if (mobile) {
-    await tapInternal(page, 62, 238);
-    await tapInternal(page, 62, 238);
+    await tapInternal(page, 112, 252);
+    await tapInternal(page, 112, 252);
     await page.waitForTimeout(180);
-    await tapInternal(page, 62, 116);
-    await tapInternal(page, 62, 116);
+    await tapInternal(page, 112, 150);
+    await tapInternal(page, 112, 150);
     await page.waitForTimeout(180);
     await tapInternal(page, 320, 306);
   } else {

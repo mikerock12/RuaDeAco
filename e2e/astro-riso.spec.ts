@@ -69,11 +69,11 @@ async function openAstroFight(page: Page, testInfo: TestInfo): Promise<void> {
   await waitForScene(page, 'CharacterSelectScene');
 
   if (mobile) {
-    await tapInternal(page, 294, 116);
-    await tapInternal(page, 294, 116);
+    await tapInternal(page, 300, 150);
+    await tapInternal(page, 300, 150);
     await page.waitForTimeout(200);
-    await tapInternal(page, 294, 238);
-    await tapInternal(page, 294, 238);
+    await tapInternal(page, 300, 252);
+    await tapInternal(page, 300, 252);
     await page.waitForTimeout(200);
     await tapInternal(page, 320, 306);
   } else {

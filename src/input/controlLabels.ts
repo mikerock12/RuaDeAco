@@ -94,20 +94,20 @@ export function gamepadButtonLabel(family: GamepadFamily, index: number): string
 }
 
 /** Rótulo visual dos botões touch: o glifo acompanha a ação, de modo que a
- * legenda "A = FRACO" continue verdadeira após o remapeamento. */
+ * legenda "L = FRACO" continue verdadeira após o remapeamento. */
 export const TOUCH_BUTTON_GLYPHS: Readonly<Record<CombatButton, string>> = {
-  light: 'A',
-  heavy: 'B',
+  light: 'L',
+  heavy: 'H',
   special: 'S',
-  block: '▣',
+  block: 'D',
 };
 
-/** Versão ASCII para a fonte pixel do jogo, que não possui o glifo ▣. */
+/** Mesmas letras na ajuda em fonte pixel e nos botões HTML. */
 export const TOUCH_BUTTON_PIXEL_LABELS: Readonly<Record<CombatButton, string>> = {
-  light: 'A',
-  heavy: 'B',
+  light: 'L',
+  heavy: 'H',
   special: 'S',
-  block: 'ESCUDO',
+  block: 'D',
 };
 
 export const TOUCH_BUTTON_ARIA: Readonly<Record<CombatButton, string>> = {

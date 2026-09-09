@@ -29,6 +29,7 @@ import type { FighterEffectAsset } from '../types/assets';
 import { createStageView, type StageView } from '../ui/createStageView';
 import { createFighterView, type FighterView } from '../ui/FighterSpriteView';
 import { PauseMenuModel, type PauseMenuAction, type PauseNavigationTarget } from '../ui/pauseMenu';
+import { CombatFeedback } from '../ui/CombatFeedback';
 import { pixelText } from '../utils/text';
 
 const EMPTY_INPUT: InputFrame = {
@@ -47,6 +48,7 @@ export class FightScene extends Phaser.Scene {
   private cpu: CpuController | null = null;
   private views: readonly [FighterView, FighterView] | null = null;
   private stageView!: StageView;
+  private combatFeedback!: CombatFeedback;
   private projectileSprites: Phaser.GameObjects.Sprite[] = [];
   private debugGraphics!: Phaser.GameObjects.Graphics;
   private debugOverlayEnabled = DEBUG_OVERLAY_DEFAULT;
@@ -224,6 +226,7 @@ export class FightScene extends Phaser.Scene {
       };
     }
     this.stageView = createStageView(this, selection.arena);
+    this.combatFeedback = new CombatFeedback(this);
     if (import.meta.env.DEV) {
       (globalThis as typeof globalThis & { __RUA_STAGE_DEBUG__?: () => unknown }).__RUA_STAGE_DEBUG__ = () => ({
         arena: selection.arena, ambience: this.stageView.snapshot?.(),
@@ -274,6 +277,7 @@ export class FightScene extends Phaser.Scene {
     } else if (!this.capturePaused) {
       this.runner.update(delta, () => this.simulateStep());
     }
+    this.combatFeedback.update(delta, this.world.fighters, this.world.paused || this.capturePaused);
     const snapshot = this.world.snapshot();
     const renderAlpha = this.capturePaused ? 1 : this.runner.alpha;
     this.views?.[0].sync(snapshot.fighters[0], renderAlpha);
@@ -397,19 +401,8 @@ export class FightScene extends Phaser.Scene {
 
   private handleCombatEvent(event: CombatEvent): void {
     this.game.events.emit('combat:event', event);
-    if (event.type === 'hit') {
-      audioManager.play('hit');
-    }
-    if (event.type === 'blocked') audioManager.play('block');
-    if (event.type === 'special' || event.type === 'passive') {
-      audioManager.play('special');
-      if (event.isSuper) {
-        const freeze = event.cinematic === 'freeze';
-        this.cameras.main.flash(400, freeze ? 168 : 90, freeze ? 233 : 210, 255);
-        this.cameras.main.setScroll(event.attacker === this.world.fighters[0].id ? -4 : 4, 0);
-        this.time.delayedCall(freeze ? 200 : 150, () => this.cameras.main.setScroll(0, 0));
-      }
-    }
+    this.combatFeedback.event(event, this.world.fighters);
+    if (event.type === 'special' || event.type === 'passive') audioManager.play('special');
     if (event.type === 'roundStart' || event.type === 'fight') audioManager.play('round');
     if (event.type === 'knockout') audioManager.play('ko');
     if (event.type === 'matchEnd') this.scheduleResult();
@@ -748,7 +741,7 @@ export class FightScene extends Phaser.Scene {
       174,
       0x101827,
       0.98,
-    ).setStrokeStyle(4, PALETTE.cyan);
+    ).setStrokeStyle(1, PALETTE.cyan);
     const title = pixelText(this, INTERNAL_WIDTH / 2, 146, 'A PARTIDA ONLINE NAO PAUSA', {
       size: 24,
       minSize: 16,

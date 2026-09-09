@@ -10,7 +10,7 @@
   color-scheme: dark;
   font-family: 'Rua de Aco Pixel', monospace;
   background: #000;
-  --touch-opacity: 0.58;
+  --touch-opacity: 0.4;
   --pixel-cyan: #20c8e5;
   --pixel-gold: #e8b84a;
   --pixel-ink: #050814;
@@ -139,120 +139,97 @@ canvas,
   pointer-events: none;
   width: 100%;
   height: 100%;
-  --touch-button-size: clamp(48px, 8vw, 68px);
-  --touch-button-half: clamp(24px, 4vw, 34px);
+  --touch-button-size: clamp(44px, 12dvh, 56px);
+  --stick-size: clamp(100px, 30dvh, 140px);
 }
 
-#touch-controls.visible {
-  display: block;
-}
-
+#touch-controls.visible { display: block; }
 .touch-cluster {
   position: absolute;
-  bottom: max(9px, env(safe-area-inset-bottom, 0px));
-  width: min(34vw, 196px);
-  height: min(34vw, 196px);
+  bottom: max(14px, env(safe-area-inset-bottom, 0px));
   pointer-events: none;
 }
-
 .touch-cluster.dpad {
+  width: var(--stick-size);
+  height: var(--stick-size);
+  left: max(18px, env(safe-area-inset-left, 0px));
+  border: 1px solid #b7e9ef;
+  border-radius: 50%;
+  background: rgba(4, 13, 27, 0.8);
+  box-shadow: inset 0 0 0 7px rgba(45, 99, 126, 0.28), 0 0 0 3px rgba(48, 117, 144, 0.3);
+  opacity: var(--touch-opacity);
   pointer-events: auto;
   touch-action: none;
-  left: max(8px, env(safe-area-inset-left, 0px));
+  transition: opacity 90ms linear, border-color 90ms linear;
 }
-
+.dpad.active { opacity: 0.9; border-color: #c5ffff; }
+.stick-knob {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 35%; height: 35%;
+  border: 2px solid #e0f4f3;
+  border-radius: 50%;
+  background: rgba(148, 183, 192, 0.65);
+  box-shadow: inset 0 0 0 3px rgba(7, 22, 36, 0.35);
+  transform: translate(calc(-50% + var(--knob-x, 0px)), calc(-50% + var(--knob-y, 0px)));
+  pointer-events: none;
+}
+.stick-direction {
+  position: absolute;
+  color: #b8d5df;
+  font: 12px / 1 system-ui, sans-serif;
+  pointer-events: none;
+}
+.stick-direction.up { top: 6%; left: 50%; transform: translateX(-50%); }
+.stick-direction.down { bottom: 6%; left: 50%; transform: translateX(-50%); }
+.stick-direction.left { left: 6%; top: 50%; transform: translateY(-50%); }
+.stick-direction.right { right: 6%; top: 50%; transform: translateY(-50%); }
+.stick-direction.pressed { color: #fff; text-shadow: 0 0 5px #43dcea; }
 .touch-cluster.buttons {
-  right: max(8px, env(safe-area-inset-right, 0px));
+  width: calc(var(--touch-button-size) * 2.7);
+  height: calc(var(--touch-button-size) * 2.7);
+  right: max(16px, env(safe-area-inset-right, 0px));
 }
-
 .touch-button {
   position: absolute;
   display: grid;
   place-items: center;
   width: var(--touch-button-size);
   height: var(--touch-button-size);
-  margin: 0;
-  padding: 0;
+  min-width: 44px; min-height: 44px;
+  margin: 0; padding: 0;
   appearance: none;
-  border: 4px solid rgba(157, 182, 198, calc(var(--touch-opacity) + 0.2));
-  border-radius: 0;
-  background: rgba(5, 8, 20, var(--touch-opacity));
-  color: rgba(243, 231, 189, calc(var(--touch-opacity) + 0.32));
-  font: 400 clamp(14px, 2.4vw, 20px) / 1 'Rua de Aco Pixel', monospace;
-  text-shadow: 3px 3px 0 #050814;
-  box-shadow:
-    inset 3px 3px 0 rgba(82, 107, 130, calc(var(--touch-opacity) * 0.75)),
-    inset -3px -3px 0 rgba(2, 4, 10, 0.8),
-    3px 3px 0 rgba(2, 4, 10, 0.65);
+  border: 1px solid var(--action-color, #7cdded);
+  border-radius: 50%;
+  background: rgba(5, 13, 25, 0.88);
+  color: var(--action-color, #a4eeff);
+  font: 400 18px / 1 'Rua de Aco Pixel', monospace;
+  box-shadow: inset 0 0 0 3px rgba(20, 45, 61, 0.65), 0 0 4px var(--action-color);
+  opacity: var(--touch-opacity);
   pointer-events: auto;
-  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  touch-action: none;
+  transition: opacity 70ms linear, background-color 70ms linear;
 }
-
-.touch-button::before {
-  content: '';
-  position: absolute;
-  inset: -13px;
-}
-
-.buttons .touch-button::before {
-  inset: -9px;
-}
-
-.buttons .touch-button {
-  padding-bottom: 12px;
-}
-
-.buttons .touch-button::after {
-  content: attr(data-label);
-  position: absolute;
-  bottom: 5px;
-  left: 0;
-  right: 0;
-  font: 700 9px / 1.1 system-ui, sans-serif;
-  letter-spacing: 0.2px;
-  text-shadow: none;
-  pointer-events: none;
-}
-
+.touch-button[data-action=light] { --action-color: #69ddff; }
+.touch-button[data-action=heavy] { --action-color: #ff7798; }
+.touch-button[data-action=special] { --action-color: #ffd364; }
+.touch-button[data-action=block] { --action-color: #7bf2b4; }
 .touch-button.pressed {
   color: #fff;
-  background: rgba(21, 122, 163, 0.88);
-  border-color: #9af7ff;
-  box-shadow:
-    inset -3px -3px 0 rgba(82, 107, 130, 0.65),
-    inset 3px 3px 0 rgba(2, 4, 10, 0.8);
+  background: #183b50;
+  opacity: 1;
+  border-width: 2px;
+  box-shadow: inset 0 0 0 3px rgba(20, 45, 61, 0.65), 0 0 8px var(--action-color);
 }
-
-.dpad .up { left: calc(50% - var(--touch-button-half)); top: 0; }
-.dpad .down { left: calc(50% - var(--touch-button-half)); bottom: 0; }
-.dpad .left { left: 0; top: calc(50% - var(--touch-button-half)); }
-.dpad .right { right: 0; top: calc(50% - var(--touch-button-half)); }
-/* Posições fixas do cluster de ações; a ação de cada posição é remapeável. */
-.buttons .pos-nw { left: 0; top: 0; }
-.buttons .pos-ne { right: 0; top: 0; }
-.buttons .pos-sw { left: 0; bottom: 0; }
-.buttons .pos-se { right: 0; bottom: 0; }
+/* IDs de perfil preservados: cima, esquerda, direita e baixo no diamante. */
+.buttons .pos-nw { left: calc(50% - var(--touch-button-size) / 2); top: 0; }
+.buttons .pos-ne { left: 0; top: calc(50% - var(--touch-button-size) / 2); }
+.buttons .pos-sw { right: 0; top: calc(50% - var(--touch-button-size) / 2); }
+.buttons .pos-se { left: calc(50% - var(--touch-button-size) / 2); bottom: 0; }
 
 @media (orientation: portrait) {
   #rotate-warning { display: flex; }
   #game-shell { visibility: hidden; }
-}
-
-@media (max-height: 440px) {
-  #touch-controls {
-    --touch-button-size: clamp(44px, 14vh, 60px);
-    --touch-button-size: clamp(44px, 14dvh, 60px);
-    --touch-button-half: clamp(22px, 7vh, 30px);
-    --touch-button-half: clamp(22px, 7dvh, 30px);
-  }
-
-  .touch-cluster {
-    width: min(44vh, 164px);
-    height: min(44vh, 164px);
-    width: min(44dvh, 164px);
-    height: min(44dvh, 164px);
-  }
-
 }
 
 #gamepad-toast {

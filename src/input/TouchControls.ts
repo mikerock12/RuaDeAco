@@ -3,7 +3,7 @@ import type { CombatButton, InputAction } from '../types/combat';
 import { TOUCH_BUTTON_ARIA, TOUCH_BUTTON_GLYPHS } from './controlLabels';
 import { controlsStore, TOUCH_SLOT_IDS, type TouchSlotId } from './controlsStore';
 import { InputManager, inputManager } from './InputManager';
-import { touchDpadActions } from './touchDirection';
+import { radialStickPosition, touchDpadActions } from './touchDirection';
 
 const DIRECTION_ACTIONS: readonly InputAction[] = ['left', 'right', 'up', 'down'];
 const COMBAT_ACTIONS: readonly InputAction[] = ['light', 'heavy', 'special', 'block'];
@@ -47,6 +47,12 @@ export class TouchControls {
     this.slotButtons.clear();
     const dpad = this.createCluster('dpad');
     this.dpad = dpad;
+    dpad.setAttribute('role', 'group');
+    dpad.setAttribute('aria-label', 'Analógico de movimento em oito direções');
+    const knob = document.createElement('span');
+    knob.className = 'stick-knob';
+    knob.setAttribute('aria-hidden', 'true');
+    dpad.append(knob);
     const buttons = this.createCluster('buttons');
 
     for (const spec of DIRECTION_BUTTONS) {
@@ -90,6 +96,7 @@ export class TouchControls {
     const captures = [...this.captures];
     this.captures.clear();
     this.dpadPointer = null;
+    this.resetStick();
     this.pointers.clear();
     this.syncActions();
     for (const [id, element] of captures) {
@@ -140,14 +147,12 @@ export class TouchControls {
     return element;
   }
 
-  private createDirectionButton(spec: DirectionSpec): HTMLButtonElement {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'touch-button ' + spec.className;
+  private createDirectionButton(spec: DirectionSpec): HTMLElement {
+    const button = document.createElement('span');
+    button.className = 'stick-direction ' + spec.className;
     button.dataset.action = spec.action;
     button.textContent = spec.label;
-    button.setAttribute('aria-label', spec.aria);
-    button.tabIndex = -1;
+    button.setAttribute('aria-hidden', 'true');
     return button;
   }
 
@@ -155,6 +160,7 @@ export class TouchControls {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'touch-button pos-' + slot;
+    button.tabIndex = -1;
     this.slotButtons.set(slot, button);
 
     button.addEventListener('pointerdown', (event) => {
@@ -170,13 +176,19 @@ export class TouchControls {
       if (!this.pointers.has(event.pointerId)) return;
       // O polegar pode deslizar entre ataques sem levantar; cada dedo mantém
       // sua própria ação. Fora dos botões, a ação é liberada.
-      const target = [...this.slotButtons].find(([, candidate]) => {
+      let target: TouchSlotId | null = null;
+      let nearest = Infinity;
+      for (const [candidateSlot, candidate] of this.slotButtons) {
         const rect = candidate.getBoundingClientRect();
-        const margin = 10;
-        return event.clientX >= rect.left - margin && event.clientX <= rect.right + margin
-          && event.clientY >= rect.top - margin && event.clientY <= rect.bottom + margin;
-      });
-      this.pointers.set(event.pointerId, target ? new Set([this.slotAction(target[0])]) : new Set());
+        const dx = event.clientX - rect.left - rect.width / 2;
+        const dy = event.clientY - rect.top - rect.height / 2;
+        const distance = dx * dx + dy * dy;
+        if (Math.abs(dx) <= rect.width / 2 + 6 && Math.abs(dy) <= rect.height / 2 + 6 && distance < nearest) {
+          nearest = distance;
+          target = candidateSlot;
+        }
+      }
+      this.pointers.set(event.pointerId, target ? new Set([this.slotAction(target)]) : new Set());
       this.syncActions();
     });
     button.addEventListener('pointerup', this.handlePointerEnd);
@@ -212,6 +224,10 @@ export class TouchControls {
     const centerY = rect.top + rect.height / 2;
     const dx = (event.clientX - centerX) / (rect.width / 2);
     const dy = (event.clientY - centerY) / (rect.height / 2);
+    const knob = radialStickPosition(dx, dy);
+    this.dpad.style.setProperty('--knob-x', (knob.x * rect.width * 0.31).toFixed(2) + 'px');
+    this.dpad.style.setProperty('--knob-y', (knob.y * rect.height * 0.31).toFixed(2) + 'px');
+    this.dpad.classList.add('active');
     this.pointers.set(event.pointerId, new Set(touchDpadActions(dx, dy)));
     this.syncActions();
   }
@@ -220,9 +236,18 @@ export class TouchControls {
     event.preventDefault();
     this.pointers.delete(event.pointerId);
     this.captures.delete(event.pointerId);
-    if (this.dpadPointer === event.pointerId) this.dpadPointer = null;
+    if (this.dpadPointer === event.pointerId) {
+      this.dpadPointer = null;
+      this.resetStick();
+    }
     this.syncActions();
   };
+
+  private resetStick(): void {
+    this.dpad?.classList.remove('active');
+    this.dpad?.style.setProperty('--knob-x', '0px');
+    this.dpad?.style.setProperty('--knob-y', '0px');
+  }
 
   private syncActions(): void {
     const next = new Set<InputAction>();

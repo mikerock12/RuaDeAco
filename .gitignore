@@ -71,3 +71,5 @@ __pycache__/
 
 # Auditoria local da remasterização do Cais
 /tmp/cais-audit/
+
+/tmp/remaster-audit/

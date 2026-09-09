@@ -63,7 +63,8 @@ function precacheManifestPlugin(): Plugin {
       const bundleFiles = Object.values(bundle)
         .map((item) => item.fileName)
         .filter((fileName) => !fileName.endsWith('.map'));
-      const publicFiles = listPublicFiles(publicRoot);
+      // Referências de design não fazem parte do download offline do jogo.
+      const publicFiles = listPublicFiles(publicRoot).filter(file => !file.startsWith('assets/remaster/'));
       const files = [...new Set(['index.html', ...bundleFiles, ...publicFiles])].sort();
       const hash = createHash('sha256');
       for (const item of Object.values(bundle)) {

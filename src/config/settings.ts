@@ -9,7 +9,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   muted: false,
   difficulty: 'normal',
   touchControls: 'auto',
-  touchOpacity: 0.58,
+  touchOpacity: 0.4,
   preferFullscreen: false,
   wins: 0,
   losses: 0,

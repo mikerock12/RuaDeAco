@@ -12,7 +12,7 @@ const INDEX: Readonly<Record<FighterId, number>> = {
   'rafa-mare': 0, 'noir-reflexo': 1, 'astro-riso': 2,
   'dante-sinal': 3, 'leo-violeta': 4, 'guto-barba': 5,
 };
-const POINTS = [[62, 116], [178, 116], [294, 116], [62, 238], [178, 238], [294, 238]] as const;
+const POINTS = [[112, 150], [206, 150], [300, 150], [112, 252], [206, 252], [300, 252]] as const;
 const MOVES: Readonly<Record<FighterId, {
   normal: string; low: string; air: string; special: string; projectile: boolean;
 }>> = {

@@ -109,7 +109,7 @@ describe('rótulos dinâmicos por dispositivo e binding', () => {
   it('apresenta comandos touch com os glifos A/B/S e identifica o dispositivo', () => {
     const lines = buildPauseMoveList(astroRiso, 0, 'touch').lines.map(({ text }) => text);
     expect(lines[0]).toContain('(TOUCH)');
-    expect(lines).toContain('A FRACO | B FORTE | S ESPECIAL | ESCUDO DEFESA');
+    expect(lines).toContain('L FRACO | H FORTE | S ESPECIAL | D DEFESA');
     expect(lines.some((line) => line.includes('+S ') && line.includes('SORRISO'))).toBe(true);
   });
 

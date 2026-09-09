@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { ASSET_MANIFEST } from '../assets/assetManifest';
 import { audioManager } from '../audio/AudioManager';
 import type { CombatWorld, CombatWorldSnapshot } from '../combat/CombatWorld';
 import { MAX_METER } from '../config/gameConfig';
@@ -53,6 +52,7 @@ export class UIScene extends Phaser.Scene {
   private readonly roundMarkers: [Phaser.GameObjects.Rectangle[], Phaser.GameObjects.Rectangle[]] = [[], []];
   private timerText: Phaser.GameObjects.BitmapText | null = null;
   private infoText: Phaser.GameObjects.BitmapText | null = null;
+  private infoPanel: Phaser.GameObjects.Rectangle | null = null;
   private bannerBackground: Phaser.GameObjects.Rectangle | null = null;
   private bannerText: Phaser.GameObjects.BitmapText | null = null;
   private pauseShade: Phaser.GameObjects.Rectangle | null = null;
@@ -86,7 +86,7 @@ export class UIScene extends Phaser.Scene {
 
     this.createHudFrame();
     if (this.online) {
-      this.onlineText = pixelText(this, INTERNAL_WIDTH / 2, 55, '', {
+      this.onlineText = pixelText(this, INTERNAL_WIDTH / 2, 50, '', {
         size: 8,
         maxWidth: 380,
         maxHeight: 12,
@@ -143,103 +143,57 @@ export class UIScene extends Phaser.Scene {
     this.selectedPauseAction = 'continue';
     this.wasPaused = false;
     this.infoText = null;
+    this.infoPanel = null;
     this.previousBanner = '';
     this.online = false;
     this.localSlot = null;
     this.onlineText = null;
   }
 
-  // Faixa do HUD: 64px de altura (safe area superior). Os lutadores em pé
-  // ficam abaixo de y=88, garantindo margem visual para a arena.
+  // 44px: 31% menos altura, sem deslocar os pés ou a simulação.
   private createHudFrame(): void {
-    this.add.rectangle(INTERNAL_WIDTH / 2, 32, INTERNAL_WIDTH, 64, PALETTE.black, 0.94).setDepth(4);
-    this.add.image(0, 0, ASSET_MANIFEST.ui.hudFrame.key).setOrigin(0).setScale(2).setDepth(5);
-
-    this.timerText = pixelText(this, INTERNAL_WIDTH / 2, 20, '99', {
-      size: 32,
-      minSize: 16,
-      maxWidth: 72,
-      maxHeight: 40,
-      align: 'center',
-      layoutName: 'fight-timer',
-    })
-      .setTint(PALETTE.gold)
-      .setDepth(9);
+    this.add.rectangle(320, 22, 640, 44, PALETTE.ink, 0.72).setDepth(4).setName('fight-hud-compact');
+    this.add.rectangle(320, 43, 624, 1, PALETTE.steelDark, 0.5).setDepth(5);
+    this.add.rectangle(320, 19, 40, 28, PALETTE.ink, 0.85).setStrokeStyle(1, PALETTE.steel).setDepth(6);
+    this.timerText = pixelText(this, 320, 19, '99', {
+      size: 24, minSize: 20, maxWidth: 36, maxHeight: 26,
+      align: 'center', layoutName: 'fight-timer', color: PALETTE.gold,
+    }).setDepth(9);
   }
 
   private createFighterHud(index: 0 | 1, fighterId: CombatWorldSnapshot['fighters'][number]['id']): void {
     const fighter = getFighterDefinition(fighterId);
-    const playerOne = index === 0;
-    const portraitX = playerOne ? 28 : INTERNAL_WIDTH - 28;
-    const barStart = playerOne ? 56 : INTERNAL_WIDTH - 56;
-    const direction = playerOne ? 1 : -1;
+    const playerOne = index === 0, direction = playerOne ? 1 : -1;
+    const portraitX = playerOne ? 21 : 619, barStart = playerOne ? 42 : 598;
     const tint = playerOne ? PALETTE.cyan : PALETTE.pink;
-
-    createConceptPortrait(this, portraitX, 31, fighterId, 34, 38, {
-      crop: 'hud',
-      frameColor: tint,
-    }).setDepth(8);
-
-    // Margem superior segura: topo do texto (12 - 8) fica a 4px da borda.
-    pixelText(this, barStart, 12, fighter.name.toUpperCase(), {
-      size: 16,
-      minSize: 8,
-      maxWidth: 232,
-      maxHeight: 16,
-      maxLines: 1,
-      align: playerOne ? 'left' : 'right',
-      layoutName: `fight-name-${index}`,
-    }).setTint(PALETTE.ivory).setDepth(9);
-
-    this.add.rectangle(
-      barStart + direction * 70,
-      26,
-      140,
-      10,
-      PALETTE.metalDark,
-    ).setStrokeStyle(2, PALETTE.steel).setDepth(6);
-    for (let segment = 0; segment < HEALTH_SEGMENTS; segment += 1) {
-      const cell = this.add.rectangle(
-        barStart + direction * (7 + segment * 14),
-        26,
-        12,
-        6,
-        tint,
-      ).setDepth(8);
-      this.healthSegments[index].push(cell);
+    createConceptPortrait(this, portraitX, 20, fighterId, 28, 30, { crop: 'hud', frameColor: tint }).setDepth(8);
+    pixelText(this, barStart, 9, fighter.name.toUpperCase(), {
+      size: 12, minSize: 10, maxWidth: 224, maxHeight: 13, maxLines: 1,
+      align: playerOne ? 'left' : 'right', layoutName: 'fight-name-' + index,
+      color: PALETTE.ivory,
+    }).setDepth(9);
+    this.add.rectangle(barStart + direction * 90, 21, 180, 7, PALETTE.navy)
+      .setStrokeStyle(1, PALETTE.steel).setDepth(6);
+    for (let cell = 0; cell < HEALTH_SEGMENTS; cell++) {
+      const bar = this.add.rectangle(barStart + direction * (1 + cell * 18), 21, 17, 5, tint)
+        .setOrigin(playerOne ? 0 : 1, 0.5).setDepth(8);
+      this.healthSegments[index].push(bar);
     }
-
-    this.add.rectangle(
-      barStart + direction * 70,
-      40,
-      140,
-      8,
-      PALETTE.ink,
-    ).setStrokeStyle(2, PALETTE.steelDark).setDepth(6);
-    for (let segment = 0; segment < METER_SEGMENTS; segment += 1) {
-      const cell = this.add.rectangle(
-        barStart + direction * (7 + segment * 14),
-        40,
-        12,
-        4,
-        PALETTE.gold,
-      ).setDepth(8);
-      this.meterSegments[index].push(cell);
+    this.add.rectangle(barStart + direction * 90, 31, 180, 4, PALETTE.ink)
+      .setStrokeStyle(1, PALETTE.steelDark).setDepth(6);
+    for (let cell = 0; cell < METER_SEGMENTS; cell++) {
+      this.meterSegments[index].push(this.add.rectangle(barStart + direction * (9 + cell * 18), 31, 16, 2, PALETTE.gold).setDepth(8));
     }
-
-    for (let round = 0; round < 2; round += 1) {
-      const markerX = INTERNAL_WIDTH / 2 + (playerOne ? -1 : 1) * (26 + round * 10);
-      const marker = this.add.rectangle(markerX, 44, 6, 6, PALETTE.metalDark)
-        .setStrokeStyle(2, tint)
-        .setDepth(9);
-      this.roundMarkers[index].push(marker);
+    for (let round = 0; round < 2; round++) {
+      this.roundMarkers[index].push(this.add.rectangle(320 + (playerOne ? -1 : 1) * (13 + round * 10), 39, 4, 4, PALETTE.navy)
+        .setStrokeStyle(1, tint).setDepth(9));
     }
   }
 
   private createAnnouncements(): void {
     this.bannerBackground = tagLayoutPanel(
       this.add.rectangle(INTERNAL_WIDTH / 2, 156, 348, 58, PALETTE.black, 0.9)
-        .setStrokeStyle(4, PALETTE.steelLight)
+        .setStrokeStyle(1, PALETTE.cyan)
         .setVisible(false)
         .setDepth(30),
       'fight-banner',
@@ -269,7 +223,7 @@ export class UIScene extends Phaser.Scene {
     ).setVisible(false).setDepth(90);
     this.pausePanel = tagLayoutPanel(
       this.add.rectangle(INTERNAL_WIDTH / 2, 200, 608, 280, PALETTE.panel, 1)
-        .setStrokeStyle(4, PALETTE.steelLight)
+        .setStrokeStyle(1, PALETTE.cyan)
         .setVisible(false)
         .setDepth(91),
       'pause-panel',
@@ -458,34 +412,19 @@ export class UIScene extends Phaser.Scene {
   }
 
   private createButtons(snapshot: CombatWorldSnapshot): void {
-    const touch = InputManager.shouldShowTouch(settingsStore.get());
-    this.pauseButton = this.createButton(touch ? 608 : this.online ? INTERNAL_WIDTH - 24 : INTERNAL_WIDTH / 2, touch ? 82 : 55, 40, touch ? 28 : 14, 'II', () => {
-      this.game.events.emit('fight:pause');
-    });
+    this.pauseButton = this.createButton(608, 58, 40, 18, 'II', () => this.game.events.emit('fight:pause'));
     this.pauseButton.container.setDepth(100);
-
     if (this.world?.mode !== 'training') return;
-
     const controls: ReadonlyArray<readonly [number, string, string]> = [
-      [126, 'REPOS.', 'training:reset'],
-      [320, 'BOXES', 'training:debug'],
-      [514, 'CPU', 'training:cpu'],
+      [372, 'RESET', 'training:reset'], [450, 'BOXES', 'training:debug'], [528, 'CPU', 'training:cpu'],
     ];
-    this.trainingButtons = controls.map(([x, label, eventName]) => (
-      this.createButton(x, 82, label === 'REPOS.' ? 92 : 76, 28, label, () => this.game.events.emit(eventName))
-    ));
-
-    this.infoText = pixelText(this, touch ? 320 : 8, touch ? 342 : 302, '', {
-      size: 16,
-      minSize: 8,
-      align: touch ? 'center' : 'left',
-      maxWidth: touch ? 264 : 624,
-      maxHeight: touch ? 20 : 44,
-      maxLines: 3,
-      layoutName: 'training-info',
-    })
-      .setTint(PALETTE.cyanLight)
-      .setDepth(80);
+    this.trainingButtons = controls.map(([x, label, eventName]) => this.createButton(x, 58, 60, 18, label, () => this.game.events.emit(eventName)));
+    this.infoPanel = tagLayoutPanel(this.add.rectangle(320, 344, 210, 18, PALETTE.ink, 0.78)
+      .setStrokeStyle(1, PALETTE.steel).setDepth(79), 'training-readout', { x: 6, y: 2 });
+    this.infoText = pixelText(this, 320, 344, '', {
+      size: 10, minSize: 10, align: 'center', maxWidth: 196, maxHeight: 14, maxLines: 1,
+      layoutName: 'training-info', panelName: 'training-readout', color: PALETTE.cyanLight,
+    }).setDepth(80);
     this.updateTrainingLabels(snapshot);
   }
 
@@ -499,8 +438,8 @@ export class UIScene extends Phaser.Scene {
   ): HudButton {
     const panelName = `hud-button-${text.toLowerCase().replace(/[^a-z0-9]+/gu, '-')}-${x}-${y}`;
     const background = tagLayoutPanel(
-      this.add.rectangle(0, 0, width, height, PALETTE.metalDark, 0.96)
-        .setStrokeStyle(2, PALETTE.steelLight),
+      this.add.rectangle(0, 0, width, height, PALETTE.ink, 0.78)
+        .setStrokeStyle(1, PALETTE.steel),
       panelName,
       { x: 6, y: 3 },
     );
@@ -517,7 +456,7 @@ export class UIScene extends Phaser.Scene {
     }).setTint(PALETTE.ivory);
     const container = this.add.container(x, y, [background, label]);
     container.setName('hud-control:' + text);
-    container.setSize(width + 20, Math.max(height + 16, 44)).setInteractive({ useHandCursor: true });
+    container.setSize(width + 12, Math.max(height + 16, 44)).setInteractive({ useHandCursor: true });
     container.on('pointerdown', () => background.setFillStyle(PALETTE.panelLight));
     container.on('pointerout', () => background.setFillStyle(PALETTE.metalDark));
     container.on('pointerup', () => {
@@ -536,6 +475,7 @@ export class UIScene extends Phaser.Scene {
       const healthTint = health <= 0.25 ? PALETTE.danger : index === 0 ? PALETTE.cyan : PALETTE.pink;
       this.healthSegments[index].forEach((segment, cell) => {
         segment.setFillStyle(cell < healthCells ? healthTint : PALETTE.metalDark);
+        segment.setScale(clamp01(health * HEALTH_SEGMENTS - cell), 1);
       });
 
       const meterCells = Math.floor(clamp01(fighter.meter / MAX_METER) * METER_SEGMENTS);
@@ -555,7 +495,7 @@ export class UIScene extends Phaser.Scene {
     this.timerText?.setText(String(snapshot.timeSeconds).padStart(2, '0'));
     if (this.onlineText) {
       this.onlineText.setText(
-        `ONLINE • ${this.localSlot?.toUpperCase() ?? '--'} LOCAL • PING ${onlineSession.snapshot.latencyMs ?? '--'} MS`,
+        `ONLINE  ${this.localSlot?.toUpperCase() ?? '--'}  PING ${onlineSession.snapshot.latencyMs ?? '--'} MS`,
       );
     }
     this.updateBanner(snapshot);
@@ -616,6 +556,7 @@ export class UIScene extends Phaser.Scene {
     for (const button of this.touchPageButtons) button.container.setVisible(paused);
     for (const button of this.trainingButtons) button.container.setVisible(!paused);
     this.infoText?.setVisible(!paused);
+    this.infoPanel?.setVisible(!paused);
     if (paused) this.refreshPauseOptions();
     this.pauseButton?.label.setText(paused ? '>' : 'II');
   }
@@ -630,28 +571,21 @@ export class UIScene extends Phaser.Scene {
       const selected = option.action === this.selectedPauseAction;
       option.background
         .setFillStyle(selected ? PALETTE.panelLight : PALETTE.metalDark, 0.98)
-        .setStrokeStyle(selected ? 4 : 2, selected ? PALETTE.gold : PALETTE.steelLight);
+        .setStrokeStyle(selected ? 2 : 1, selected ? PALETTE.gold : PALETTE.steelLight);
       option.label.setTint(selected ? PALETTE.gold : PALETTE.ivory);
     }
   }
 
   private updateTrainingLabels(snapshot: CombatWorldSnapshot): void {
     if (!this.infoText || this.trainingButtons.length === 0) return;
-    const [one, two] = snapshot.fighters;
-    const touch = InputManager.shouldShowTouch(settingsStore.get());
-    this.infoText.setText(touch
-      ? 'DANO ' + snapshot.lastDamage + '  COMBO ' + Math.max(...snapshot.combo)
-      : [
-      'P1 ' + one.state + (one.activeMoveId ? '/' + one.activeMoveId : ''),
-      'P2 ' + two.state + (two.activeMoveId ? '/' + two.activeMoveId : ''),
-      'DANO ' + snapshot.lastDamage + '  COMBO ' + Math.max(...snapshot.combo),
-    ].join('\n'));
+    this.infoText.setText('DANO ' + snapshot.lastDamage + ' | COMBO ' + Math.max(...snapshot.combo));
+    this.infoText.setTint(snapshot.lastDamage > 0 ? PALETTE.gold : PALETTE.cyanLight);
 
     const boxes = this.trainingButtons[1];
     const cpu = this.trainingButtons[2];
     boxes?.label.setText(snapshot.debugBoxes ? 'BOX:ON' : 'BOXES');
-    boxes?.background.setStrokeStyle(2, snapshot.debugBoxes ? PALETTE.gold : PALETTE.steelLight);
+    boxes?.background.setStrokeStyle(1, snapshot.debugBoxes ? PALETTE.gold : PALETTE.steelLight);
     cpu?.label.setText(snapshot.trainingCpuEnabled ? 'CPU:ON' : 'CPU:OFF');
-    cpu?.background.setStrokeStyle(2, snapshot.trainingCpuEnabled ? PALETTE.gold : PALETTE.steelLight);
+    cpu?.background.setStrokeStyle(1, snapshot.trainingCpuEnabled ? PALETTE.gold : PALETTE.steelLight);
   }
 }

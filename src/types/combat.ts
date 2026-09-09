@@ -315,6 +315,9 @@ export interface CombatEvent {
   readonly frame: number;
   readonly attacker?: FighterId;
   readonly defender?: FighterId;
+  /** Presentation identity for mirror matches; never used by simulation. */
+  readonly attackerIndex?: 0 | 1;
+  readonly defenderIndex?: 0 | 1;
   readonly value?: number;
   readonly text?: string;
   readonly moveId?: string;

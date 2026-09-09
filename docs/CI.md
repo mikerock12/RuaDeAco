@@ -69,3 +69,7 @@ Referências: [sintaxe do GitHub Actions](https://docs.github.com/en/actions/ref
 [Chromium headless completo](https://playwright.dev/docs/browsers#chromium-new-headless-mode)
 [relógio do Playwright](https://playwright.dev/docs/clock)
 e [console do Vitest](https://vitest.dev/config/disableconsoleintercept).
+
+## Regressões da remasterização
+
+A suíte mobile verifica dead zone de 18%, knob contínuo, diamante H/L/S/D, opacidade de 40%, captura e limpeza de input. Os unitários verificam contato, pool limitado de faíscas e ausência de alterações no estado do combate pelos efeitos. Todos integram os jobs já obrigatórios para publicar pelo workflow de Pages.
