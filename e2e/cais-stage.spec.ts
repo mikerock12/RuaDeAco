@@ -49,7 +49,7 @@ test('Cais remasterizado anima sem interferir na luta, respeita pausa e descarta
   await expect.poll(() => page.evaluate(() => (window as GameWindow).__ruaWorld?.phase)).toBe('active');
   const resting = await fighters(page);
   await page.screenshot({ path: testInfo.outputPath('cais-luta.png') });
-  await expect.poll(async () => (await stage(page))?.ambience.event, { timeout: 22000 }).not.toBeNull();
+  await expect.poll(async () => (await stage(page))?.ambience.event, { timeout: 12000 }).not.toBeNull();
   await expect.poll(async () => (await stage(page))?.ambience.eventTime).toBeGreaterThan(3500);
   await page.screenshot({ path: testInfo.outputPath('cais-evento.png') });
   expect(await fighters(page)).toEqual(resting);
@@ -64,7 +64,8 @@ test('Cais remasterizado anima sem interferir na luta, respeita pausa e descarta
   await expect.poll(async () => (await stage(page))?.ambience.completed, { timeout: 45000 }).toBeGreaterThan(0);
   const quiet = (await stage(page))!.ambience;
   expect(quiet.event).toBeNull();
-  expect(quiet.idleRemaining).toBeGreaterThan(16000);
+  expect(quiet.idleRemaining).toBeGreaterThan(7000);
+  expect(quiet.idleRemaining).toBeLessThanOrEqual(17000);
   expect([quiet.ufo, quiet.witch, quiet.monster, quiet.ship, quiet.cannonball].every(actor => !actor.visible)).toBe(true);
   expect(quiet.beamStrength + quiet.fireStrength).toBe(0);
   expect(await fighters(page)).toEqual(resting);

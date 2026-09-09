@@ -42,7 +42,7 @@ export class CaisAmbience {
   private targetSlot = 0;
 
   constructor(private readonly random: () => number = Math.random) {
-    this.idleRemaining = 12000 + this.roll() * 8000;
+    this.idleRemaining = 6000 + this.roll() * 4000;
   }
 
   update(delta: number, playerOneX = 220, playerTwoX = 420): void {
@@ -60,7 +60,7 @@ export class CaisAmbience {
       this.event = null;
       this.completed++;
       this.phase = 'quiet';
-      this.idleRemaining = 18000 + this.roll() * 16000;
+      this.idleRemaining = 9000 + this.roll() * 8000;
       this.hide();
       return;
     }

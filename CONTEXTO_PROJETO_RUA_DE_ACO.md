@@ -9,7 +9,7 @@
 >
 > Cais remasterizado: nova arte, água/reflexos, lua independente e cinco
 > encontros decorativos lentos (discos, bruxa, monstro e navio). Intervalos de
-> 18–34 s; sem interferência na simulação. Disponível em todos os modos.
+> 9–17 s; sem interferência na simulação. Disponível em todos os modos.
 > Arte, fontes e validação em [docs/CAIS_DA_CIDADE.md](docs/CAIS_DA_CIDADE.md).
 > Cliente: tipos, build e 480 testes aprovados localmente.
 >

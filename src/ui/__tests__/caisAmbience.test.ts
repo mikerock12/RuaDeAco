@@ -16,7 +16,13 @@ describe('direção lenta dos eventos do Cais', () => {
     for (let t = 0; t < 1200000; t += 100) {
       model.update(100);
       if (model.event && !previous) {
-        if (endedAt >= 0) expect(model.elapsed - endedAt).toBeGreaterThanOrEqual(18000);
+        if (endedAt >= 0) {
+          expect(model.elapsed - endedAt).toBeGreaterThanOrEqual(9000);
+          expect(model.elapsed - endedAt).toBeLessThanOrEqual(17100);
+        } else {
+          expect(model.elapsed).toBeGreaterThanOrEqual(6000);
+          expect(model.elapsed).toBeLessThanOrEqual(10100);
+        }
         expect(model.event).not.toBe(last); last = model.event;
       }
       if (!model.event && previous) endedAt = model.elapsed;

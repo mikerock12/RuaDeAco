@@ -9,7 +9,7 @@ continua em 640 × 360, com contato dos pés em Y=304.
 
 Um diretor decorativo sorteia a ordem dos cinco encontros. Cada ciclo inclui
 todos eles, sem repetir imediatamente o último. A primeira aparição espera
-12–20 segundos; entre encontros há 18–34 segundos de descanso. Os tempos são
+6–10 segundos; entre encontros há 9–17 segundos de descanso. Os tempos são
 de jogo ativo: pausar congela água e eventos.
 
 | Encontro | Duração | Comportamento |
