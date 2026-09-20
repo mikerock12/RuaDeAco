@@ -139,7 +139,10 @@ canvas,
   pointer-events: none;
   width: 100%;
   height: 100%;
-  --touch-button-size: clamp(44px, 12dvh, 56px);
+  /* 44px era o mínimo de acessibilidade, não um alvo confortável para jogar:
+     em paisagem o polegar precisa acertar o botão sem olhar e, no agarrão,
+     dois de uma vez. */
+  --touch-button-size: clamp(58px, 17dvh, 76px);
   --stick-size: clamp(100px, 30dvh, 140px);
 }
 
@@ -189,6 +192,10 @@ canvas,
   width: calc(var(--touch-button-size) * 2.7);
   height: calc(var(--touch-button-size) * 2.7);
   right: max(16px, env(safe-area-inset-right, 0px));
+  /* O diamante inteiro recebe o toque, não só os discos: é assim que um dedo
+     pousado no vão entre dois botões consegue acionar os dois. */
+  pointer-events: auto;
+  touch-action: none;
 }
 .touch-button {
   position: absolute;

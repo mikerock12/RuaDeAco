@@ -28,3 +28,40 @@ Os retratos e sprites aprovados continuam os mesmos. A arte e ambientação já 
 A suíte unitária cobre oito direções, dead zone, limite radial, posição dos contatos, reaproveitamento de efeitos, pausa e estado determinístico preservado. A suíte de navegador cobre 568×320, 640×360 e 812×375, multitouch real via CDP, diamante, opacidade, arraste, perda de foco, orientação, remapeamento e todos os fluxos de telas. Os testes online usam dois clientes e Worker local, incluindo seleção das três arenas e comparação de hashes.
 
 As capturas locais ficam em tmp/remaster-audit, fora do Git. Não houve teste em aparelho Android físico nesta rodada; emulação de navegador não mede conforto do polegar, latência do touchscreen nem consumo de bateria. Esses pontos precisam de teste manual no dispositivo do usuário.
+
+## Rodada de 20/09/2026 — fluidez do direcional e alcance dos botões
+
+Três defeitos de sensação foram medidos e corrigidos. Nenhum deles tocou em
+dano, frame data, física ou protocolo: a mudança é toda na camada de entrada.
+
+**Setores do analógico.** Os oito setores tinham 45° cada, então bastavam 23°
+de desvio do polegar para o jogo somar `down` ou `up`: o jogador tentava andar
+e o lutador agachava ou pulava. Agora o horizontal puro vai até 30°, a diagonal
+ocupa 30°–60° e a vertical pura começa aos 60°. `up` exige 38°, porque um salto
+acidental custa mais caro que um agachamento acidental. Os quartos de círculo
+continuam saindo: a diagonal tem 30° de folga.
+
+**Zona morta.** De 18% para 12% do raio da base. O knob já acompanhava o dedo
+antes de o lutador reagir, e essa distância era sentida como atraso.
+
+**Tamanho e alcance dos botões.** De `clamp(44px, 12dvh, 56px)` para
+`clamp(58px, 17dvh, 76px)` — em paisagem de celular, de ~45px para ~64px. 44px
+é o mínimo de acessibilidade, não um alvo confortável para jogar sem olhar.
+
+**Acorde com um polegar só.** Cada dedo acionava exatamente um botão, então
+fraco + forte — o agarrão — exigia dois dedos na mesma mão, o que era inviável
+na prática. O diamante inteiro passa a receber o toque e um dedo pousado no vão
+entre dois botões vizinhos aciona os dois. O alcance extra é de 18% da largura
+do botão, calibrado para que toda a face de um botão continue exclusiva,
+inclusive a borda voltada para o vizinho: só o vão de ~13px é compartilhado.
+Botões opostos do diamante ficam longe demais para coincidir.
+
+Medições que não indicaram defeito, registradas para não serem reinvestigadas:
+latência de comando é de 1 frame, a inversão de direção também é de 1 frame, e
+a simulação roda a 60,8 passos por segundo. Os totais de golpe vão de 12 frames
+(Astro, fraco) a 36 (Guto, forte), dentro do costume do gênero.
+
+Fica em aberto, por ser decisão de jogabilidade e não defeito: as velocidades
+de caminhada, medidas em 105 px/s (Guto) a 201 px/s (Astro) num palco de 640px
+— Guto leva 6,1 s para atravessar a arena. A animação de andar usa a arte de
+corrida, o que reforça a impressão de lentidão.

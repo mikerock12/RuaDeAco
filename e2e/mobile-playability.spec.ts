@@ -186,6 +186,45 @@ test('gesto baixo, diagonal e frente executa a Rajada Neon do Astro', async ({ p
 });
 
 
+test('um polegar no vão entre fraco e forte agarra, e a face do botão não', async ({ page, context }) => {
+  await openTraining(page);
+  const cdp = await context.newCDPSession(page);
+  const light = await center(page, '.touch-button[data-action="light"]');
+  const heavy = await center(page, '.touch-button[data-action="heavy"]');
+  const largura = await page.locator('.touch-button[data-action="light"]').evaluate(el => el.getBoundingClientRect().width);
+  // Alvo confortável: bem acima do mínimo de acessibilidade de 44px.
+  expect(largura).toBeGreaterThanOrEqual(56);
+
+  // A face do botão continua exclusiva: encostar na borda voltada para o
+  // vizinho não pode disparar o acorde sem querer.
+  const rumo = { x: (light.x - heavy.x) / Math.hypot(light.x - heavy.x, light.y - heavy.y),
+                 y: (light.y - heavy.y) / Math.hypot(light.x - heavy.x, light.y - heavy.y) };
+  const borda = { id: 1, x: heavy.x + rumo.x * (largura / 2 - 2), y: heavy.y + rumo.y * (largura / 2 - 2) };
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [borda] });
+  await expect(page.locator('.touch-button[data-action="heavy"]')).toHaveClass(/pressed/);
+  await expect(page.locator('.touch-button[data-action="light"]')).not.toHaveClass(/pressed/);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect(page.locator('.touch-button.pressed')).toHaveCount(0);
+
+  // O soco forte precisa terminar: um acorde durante a recuperação seria
+  // engolido pelo buffer e não diria nada sobre o vão.
+  await expect.poll(() => page.evaluate(() =>
+    (window as GameWindow).__ruaWorld!.fighters[0].state,
+  )).toBe('idle');
+
+  // Um único dedo no vão aciona os dois e o agarrão sai.
+  const vao = { id: 2, x: (light.x + heavy.x) / 2, y: (light.y + heavy.y) / 2 };
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [vao] });
+  await expect(page.locator('.touch-button[data-action="heavy"]')).toHaveClass(/pressed/);
+  await expect(page.locator('.touch-button[data-action="light"]')).toHaveClass(/pressed/);
+  await expect.poll(() => page.evaluate(() =>
+    (window as GameWindow).__ruaWorld!.fighters[0].exportDeterministicState().lastMoveId,
+  )).toBe('universalGrab');
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect(page.locator('.touch-button.pressed')).toHaveCount(0);
+});
+
+
 test('remaster: diamante, opacidade, dead zone radial e limpeza ao perder foco', async ({ page, context }) => {
   await openTraining(page);
   const dpad = page.locator('.dpad');
@@ -203,10 +242,16 @@ test('remaster: diamante, opacidade, dead zone radial e limpeza ao perder foco',
   expect(block.y).toBeGreaterThan(light.y);
   const cdp = await context.newCDPSession(page);
   const at = (x: number, y: number) => ({ id: 1, x: box.x + box.width * x, y: box.y + box.height * y });
-  await cdp.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [at(0.58, 0.5)]});
+  // Zona morta de 12%: o knob já acompanha o polegar, mas ainda não anda.
+  await cdp.send('Input.dispatchTouchEvent', {type: 'touchStart', touchPoints: [at(0.545, 0.5)]});
   await expect(page.locator('.stick-direction.pressed')).toHaveCount(0);
   expect(await dpad.evaluate(el => parseFloat((el as HTMLElement).style.getPropertyValue('--knob-x')))).toBeGreaterThan(0);
-  await cdp.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [at(0.7, 0.6)]});
+  // Setor horizontal largo: 25° abaixo da linha ainda é andar, não agachar.
+  await cdp.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [at(0.9, 0.685)]});
+  await expect(page.locator('.stick-direction.right')).toHaveClass(/pressed/);
+  await expect(page.locator('.stick-direction.down')).not.toHaveClass(/pressed/);
+  // Passando dos 30° a diagonal volta, para os quartos de círculo.
+  await cdp.send('Input.dispatchTouchEvent', {type: 'touchMove', touchPoints: [at(0.85, 0.85)]});
   await expect(page.locator('.stick-direction.right')).toHaveClass(/pressed/);
   await expect(page.locator('.stick-direction.down')).toHaveClass(/pressed/);
   const moved = (await dpad.boundingBox())!;

@@ -9,6 +9,11 @@ const DIRECTION_ACTIONS: readonly InputAction[] = ['left', 'right', 'up', 'down'
 const COMBAT_ACTIONS: readonly InputAction[] = ['light', 'heavy', 'special', 'block'];
 const ALL_TOUCH_ACTIONS = [...DIRECTION_ACTIONS, ...COMBAT_ACTIONS];
 
+// Alcance extra de cada botão, em fração da própria largura. Calibrado sobre o
+// diamante: no vão entre dois vizinhos os dois respondem, mas um toque na borda
+// interna de um botão ainda aciona só ele, para não sair agarrão sem querer.
+const BRIDGE_RATIO = 0.18;
+
 interface DirectionSpec {
   readonly action: InputAction;
   readonly label: string;
@@ -28,6 +33,7 @@ export class TouchControls {
   private readonly pointers = new Map<number, Set<InputAction>>();
   private readonly slotButtons = new Map<TouchSlotId, HTMLButtonElement>();
   private dpad: HTMLElement | null = null;
+  private buttonCluster: HTMLElement | null = null;
   private dpadPointer: number | null = null;
   private readonly captures = new Map<number, HTMLElement>();
   private built = false;
@@ -62,6 +68,13 @@ export class TouchControls {
       buttons.append(this.createSlotButton(slot));
     }
     this.applyBindings();
+
+    this.buttonCluster = buttons;
+    buttons.addEventListener('pointerdown', this.handleButtonsDown);
+    buttons.addEventListener('pointermove', this.handleButtonsMove);
+    buttons.addEventListener('pointerup', this.handlePointerEnd);
+    buttons.addEventListener('pointercancel', this.handlePointerEnd);
+    buttons.addEventListener('lostpointercapture', this.handlePointerEnd);
 
     dpad.addEventListener('pointerdown', this.handleDpadDown);
     dpad.addEventListener('pointermove', this.handleDpadMove);
@@ -163,39 +176,50 @@ export class TouchControls {
     button.tabIndex = -1;
     this.slotButtons.set(slot, button);
 
-    button.addEventListener('pointerdown', (event) => {
-      if (!this.gameplayActive) return;
-      event.preventDefault();
-      event.stopPropagation();
-      button.setPointerCapture(event.pointerId);
-      this.captures.set(event.pointerId, button);
-      this.pointers.set(event.pointerId, new Set([this.slotAction(slot)]));
-      this.syncActions();
-    });
-    button.addEventListener('pointermove', (event) => {
-      if (!this.pointers.has(event.pointerId)) return;
-      // O polegar pode deslizar entre ataques sem levantar; cada dedo mantém
-      // sua própria ação. Fora dos botões, a ação é liberada.
-      let target: TouchSlotId | null = null;
-      let nearest = Infinity;
-      for (const [candidateSlot, candidate] of this.slotButtons) {
-        const rect = candidate.getBoundingClientRect();
-        const dx = event.clientX - rect.left - rect.width / 2;
-        const dy = event.clientY - rect.top - rect.height / 2;
-        const distance = dx * dx + dy * dy;
-        if (Math.abs(dx) <= rect.width / 2 + 6 && Math.abs(dy) <= rect.height / 2 + 6 && distance < nearest) {
-          nearest = distance;
-          target = candidateSlot;
-        }
-      }
-      this.pointers.set(event.pointerId, target ? new Set([this.slotAction(target)]) : new Set());
-      this.syncActions();
-    });
-    button.addEventListener('pointerup', this.handlePointerEnd);
-    button.addEventListener('pointercancel', this.handlePointerEnd);
-    button.addEventListener('lostpointercapture', this.handlePointerEnd);
     return button;
   }
+
+  /**
+   * Ações sob um toque. Um dedo pousado no vão entre dois botões vizinhos
+   * aciona os dois: é o que torna fraco + forte viável com um polegar só, já
+   * que o agarrão exige o acorde e a mão direita não tem dedo sobrando. Botões
+   * opostos do diamante ficam longe demais para coincidir, então nunca saem
+   * juntos por acidente.
+   */
+  private actionsAt(clientX: number, clientY: number): Set<InputAction> {
+    const actions = new Set<InputAction>();
+    const hits: { slot: TouchSlotId; distance: number }[] = [];
+    for (const [slot, candidate] of this.slotButtons) {
+      const rect = candidate.getBoundingClientRect();
+      if (rect.width === 0) continue;
+      const dx = clientX - rect.left - rect.width / 2;
+      const dy = clientY - rect.top - rect.height / 2;
+      const reach = rect.width / 2 + rect.width * BRIDGE_RATIO;
+      const distance = Math.hypot(dx, dy);
+      if (distance <= reach) hits.push({ slot, distance });
+    }
+    hits.sort((a, b) => a.distance - b.distance);
+    for (const hit of hits.slice(0, 2)) actions.add(this.slotAction(hit.slot));
+    return actions;
+  }
+
+  private handleButtonsDown = (event: PointerEvent): void => {
+    if (!this.gameplayActive || !this.buttonCluster) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.buttonCluster.setPointerCapture(event.pointerId);
+    this.captures.set(event.pointerId, this.buttonCluster);
+    this.pointers.set(event.pointerId, this.actionsAt(event.clientX, event.clientY));
+    this.syncActions();
+  };
+
+  private handleButtonsMove = (event: PointerEvent): void => {
+    // O polegar pode deslizar entre ataques sem levantar; cada dedo mantém as
+    // suas próprias ações. Fora do alcance de qualquer botão, solta tudo.
+    if (!this.pointers.has(event.pointerId)) return;
+    this.pointers.set(event.pointerId, this.actionsAt(event.clientX, event.clientY));
+    this.syncActions();
+  };
 
   private slotAction(slot: TouchSlotId): CombatButton {
     return controlsStore.get().touch.slots[slot];
