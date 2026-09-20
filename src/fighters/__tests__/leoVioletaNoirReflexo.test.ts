@@ -98,7 +98,8 @@ describe('Léo Violeta e Noir Reflexo', () => {
   });
 
   it('mantém 12 normais e configura o trio de golpes do Léo nos limites pedidos', () => {
-    expect(Object.values(leoVioleta.moves)).toHaveLength(15);
+    expect(Object.values(leoVioleta.moves)).toHaveLength(16);
+    expect(leoVioleta.moves.universalGrab?.command.buttons).toEqual(['light', 'heavy']);
 
     const olhar = leoVioleta.moves.olharFrio!;
     expect(olhar.command.directions).toEqual(['down', 'downForward', 'forward']);
@@ -182,7 +183,8 @@ describe('Léo Violeta e Noir Reflexo', () => {
   );
 
   it('configura parry, Quebra-Luz e Impacto Solar nos limites pedidos', () => {
-    expect(Object.values(noirReflexo.moves)).toHaveLength(15);
+    expect(Object.values(noirReflexo.moves)).toHaveLength(16);
+    expect(noirReflexo.moves.universalGrab?.command.buttons).toEqual(['light', 'heavy']);
     expect(noirReflexo.moves.reflexoNegro?.events).toEqual([{
       frame: 5,
       type: 'grantParry',
@@ -449,13 +451,13 @@ describe('Léo Violeta e Noir Reflexo', () => {
       .toBe(deterministicHash(right.exportDeterministicState()));
   });
 
-  it('registra 35 animações, efeitos dedicados e oito poses de vítima', () => {
+  it('registra 36 animações, efeitos dedicados e oito poses de vítima', () => {
     expect(FIGHTER_SPRITE_ASSETS).toEqual(expect.arrayContaining([
       leoVioletaSpriteAsset,
       noirReflexoSpriteAsset,
     ]));
     for (const asset of [leoVioletaSpriteAsset, noirReflexoSpriteAsset]) {
-      expect(Object.values(asset.animations)).toHaveLength(35);
+      expect(Object.values(asset.animations)).toHaveLength(36);
       expect(asset.animations.grabbedFront.frames).toBe(8);
       expect(asset.animations.grabbedLifted.frames).toBe(8);
       expect(asset).toMatchObject({

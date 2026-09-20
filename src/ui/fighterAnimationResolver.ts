@@ -1,3 +1,4 @@
+import { grabPoseIndex } from '../fighters/grabArtTiming';
 import {
   jumpArcPhaseFrames,
   moveAnimationFrameIndex,
@@ -58,6 +59,11 @@ export function resolveFighterAnimation(
   asset: FighterSpriteAsset,
   definition: FighterDefinition,
 ): ResolvedFighterAnimation {
+  if (activeMove?.id === 'universalGrab') {
+    return { id: 'universalGrab', localFrame: snapshot.stateFrame,
+      explicitFrame: grabPoseIndex(snapshot.stateFrame, snapshot.moveConnected !== 'none') };
+  }
+  if (snapshot.state === 'dizzy') return { id: 'hit', localFrame: snapshot.stateFrame % 24, explicitFrame: Math.floor(snapshot.stateFrame / 12) % Math.min(2, asset.animations.hit.frames) };
   if (activeMove) {
     const whiff = whiffedGrabAnimation(snapshot, activeMove, asset);
     if (whiff) return whiff;

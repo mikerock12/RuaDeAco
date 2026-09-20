@@ -70,6 +70,7 @@ export type SharedFighterAnimationId =
   | 'victory';
 
 export type FighterAnimationId = SharedFighterAnimationId
+  | 'universalGrab'
   | 'special2Grab'
   | 'special2Hold'
   | 'special2Throw'

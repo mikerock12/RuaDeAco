@@ -32,7 +32,7 @@ import {
 } from './safeAnimationFrame';
 
 export interface FighterView {
-  sync(snapshot: FighterSnapshot, alpha: number): void;
+  sync(snapshot: FighterSnapshot, alpha: number, presentation?: { scale: number; depth: number; shadow: boolean }): void;
   setVisible(visible: boolean): void;
   destroy(): void;
 }
@@ -88,7 +88,7 @@ class SpriteFighterView implements FighterView {
     this.moveEffect?.setName(`${definition.id}-move-effect`);
   }
 
-  sync(snapshot: FighterSnapshot, alpha: number): void {
+  sync(snapshot: FighterSnapshot, alpha: number, presentation?: { scale: number; depth: number; shadow: boolean }): void {
     if (this.destroyed) return;
 
     const worldX = Phaser.Math.Linear(snapshot.previousX, snapshot.x, alpha);
@@ -97,11 +97,11 @@ class SpriteFighterView implements FighterView {
     const y = worldToScreen(worldY) + this.asset.visualOffset.y;
     this.sprite
       .setPosition(roundPixel(x), roundPixel(y))
-      .setScale(snapshot.facing * this.asset.scale, this.asset.scale)
+      .setScale(snapshot.facing * this.asset.scale * (presentation?.scale ?? 1), this.asset.scale * (presentation?.scale ?? 1))
       .setRotation(snapshot.victimRotation)
       // A vítima continua sendo seu próprio sprite, apenas atrás da camada
       // corporal do grappler durante a sustentação.
-      .setDepth(snapshot.grabbedBy === null ? 20 : snapshot.victimDepth === 'front' ? 22 : 19);
+      .setDepth(presentation?.depth ?? (snapshot.grabbedBy === null ? 20 : snapshot.victimDepth === 'front' ? 22 : 19));
 
     const poseSnapshot: FighterSnapshot = {
       ...snapshot,
@@ -136,6 +136,7 @@ class SpriteFighterView implements FighterView {
 
     keepFighterBodyColorsNeutral(this.sprite, snapshot);
     this.groundShadow.sync(snapshot, roundPixel(worldToScreen(worldX)));
+    this.groundShadow.setVisible(this.viewVisible && (presentation?.shadow ?? true));
     this.statusPresentation.sync(snapshot, roundPixel(x), roundPixel(y), 18);
 
     const attachedEffect = resolveAttachedEffect(poseSnapshot, activeMove, this.asset);

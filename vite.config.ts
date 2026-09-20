@@ -89,7 +89,7 @@ export default defineConfig({
   define: {
     __FIGHTER_ASSET_REVISION__: JSON.stringify(fighterAssetRevision),
     __CLIENT_BUILD_ID__: JSON.stringify(clientBuildId),
-    __COMBAT_ENGINE_VERSION__: JSON.stringify('lockstep-v1'),
+    __COMBAT_ENGINE_VERSION__: JSON.stringify('lockstep-v3-grab-art'),
   },
   build: {
     target: 'es2022',

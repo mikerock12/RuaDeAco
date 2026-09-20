@@ -1,0 +1,328 @@
+import type { FighterId } from '../types/combat';
+
+/** Contact landmarks for the newly drawn art, in foot-root coordinates. */
+export const GRAB_HANDS: Readonly<Record<FighterId, readonly (readonly [number, number])[]>> = {
+  "rafa-mare": [
+    [
+      42,
+      -111
+    ],
+    [
+      74,
+      -129
+    ],
+    [
+      46,
+      -118
+    ],
+    [
+      40,
+      -68
+    ],
+    [
+      26,
+      -141
+    ],
+    [
+      30,
+      -156
+    ],
+    [
+      7,
+      -216
+    ],
+    [
+      -43,
+      -193
+    ],
+    [
+      68,
+      -184
+    ],
+    [
+      58,
+      -73
+    ],
+    [
+      57,
+      -62
+    ],
+    [
+      42,
+      -104
+    ]
+  ],
+  "guto-barba": [
+    [
+      60,
+      -139
+    ],
+    [
+      91,
+      -146
+    ],
+    [
+      72,
+      -117
+    ],
+    [
+      19,
+      -39
+    ],
+    [
+      40,
+      -142
+    ],
+    [
+      38,
+      -184
+    ],
+    [
+      7,
+      -243
+    ],
+    [
+      -23,
+      -242
+    ],
+    [
+      39,
+      -117
+    ],
+    [
+      36,
+      -75
+    ],
+    [
+      40,
+      -20
+    ],
+    [
+      59,
+      -115
+    ]
+  ],
+  "noir-reflexo": [
+    [
+      46,
+      -120
+    ],
+    [
+      76,
+      -139
+    ],
+    [
+      58,
+      -118
+    ],
+    [
+      16,
+      -51
+    ],
+    [
+      32,
+      -153
+    ],
+    [
+      37,
+      -167
+    ],
+    [
+      -2,
+      -228
+    ],
+    [
+      -4,
+      -228
+    ],
+    [
+      -36,
+      -180
+    ],
+    [
+      51,
+      -91
+    ],
+    [
+      48,
+      -70
+    ],
+    [
+      54,
+      -107
+    ]
+  ],
+  "astro-riso": [
+    [
+      40,
+      -110
+    ],
+    [
+      66,
+      -116
+    ],
+    [
+      48,
+      -109
+    ],
+    [
+      34,
+      -77
+    ],
+    [
+      26,
+      -131
+    ],
+    [
+      24,
+      -159
+    ],
+    [
+      1,
+      -204
+    ],
+    [
+      -28,
+      -203
+    ],
+    [
+      -33,
+      -105
+    ],
+    [
+      42,
+      -74
+    ],
+    [
+      22,
+      -39
+    ],
+    [
+      44,
+      -106
+    ]
+  ],
+  "dante-sinal": [
+    [
+      52,
+      -126
+    ],
+    [
+      82,
+      -143
+    ],
+    [
+      64,
+      -120
+    ],
+    [
+      28,
+      -45
+    ],
+    [
+      38,
+      -136
+    ],
+    [
+      32,
+      -163
+    ],
+    [
+      1,
+      -207
+    ],
+    [
+      -4,
+      -207
+    ],
+    [
+      -22,
+      -85
+    ],
+    [
+      44,
+      -73
+    ],
+    [
+      32,
+      -63
+    ],
+    [
+      36,
+      -109
+    ]
+  ],
+  "leo-violeta": [
+    [
+      42,
+      -122
+    ],
+    [
+      83,
+      -123
+    ],
+    [
+      58,
+      -116
+    ],
+    [
+      43,
+      -83
+    ],
+    [
+      20,
+      -146
+    ],
+    [
+      22,
+      -150
+    ],
+    [
+      14,
+      -217
+    ],
+    [
+      -40,
+      -192
+    ],
+    [
+      -11,
+      -106
+    ],
+    [
+      59,
+      -75
+    ],
+    [
+      43,
+      -12
+    ],
+    [
+      40,
+      -99
+    ]
+  ]
+};
+export const GRAB_POSE_STARTS = [0, 3, 6, 10, 14, 18, 23, 29, 35, 40, 46, 58] as const;
+export function grabPoseIndex(frame: number, connected = true): number {
+  if (!connected && frame > 9) return 11;
+  let index = 0;
+  for (let i = 1; i < GRAB_POSE_STARTS.length; i++) if (frame >= GRAB_POSE_STARTS[i]!) index = i;
+  return index;
+}
+/** Body root needed to put the victim torso in the attacker's actual hands. */
+export function grabVictimArtPose(attacker: FighterId, victim: FighterId, frame: number) {
+  const index = grabPoseIndex(frame);
+  const next = Math.min(index + 1, GRAB_POSE_STARTS.length - 1);
+  const span = GRAB_POSE_STARTS[next]! - GRAB_POSE_STARTS[index]!;
+  const progress = span ? Math.max(0, Math.min(1, (frame - GRAB_POSE_STARTS[index]!) / span)) : 0;
+  const blend = progress * progress * (3 - 2 * progress);
+  const from = GRAB_HANDS[attacker][index]!;
+  const to = GRAB_HANDS[attacker][next]!;
+  const handX = from[0] + (to[0] - from[0]) * blend;
+  const handY = from[1] + (to[1] - from[1]) * blend;
+  const angles = [0, 0, 0, 0, 0, 0.55, Math.PI / 2, Math.PI / 2, 1.85, 2.3, 2.3, 2.3];
+  const rotation = angles[index]! + (angles[next]! - angles[index]!) * blend;
+  const torso = victim === 'guto-barba' ? 112 : 94;
+  return { x: handX - Math.sin(rotation) * torso, y: Math.min(0, handY + Math.cos(rotation) * torso), rotation };
+}

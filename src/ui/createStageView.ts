@@ -7,6 +7,7 @@ import { KitchenStageView } from './KitchenStageView';
 export interface StageView {
   update(delta: number, playerOneX?: number, playerTwoX?: number): void;
   snapshot?(): unknown;
+  setFinisherFrame?(frame: number | null): void;
 }
 
 export function createStageView(scene: Phaser.Scene, arena: ArenaDefinition['id']): StageView {

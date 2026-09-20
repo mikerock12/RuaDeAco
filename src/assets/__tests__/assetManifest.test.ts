@@ -73,12 +73,13 @@ describe('assetManifest', () => {
           ['abraco-glacial-freeze.png', 8],
           ['abraco-glacial-finish.png', 8],
           ['abraco-glacial-effect.png', 12],
+          ['universal-grab-v2.png', 12],
         ]);
         const victimFrames = ['grabbed-front.png', 'grabbed-lifted.png'].includes(file)
           ? 8
           : undefined;
         const expectedFrames = variableFrames.get(file) ?? victimFrames ?? 4;
-        const expectedSheetSize = fighter.fighterId === 'guto-barba' && expectedFrames !== 4
+        const expectedSheetSize = fighter.fighterId === 'guto-barba' && expectedFrames !== 4 && file !== 'universal-grab-v2.png'
           ? 256
           : frameSize;
         expect(sheet.layout).toBe('horizontal');
@@ -122,7 +123,7 @@ describe('assetManifest', () => {
       'air-light-backward.png', 'air-heavy-backward.png',
       'block-standing.png', 'block-crouching.png', 'hit.png', 'knockdown.png', 'wake-up.png',
       'grabbed-front.png', 'grabbed-lifted.png', 'thrown.png', 'frozen.png',
-      'victory.png', 'knockout.png',
+      'victory.png', 'knockout.png', 'universal-grab-v2.png',
     ];
     const names = (fighter: NonNullable<typeof rafa>): string[] =>
       [...Object.values(fighter.animations), ...fighter.effects]

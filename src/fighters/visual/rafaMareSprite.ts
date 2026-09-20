@@ -1,3 +1,4 @@
+import { universalGrabSprite } from './universalGrabSprite';
 import type {
   FighterAnimationAsset,
   FighterEffectAsset,
@@ -112,6 +113,7 @@ export const rafaMareSpriteAsset: FighterSpriteAsset = {
   ],
   movePhases: {},
   animations: {
+    universalGrab: universalGrabSprite('rafa-mare', 256),
     idle: animation('idle', 6, -1),
     walk: animation('walk', 10, -1),
     walkBackward: animation('walkBackward', 8, -1),

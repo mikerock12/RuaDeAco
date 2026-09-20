@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { FINISH_THROW, FINISH_END, finisherAttackerFrame, finisherVictimPose } from '../combat/stageFinisher';
 import { CpuController } from '../ai/CpuController';
 import { audioManager } from '../audio/AudioManager';
 import { MUSIC_TRACK_BY_ARENA } from '../audio/musicCatalog';
@@ -90,7 +91,7 @@ export class FightScene extends Phaser.Scene {
     void audioManager.playMusic(MUSIC_TRACK_BY_ARENA[selection.arena]);
     const playerOne = getFighterDefinition(selection.playerOne);
     const playerTwo = getFighterDefinition(selection.playerTwo);
-    this.world = new CombatWorld(playerOne, playerTwo, selection.mode);
+    this.world = new CombatWorld(playerOne, playerTwo, selection.mode, selection.arena);
     if (selection.mode === 'online') {
       const start = onlineSession.snapshot.start;
       const slot = onlineSession.snapshot.slot;
@@ -280,8 +281,22 @@ export class FightScene extends Phaser.Scene {
     this.combatFeedback.update(delta, this.world.fighters, this.world.paused || this.capturePaused);
     const snapshot = this.world.snapshot();
     const renderAlpha = this.capturePaused ? 1 : this.runner.alpha;
-    this.views?.[0].sync(snapshot.fighters[0], renderAlpha);
-    this.views?.[1].sync(snapshot.fighters[1], renderAlpha);
+    const cinematic = snapshot.finisherWinner !== null && (snapshot.phase === 'stageFinish'
+      || snapshot.finisherCompleted);
+    this.stageView.setFinisherFrame?.(cinematic ? Math.min(FINISH_END, snapshot.phaseFrame) : snapshot.phase === 'finishReady' ? 0 : null);
+    for (const i of [0, 1] as const) {
+      const victim = cinematic && i !== snapshot.finisherWinner;
+      const f = snapshot.phaseFrame;
+      const winner = snapshot.fighters[snapshot.finisherWinner ?? 0];
+      const pose = finisherVictimPose(f, winner.x, winner.facing, winner.id, snapshot.fighters[i].id);
+      this.views?.[i].setVisible(!victim || pose.visible);
+      let fighter = snapshot.fighters[i];
+      if (cinematic && !victim && f < 84) fighter = { ...fighter, poseMoveId: 'universalGrab',
+        poseState: 'heavyAttack', poseStateFrame: finisherAttackerFrame(f), poseMoveConnected: 'hit' };
+      this.views?.[i].sync(fighter, renderAlpha, victim ? {
+        scale: pose.scale, depth: f >= FINISH_THROW ? -23.5 : 22, shadow: false,
+      } : undefined);
+    }
     this.drawProjectiles(snapshot);
     this.drawDebug(snapshot);
     this.drawDebugOverlay();
@@ -405,6 +420,11 @@ export class FightScene extends Phaser.Scene {
     if (event.type === 'special' || event.type === 'passive') audioManager.play('special');
     if (event.type === 'roundStart' || event.type === 'fight') audioManager.play('round');
     if (event.type === 'knockout') audioManager.play('ko');
+    if (event.type === 'finishReady') audioManager.play('dread');
+    if (event.type === 'finishThrow') audioManager.play('dread');
+    if (event.type === 'monsterRoar') audioManager.play('monsterRoar');
+    if (event.type === 'finishSplash') audioManager.play('waterCrash');
+    if (event.type === 'monsterBite') audioManager.play('boneCrunch');
     if (event.type === 'matchEnd') this.scheduleResult();
   }
 

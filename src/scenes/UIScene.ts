@@ -509,6 +509,10 @@ export class UIScene extends Phaser.Scene {
       banner = snapshot.phaseFrame < 60
         ? { text: 'ROUND ' + snapshot.round, tint: PALETTE.ivory }
         : { text: 'FIGHT', tint: PALETTE.gold };
+    } else if (snapshot.phase === 'finishReady') {
+      banner = { text: 'FINALIZE!  FRACO + FORTE  ' + Math.ceil((480 - snapshot.phaseFrame) / 60), tint: PALETTE.danger };
+    } else if (snapshot.phase === 'stageFinish') {
+      banner = snapshot.phaseFrame >= 238 ? { text: 'O CAIS COBRA SUA ALMA', tint: PALETTE.danger } : null;
     } else if (snapshot.phase === 'roundOver') {
       const winner = snapshot.fighters.find((fighter) => fighter.state === 'victory');
       const knockout = snapshot.timeSeconds > 0;
@@ -532,6 +536,9 @@ export class UIScene extends Phaser.Scene {
       return;
     }
 
+    const finisherBanner = snapshot.phase === 'finishReady' || snapshot.phase === 'stageFinish';
+    this.bannerBackground?.setY(finisherBanner ? 78 : 156);
+    this.bannerText?.setY(finisherBanner ? 78 : 156);
     this.bannerBackground?.setVisible(true);
     this.bannerText?.setVisible(true).setText(banner.text).setTint(banner.tint);
     if (banner.text === this.previousBanner || !this.bannerText) return;

@@ -1,3 +1,4 @@
+import { universalGrabSprite } from './universalGrabSprite';
 import type {
   FighterAnimationAsset,
   FighterAnimationId,
@@ -7,6 +8,7 @@ import type {
 import { FIGHTER_OPAQUE_BOTTOM_PADDING } from './groundContact';
 
 const files: Readonly<Record<FighterAnimationId, string>> = {
+  universalGrab: 'universal-grab-v2.png',
   idle: 'idle.png',
   walk: 'corrida.png',
   walkBackward: 'walk-backward.png',
@@ -171,6 +173,7 @@ export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
     ],
   },
   animations: {
+    universalGrab: universalGrabSprite('guto-barba', 288),
     idle: animation('idle', 5, -1),
     walk: animation('walk', 7, -1),
     walkBackward: animation('walkBackward', 6, -1),

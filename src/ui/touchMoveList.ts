@@ -22,7 +22,7 @@ export interface TouchMovePage {
 export function buildTouchMovePages(fighter: FighterDefinition): readonly TouchMovePage[] {
   const moves = Object.values(fighter.moves);
   const label = (move: MoveDefinition): string => toPixelFontText(move.label).toUpperCase();
-  const ground = moves.filter((move) => !move.air && move.state !== 'specialAttack');
+  const ground = moves.filter((move) => !move.air && !move.grab && move.state !== 'specialAttack');
   const air = moves.filter((move) => move.air && move.jumpTrajectory === 'neutral');
   const specials = moves.filter((move) => !move.air && move.state === 'specialAttack');
   return [
@@ -34,7 +34,7 @@ export function buildTouchMovePages(fighter: FighterDefinition): readonly TouchM
         'L = FRACO    H = FORTE    S = ESPECIAL',
         'SEGURE D PARA BLOQUEAR EM PE.',
         'BAIXO + D BLOQUEIA GOLPES BAIXOS.',
-        'FRENTE E TRAS ACOMPANHAM O RIVAL.',
+        'L+H   AGARRAR E ESMAGAR (JUNTOS).',
       ],
     },
     { title: 'NO CHAO', lines: ground.map((move) => touchMoveCommand(move) + '   ' + label(move)) },

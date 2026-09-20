@@ -170,7 +170,7 @@ export function buildPauseMoveList(
   const controls = controlLabelsFor(device, player, config, options.gamepadFamily ?? 'generic');
   const moves = Object.values(definition.moves);
   const ground = moves
-    .filter((move) => !move.air && move.state !== 'specialAttack')
+    .filter((move) => !move.air && !move.grab && move.state !== 'specialAttack')
     .sort((left, right) => groundRank(left) - groundRank(right));
   const air = moves
     .filter((move) => move.air && move.jumpTrajectory === 'neutral')
@@ -188,11 +188,11 @@ export function buildPauseMoveList(
       { text: 'MOVIMENTO E DEFESA', tone: 'section' },
       { text: controls.movement, tone: 'controls' },
       { text: controls.buttons, tone: 'controls' },
+      ...(definition.moves.universalGrab ? [moveLine(definition.moves.universalGrab, controls)] : []),
       { text: 'ATAQUES NO CHAO', tone: 'section' },
       ...ground.map((move) => moveLine(move, controls)),
       { text: 'ATAQUES NO AR', tone: 'section' },
       ...air.map((move) => moveLine(move, controls, true)),
-      { text: 'MUDA COM A DIRECAO DO PULO', tone: 'note' },
       { text: 'ESPECIAIS', tone: 'section' },
       ...specials.map((move) => moveLine(move, controls)),
     ],

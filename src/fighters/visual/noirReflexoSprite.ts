@@ -1,3 +1,4 @@
+import { universalGrabSprite } from './universalGrabSprite';
 import type {
   FighterAnimationAsset,
   FighterEffectAsset,
@@ -131,6 +132,7 @@ export const noirReflexoSpriteAsset: FighterSpriteAsset = {
   ],
   movePhases: {},
   animations: {
+    universalGrab: universalGrabSprite('noir-reflexo', 256),
     idle: animation('idle', 8, -1),
     walk: animation('walk', 12, -1),
     walkBackward: animation('walkBackward', 10, -1),

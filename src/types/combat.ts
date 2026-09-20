@@ -7,6 +7,7 @@ export type FighterId =
   | 'leo-violeta';
 
 export type FighterState =
+  | 'dizzy'
   | 'idle'
   | 'walkForward'
   | 'walkBackward'
@@ -63,6 +64,7 @@ export interface InputFrame {
 }
 
 export interface InputCommand {
+  readonly simultaneous?: boolean;
   readonly directions?: readonly DirectionToken[];
   readonly buttons: readonly CombatButton[];
   readonly maxGapFrames: number;
@@ -301,6 +303,11 @@ export interface WorldRect extends LocalRect {
 
 export interface CombatEvent {
   readonly type:
+    | 'finishReady'
+    | 'finishThrow'
+    | 'monsterRoar'
+    | 'finishSplash'
+    | 'monsterBite'
     | 'hit'
     | 'blocked'
     | 'special'

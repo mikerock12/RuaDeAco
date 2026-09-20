@@ -1,3 +1,4 @@
+import { universalGrab } from './universalGrab';
 import type {
   FighterDefinition,
   HitLevel,
@@ -143,6 +144,7 @@ export const noirReflexo: FighterDefinition = {
     },
   },
   moves: {
+    universalGrab,
     lightPunch: normal({
       id: 'lightPunch', label: 'Toque de precisão', animation: 'standingLight',
       button: 'light', state: 'lightAttack', level: 'high', damage: 40,

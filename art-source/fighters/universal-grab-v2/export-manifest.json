@@ -1,0 +1,1089 @@
+{
+  "rafa-mare": {
+    "source": "art-source/fighters/universal-grab-v2/rafa-mare-keyed.png",
+    "file": "public/assets/fighters/rafa-mare/universal-grab-v2.png",
+    "sourceSha256": "4e407f4f42cf793a9758add279e94a76b37b4c56e6ae2a050ea502ac27ed46f1",
+    "outputSha256": "7b9b20c747053a8d4bd13e4f15be95f6ca63b4ad5a2ab60c4e153d01a5c4009c",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "frameWidth": 256,
+    "frameHeight": 256,
+    "frames": 12,
+    "transforms": [
+      {
+        "sourceBounds": {
+          "left": 82,
+          "top": 43,
+          "right": 288,
+          "bottom": 322
+        },
+        "center": 178.5,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 449,
+          "top": 44,
+          "right": 705,
+          "bottom": 322
+        },
+        "center": 547,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 801,
+          "top": 44,
+          "right": 1011,
+          "bottom": 322
+        },
+        "center": 899.5,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1162,
+          "top": 93,
+          "right": 1358,
+          "bottom": 322
+        },
+        "center": 1260,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 96,
+          "top": 397,
+          "right": 287,
+          "bottom": 697
+        },
+        "center": 191.5,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 458,
+          "top": 394,
+          "right": 645,
+          "bottom": 697
+        },
+        "center": 551.5,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 819,
+          "top": 338,
+          "right": 990,
+          "bottom": 697
+        },
+        "center": 904.5,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1159,
+          "top": 375,
+          "right": 1352,
+          "bottom": 697
+        },
+        "center": 1268,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 66,
+          "top": 721,
+          "right": 312,
+          "bottom": 1033
+        },
+        "center": 184,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 402,
+          "top": 779,
+          "right": 653,
+          "bottom": 1034
+        },
+        "center": 527.5,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 755,
+          "top": 817,
+          "right": 1003,
+          "bottom": 1034
+        },
+        "center": 879,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1164,
+          "top": 764,
+          "right": 1372,
+          "bottom": 1035
+        },
+        "center": 1265.5,
+        "baseline": 249,
+        "scale": 0.6285714285714286,
+        "rootOffset": 0
+      }
+    ]
+  },
+  "guto-barba": {
+    "source": "art-source/fighters/universal-grab-v2/guto-barba.png",
+    "file": "public/assets/fighters/guto-barba/universal-grab-v2.png",
+    "sourceSha256": "283e52c16da6df3b1b937cba61b75d6cf045a0665e16255b822281ea5d4827f8",
+    "outputSha256": "cbe3fc8148375bd130a075d940144a4a785d56edcfaa5ee3d1082f2d09bd6630",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "frameWidth": 288,
+    "frameHeight": 288,
+    "frames": 12,
+    "transforms": [
+      {
+        "sourceBounds": {
+          "left": 69,
+          "top": 49,
+          "right": 303,
+          "bottom": 325
+        },
+        "center": 178,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 408,
+          "top": 49,
+          "right": 698,
+          "bottom": 325
+        },
+        "center": 522.5,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 776,
+          "top": 61,
+          "right": 1024,
+          "bottom": 325
+        },
+        "center": 891.5,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1147,
+          "top": 108,
+          "right": 1384,
+          "bottom": 325
+        },
+        "center": 1265.5,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 66,
+          "top": 410,
+          "right": 291,
+          "bottom": 702
+        },
+        "center": 178.5,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 431,
+          "top": 404,
+          "right": 657,
+          "bottom": 702
+        },
+        "center": 544,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 790,
+          "top": 359,
+          "right": 1020,
+          "bottom": 702
+        },
+        "center": 905,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1159,
+          "top": 357,
+          "right": 1386,
+          "bottom": 702
+        },
+        "center": 1272.5,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 60,
+          "top": 760,
+          "right": 296,
+          "bottom": 1032
+        },
+        "center": 172.5,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 408,
+          "top": 780,
+          "right": 657,
+          "bottom": 1032
+        },
+        "center": 532.5,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 774,
+          "top": 838,
+          "right": 1023,
+          "bottom": 1032
+        },
+        "center": 898.5,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1148,
+          "top": 751,
+          "right": 1383,
+          "bottom": 1032
+        },
+        "center": 1259.5,
+        "baseline": 281,
+        "scale": 0.7292418772563177,
+        "rootOffset": 0
+      }
+    ]
+  },
+  "noir-reflexo": {
+    "source": "art-source/fighters/universal-grab-v2/noir-reflexo.png",
+    "file": "public/assets/fighters/noir-reflexo/universal-grab-v2.png",
+    "sourceSha256": "8052e91820c8965cb0418d6865390b70eb1d41a28a543719f098b892ed94177d",
+    "outputSha256": "ce292f9f3e118cd4d806686f336d3a47f6bec7df9b1314c8ea45e8579bb14057",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "frameWidth": 256,
+    "frameHeight": 256,
+    "frames": 12,
+    "transforms": [
+      {
+        "sourceBounds": {
+          "left": 72,
+          "top": 65,
+          "right": 302,
+          "bottom": 319
+        },
+        "center": 173.5,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 433,
+          "top": 61,
+          "right": 671,
+          "bottom": 319
+        },
+        "center": 534.5,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 791,
+          "top": 68,
+          "right": 1003,
+          "bottom": 319
+        },
+        "center": 893.5,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1158,
+          "top": 118,
+          "right": 1369,
+          "bottom": 319
+        },
+        "center": 1263.5,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 75,
+          "top": 418,
+          "right": 280,
+          "bottom": 698
+        },
+        "center": 177.5,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 440,
+          "top": 420,
+          "right": 640,
+          "bottom": 698
+        },
+        "center": 540,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 814,
+          "top": 352,
+          "right": 1008,
+          "bottom": 698
+        },
+        "center": 911,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1181,
+          "top": 354,
+          "right": 1374,
+          "bottom": 698
+        },
+        "center": 1277.5,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 75,
+          "top": 743,
+          "right": 292,
+          "bottom": 1023
+        },
+        "center": 183.5,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 431,
+          "top": 782,
+          "right": 646,
+          "bottom": 1023
+        },
+        "center": 538.5,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 794,
+          "top": 839,
+          "right": 996,
+          "bottom": 1023
+        },
+        "center": 895,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1156,
+          "top": 767,
+          "right": 1384,
+          "bottom": 1023
+        },
+        "center": 1264,
+        "baseline": 249,
+        "scale": 0.6901960784313725,
+        "rootOffset": 0
+      }
+    ]
+  },
+  "astro-riso": {
+    "source": "art-source/fighters/universal-grab-v2/astro-riso.png",
+    "file": "public/assets/fighters/astro-riso/universal-grab-v2.png",
+    "sourceSha256": "bf4ec4d26b0e7c5592cc5c45b32594c7621ced9e8d78df6817809d5ff869b542",
+    "outputSha256": "1118b377d18d89fe3d8dd0b4c7c869391b952e029ddbdd652d100e164311a07c",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "frameWidth": 256,
+    "frameHeight": 256,
+    "frames": 12,
+    "transforms": [
+      {
+        "sourceBounds": {
+          "left": 70,
+          "top": 48,
+          "right": 283,
+          "bottom": 315
+        },
+        "center": 165,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 421,
+          "top": 54,
+          "right": 649,
+          "bottom": 315
+        },
+        "center": 522,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 788,
+          "top": 54,
+          "right": 993,
+          "bottom": 315
+        },
+        "center": 890.5,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1166,
+          "top": 94,
+          "right": 1355,
+          "bottom": 314
+        },
+        "center": 1260.5,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 72,
+          "top": 410,
+          "right": 256,
+          "bottom": 705
+        },
+        "center": 164,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 442,
+          "top": 399,
+          "right": 624,
+          "bottom": 706
+        },
+        "center": 533,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 812,
+          "top": 350,
+          "right": 994,
+          "bottom": 706
+        },
+        "center": 903,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1188,
+          "top": 350,
+          "right": 1369,
+          "bottom": 705
+        },
+        "center": 1278.5,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 68,
+          "top": 754,
+          "right": 283,
+          "bottom": 1043
+        },
+        "center": 175.5,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 418,
+          "top": 786,
+          "right": 651,
+          "bottom": 1043
+        },
+        "center": 534.5,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 802,
+          "top": 849,
+          "right": 1019,
+          "bottom": 1043
+        },
+        "center": 910.5,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1160,
+          "top": 759,
+          "right": 1384,
+          "bottom": 1044
+        },
+        "center": 1260,
+        "baseline": 249,
+        "scale": 0.5932835820895522,
+        "rootOffset": 1
+      }
+    ]
+  },
+  "dante-sinal": {
+    "source": "art-source/fighters/universal-grab-v2/dante-sinal.png",
+    "file": "public/assets/fighters/dante-sinal/universal-grab-v2.png",
+    "sourceSha256": "a74a3a0c82fe0e0bf2cc1b3d95e412fa72c78d79edeafe868efa062e4562cfc7",
+    "outputSha256": "973749fa215105d167a64c624a9125a614ed17d2b780a68abaf47ada3bf283ef",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "frameWidth": 256,
+    "frameHeight": 256,
+    "frames": 12,
+    "transforms": [
+      {
+        "sourceBounds": {
+          "left": 64,
+          "top": 68,
+          "right": 283,
+          "bottom": 338
+        },
+        "center": 151.5,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 423,
+          "top": 65,
+          "right": 653,
+          "bottom": 338
+        },
+        "center": 511,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 800,
+          "top": 65,
+          "right": 998,
+          "bottom": 338
+        },
+        "center": 888,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1180,
+          "top": 116,
+          "right": 1357,
+          "bottom": 338
+        },
+        "center": 1268.5,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 80,
+          "top": 434,
+          "right": 254,
+          "bottom": 711
+        },
+        "center": 167,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 451,
+          "top": 428,
+          "right": 619,
+          "bottom": 711
+        },
+        "center": 535,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 832,
+          "top": 378,
+          "right": 999,
+          "bottom": 711
+        },
+        "center": 915.5,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1210,
+          "top": 375,
+          "right": 1373,
+          "bottom": 711
+        },
+        "center": 1292.5,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 60,
+          "top": 788,
+          "right": 259,
+          "bottom": 1045
+        },
+        "center": 159.5,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 418,
+          "top": 804,
+          "right": 633,
+          "bottom": 1045
+        },
+        "center": 525.5,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 800,
+          "top": 825,
+          "right": 1011,
+          "bottom": 1045
+        },
+        "center": 905.5,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1178,
+          "top": 777,
+          "right": 1363,
+          "bottom": 1045
+        },
+        "center": 1267.5,
+        "baseline": 249,
+        "scale": 0.6494464944649446,
+        "rootOffset": 0
+      }
+    ]
+  },
+  "leo-violeta": {
+    "source": "art-source/fighters/universal-grab-v2/leo-violeta.png",
+    "file": "public/assets/fighters/leo-violeta/universal-grab-v2.png",
+    "sourceSha256": "cac45fe2405f1ab860602b7d08a22cf9f060807bed6a1d3a76409b4ea463252b",
+    "outputSha256": "f7f939a4a95f5762102289b17c24fbf37233ef2771c7c49efa74167e0d9ca04c",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "frameWidth": 256,
+    "frameHeight": 256,
+    "frames": 12,
+    "transforms": [
+      {
+        "sourceBounds": {
+          "left": 76,
+          "top": 47,
+          "right": 269,
+          "bottom": 314
+        },
+        "center": 167.5,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 426,
+          "top": 53,
+          "right": 689,
+          "bottom": 316
+        },
+        "center": 534,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 790,
+          "top": 52,
+          "right": 996,
+          "bottom": 314
+        },
+        "center": 890,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1160,
+          "top": 100,
+          "right": 1360,
+          "bottom": 313
+        },
+        "center": 1260,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 89,
+          "top": 376,
+          "right": 273,
+          "bottom": 689
+        },
+        "center": 181,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 449,
+          "top": 393,
+          "right": 634,
+          "bottom": 689
+        },
+        "center": 541.5,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 806,
+          "top": 345,
+          "right": 1012,
+          "bottom": 691
+        },
+        "center": 909,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1189,
+          "top": 376,
+          "right": 1374,
+          "bottom": 689
+        },
+        "center": 1281.5,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 76,
+          "top": 751,
+          "right": 294,
+          "bottom": 1022
+        },
+        "center": 185,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 416,
+          "top": 778,
+          "right": 651,
+          "bottom": 1020
+        },
+        "center": 533,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 784,
+          "top": 847,
+          "right": 1006,
+          "bottom": 1017
+        },
+        "center": 895,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      },
+      {
+        "sourceBounds": {
+          "left": 1172,
+          "top": 749,
+          "right": 1364,
+          "bottom": 1021
+        },
+        "center": 1265.5,
+        "baseline": 249,
+        "scale": 0.6567164179104478,
+        "rootOffset": 0
+      }
+    ]
+  },
+  "monster": {
+    "source": "art-source/stages/cais-finisher-v2/monster.png",
+    "file": "public/assets/stages/cais-da-cidade/remaster/monster-finisher-v2.png",
+    "sourceSha256": "aab2243aac5094a1ed62b67d70186644962b9655aa165035997c4d791c7773fa",
+    "outputSha256": "310ecaf00e7fef3a8297476364d303cfc446b00ea1f545194aaf49f67f4fb972",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "frameWidth": 192,
+    "frameHeight": 192,
+    "frames": 12,
+    "transforms": [
+      {
+        "sourceBounds": {
+          "left": 39,
+          "top": 128,
+          "right": 325,
+          "bottom": 335
+        },
+        "center": 175,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 414,
+          "top": 55,
+          "right": 693,
+          "bottom": 335
+        },
+        "center": 553.5,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 778,
+          "top": 45,
+          "right": 1047,
+          "bottom": 335
+        },
+        "center": 912.5,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 1133,
+          "top": 33,
+          "right": 1406,
+          "bottom": 335
+        },
+        "center": 1269.5,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 40,
+          "top": 352,
+          "right": 313,
+          "bottom": 698
+        },
+        "center": 176.5,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 355,
+          "top": 467,
+          "right": 755,
+          "bottom": 698
+        },
+        "center": 482,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 749,
+          "top": 475,
+          "right": 1049,
+          "bottom": 699
+        },
+        "center": 886,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 1114,
+          "top": 480,
+          "right": 1415,
+          "bottom": 699
+        },
+        "center": 1251,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 43,
+          "top": 736,
+          "right": 320,
+          "bottom": 1042
+        },
+        "center": 181.5,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 400,
+          "top": 741,
+          "right": 685,
+          "bottom": 1042
+        },
+        "center": 542.5,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 752,
+          "top": 784,
+          "right": 1044,
+          "bottom": 1041
+        },
+        "center": 893.5,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      },
+      {
+        "sourceBounds": {
+          "left": 1104,
+          "top": 847,
+          "right": 1423,
+          "bottom": 1041
+        },
+        "center": 1234.5,
+        "baseline": 189,
+        "scale": 0.4495677233429395
+      }
+    ]
+  }
+}

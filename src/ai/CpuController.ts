@@ -67,6 +67,13 @@ export class CpuController {
   }
 
   sample(snapshot: CombatWorldSnapshot): InputFrame {
+    if (snapshot.phase === 'finishReady' && snapshot.finisherWinner === this.playerIndex) {
+      this.resetPlanning();
+      const own = snapshot.fighters[this.playerIndex], rival = snapshot.fighters[this.playerIndex === 0 ? 1 : 0];
+      const actions = new Set<InputAction>(snapshot.phaseFrame < 60 ? [] : Math.abs(own.x - rival.x) > 74
+        ? [rival.x > own.x ? 'right' : 'left'] : snapshot.phaseFrame % 30 < 5 ? ['light', 'heavy'] : []);
+      const input = createInputFrame(actions, this.previousActions); this.previousActions = actions; return input;
+    }
     if (snapshot.phase !== 'active') {
       this.resetPlanning();
       return this.releaseInput();

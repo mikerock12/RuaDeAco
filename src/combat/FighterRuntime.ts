@@ -249,7 +249,7 @@ export class FighterRuntime {
     }
     this.frozen = false;
 
-    if (this.state === 'knockout' || this.state === 'victory') return;
+    if (this.state === 'knockout' || this.state === 'victory' || this.state === 'dizzy') return;
 
     // O mundo de combate posiciona a vítima pela âncora do atacante. Enquanto
     // presa, ela não processa input, movimento, física ou golpes próprios.
@@ -276,6 +276,16 @@ export class FighterRuntime {
       return;
     }
 
+    // Up to three startup frames tolerate two fingers/keys arriving separately.
+    if (this.activeMove && !this.activeMove.air && this.stateFrame <= 3
+      && this.moveConnected === 'none' && this.activeMove.command.buttons.length === 1
+      && ['light', 'heavy'].includes(this.activeMove.command.buttons[0]!)
+      && input.held.has('light') && input.held.has('heavy')
+      && (input.pressed.has('light') || input.pressed.has('heavy'))
+      && this.definition.moves.universalGrab) {
+      this.startMove(this.definition.moves.universalGrab);
+      return;
+    }
     if (this.activeMove) {
       const cancelWindow = this.activeMove.cancels?.find(({ range, condition }) =>
         this.stateFrame >= range.from
@@ -369,7 +379,7 @@ export class FighterRuntime {
   finishFrame(): void {
     this.x = Math.max(STAGE_LEFT, Math.min(STAGE_RIGHT, this.x));
     if (this.frozen) return;
-    if (this.state === 'knockout' || this.state === 'victory') {
+    if (this.state === 'knockout' || this.state === 'victory' || this.state === 'dizzy') {
       this.stateFrame += 1;
       return;
     }
@@ -724,7 +734,7 @@ export class FighterRuntime {
     this.meter = applyEnergy(0, amount, MAX_METER);
   }
 
-  setMatchState(state: 'victory' | 'knockout'): void {
+  setMatchState(state: 'victory' | 'knockout' | 'dizzy' | 'idle'): void {
     this.settleMatchPresentation();
     this.transition(state);
   }
@@ -989,6 +999,8 @@ export class FighterRuntime {
     this.knockdownPending = false;
     this.frozen = false;
     this.moveConnected = 'none';
+    this.invulnerableFrames = 0;
+    this.commandBuffer.clear();
   }
 
   private transition(next: FighterState): void {

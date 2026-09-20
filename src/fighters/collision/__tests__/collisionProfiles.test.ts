@@ -42,7 +42,7 @@ describe('metadata raster/colisão v1', () => {
       const profile = getFighterCollisionProfile(fighter.id);
       expect(profile?.version).toBe(1);
       const normals = Object.values(fighter.moves)
-        .filter(({ animation }) => NORMAL_ANIMATIONS.has(animation));
+        .filter(({ animation, grab }) => !grab && NORMAL_ANIMATIONS.has(animation));
       expect(normals, fighter.id).toHaveLength(12);
       normalCount += normals.length;
 

@@ -5,7 +5,12 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
-> Última revisão: **09/09/2026**.
+> Última revisão: **14/09/2026**.
+>
+> Implementação local, ainda sem publicação: agarrão universal F+G (touch L+H)
+> nos seis lutadores e janela de finalização após a segunda derrota no Cais.
+> Detalhes e regras: [docs/AGARRAO_FINALIZACAO_CAIS.md](docs/AGARRAO_FINALIZACAO_CAIS.md).
+> Motor online v2 impede mistura com clientes anteriores. Sem mudança no Worker.
 >
 > Remaster de menus, HUD e controles: [docs/REMASTER_UI_CONTROLES.md](docs/REMASTER_UI_CONTROLES.md).
 > HUD 31,25% menor, analógico radial com dead zone de 18%, diamante H/L/S/D,
@@ -350,3 +355,12 @@ grandes alterações, lembrar que o backup pode ser atualizado.
 
 Registrar aqui também tentativas que falharam, para que ninguém repita uma
 solução já rejeitada.
+
+
+### Continuação local: arte do agarrão e finalização (14/09/2026)
+- Seis folhas próprias de 12 poses para universalGrab; monstro com 12 poses exclusivas.
+- Fontes, prompts, landmarks e manifesto em art-source/fighters/universal-grab-v2.
+- Reexportação: npm run assets:grab. Auditoria verifica hashes e raster.
+- Contato da vítima interpolado; finalização com arco ao lago, captura e submersão.
+- Motor lockstep-v3-grab-art: novas posições determinísticas requerem clientes da mesma versão.
+- Alterações locais, sem commit/push/publicação neste pedido. Consulte docs/AGARRAO_FINALIZACAO_CAIS.md.

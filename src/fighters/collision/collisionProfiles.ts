@@ -63,7 +63,7 @@ function poses(
 }
 
 function moves(source: MoveTupleProfile): FighterCollisionProfile['moves'] {
-  return Object.fromEntries(Object.entries(source).map(([moveId, phases]) => [
+  return Object.fromEntries(Object.entries({ ...source, universalGrab: [[[0, -120, 58, -5]]] } as MoveTupleProfile).map(([moveId, phases]) => [
     moveId,
     phases.map((boxes) => boxes.map(rect)),
   ]));

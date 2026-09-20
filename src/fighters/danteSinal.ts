@@ -1,3 +1,4 @@
+import { universalGrab } from './universalGrab';
 import type { FighterDefinition } from '../types/combat';
 import { CROUCHING_HURTBOXES, STANDARD_ANIMATIONS, STANDING_HURTBOXES } from './shared';
 
@@ -93,6 +94,7 @@ export const danteSinal: FighterDefinition = {
     },
   },
   moves: {
+    universalGrab,
     lightPunch: {
       id: 'lightPunch',
       label: 'Soco rápido',

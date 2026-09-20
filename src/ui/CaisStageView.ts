@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { FINISH_SPLASH, FINISH_BITE, finisherMonsterPose } from '../combat/stageFinisher';
 import { ASSET_MANIFEST } from '../assets/assetManifest';
 import { CaisAmbience, type CaisActorPose } from './caisAmbience';
 import { CAIS_STAGE_DEPTHS as DEPTH, CAIS_STAGE_LAYOUT as LAYOUT } from './stagePresentation';
@@ -8,6 +9,8 @@ export class CaisStageView {
   private readonly moon: Phaser.GameObjects.Image;
   private readonly moonGlows: Phaser.GameObjects.Ellipse[] = [];
   private skyOffset = 0;
+  private finisherFrame: number | null = null;
+  private readonly dread: Phaser.GameObjects.Rectangle;
   private readonly reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   private readonly water: Phaser.GameObjects.TileSprite[];
   private readonly reflections: Phaser.GameObjects.Rectangle[];
@@ -15,6 +18,7 @@ export class CaisStageView {
   private readonly witch: Phaser.GameObjects.Image;
   private readonly ship: Phaser.GameObjects.Image;
   private readonly monster: Phaser.GameObjects.Sprite;
+  private readonly finisherMonster: Phaser.GameObjects.Sprite;
   private readonly fire: Phaser.GameObjects.Sprite;
   private readonly splash: Phaser.GameObjects.Sprite;
   private readonly beam: Phaser.GameObjects.Graphics;
@@ -25,6 +29,7 @@ export class CaisStageView {
 
   constructor(scene: Phaser.Scene, private readonly ambience = new CaisAmbience()) {
     const assets = ASSET_MANIFEST.caisRemaster;
+    this.dread = scene.add.rectangle(320, 180, 640, 360, 0x080016, 0).setDepth(14).setName('cais-finisher-dread');
     scene.add.rectangle(320, 180, 640, 360, 0x040d20).setDepth(DEPTH.background - 1);
     scene.add.image(320, 180 + LAYOUT.backgroundOffsetY, assets.background.key)
       .setDepth(DEPTH.background).setName('cais-remastered-background');
@@ -48,6 +53,7 @@ export class CaisStageView {
     this.witch = scene.add.image(0, 0, assets.witch.key).setDepth(DEPTH.witch).setName('cais-flying-witch');
     this.ship = scene.add.image(0, 0, assets.ship.key).setOrigin(0.5, 1).setDepth(DEPTH.ship).setName('cais-pirate-ship');
     this.monster = scene.add.sprite(0, 0, assets.monster.key).setOrigin(0.5, 1).setDepth(DEPTH.monster).setName('cais-sea-monster');
+    this.finisherMonster = scene.add.sprite(0, 0, assets.finisherMonster.key).setOrigin(0.5, 1).setDepth(DEPTH.monster).setVisible(false).setName('cais-finisher-monster');
     this.fire = scene.add.sprite(0, 0, assets.fire.key).setOrigin(0.5, 1).setDepth(DEPTH.fire).setName('cais-monster-fire');
     this.splash = scene.add.sprite(0, 0, assets.splash.key).setOrigin(0.5, 1).setDepth(DEPTH.splash).setName('cais-monster-splash');
     this.beam = scene.add.graphics().setDepth(DEPTH.beam).setName('cais-abduction-beam');
@@ -57,7 +63,7 @@ export class CaisStageView {
   }
 
   update(delta: number, playerOneX = 220, playerTwoX = 420): void {
-    this.ambience.update(delta, playerOneX, playerTwoX);
+    if (this.finisherFrame === null) this.ambience.update(delta, playerOneX, playerTwoX);
     const a = this.ambience, time = a.elapsed;
     // Three-pixel sky parallax; dock and fighter contact plane stay fixed.
     const target = this.reducedMotion ? 0 : Phaser.Math.Clamp((320 - (playerOneX + playerTwoX) / 2) * 0.025, -3, 3);
@@ -90,6 +96,46 @@ export class CaisStageView {
     this.heatReflection.setPosition(Math.round(a.monster.x), 255).setAlpha(a.fireStrength * 0.12);
     this.floorLight.setPosition(Math.round(a.ufo.x), LAYOUT.dockContactY).setAlpha(a.beamStrength * 0.1);
     this.drawBeam(); this.drawSea(); this.drawCannon();
+    this.renderFinisher();
+  }
+
+  setFinisherFrame(frame: number | null): void { this.finisherFrame = frame; this.renderFinisher(); }
+
+  private renderFinisher(): void {
+    const f = this.finisherFrame;
+    if (f === null) { this.dread.setAlpha(0); this.finisherMonster.setVisible(false); return; }
+    this.ufo.setVisible(false); this.witch.setVisible(false); this.ship.setVisible(false);
+    this.fire.setVisible(false); this.beam.clear(); this.cannonFx.clear(); this.seaFx.clear();
+    this.floorLight.setAlpha(0); this.heatReflection.setAlpha(0);
+    this.dread.setAlpha(0.2);
+    const monster = finisherMonsterPose(f);
+    const reveal = monster.reveal;
+    const chewing = f >= FINISH_BITE && f < 238;
+    this.monster.setVisible(false);
+    this.finisherMonster.setVisible(reveal > 0).setPosition(Math.round(monster.x), Math.round(monster.y))
+      .setFrame(monster.frame).setCrop(0, 0, 192, Math.ceil(192 - (1-reveal)*160));
+    const splash = f >= FINISH_SPLASH && f < 155 || f >= 240 && f < 282;
+    this.splash.setVisible(splash).setPosition(320, 247).setScale(1).setAlpha(0.85).setFrame(Math.floor(f / 6) % 4);
+    if (chewing) {
+      // Small crimson pixels and ripples; the victim remains its own raster sprite.
+      for (let i = 0; i < 9; i++) {
+        const p = ((f - FINISH_BITE + i * 7) % 24) / 24;
+        this.seaFx.fillStyle(i % 2 ? 0x8c1736 : 0xc4424f, (1 - p) * 0.85)
+          .fillRect(Math.round(monster.mouthX + Math.sin(i * 4) * p * 42), Math.round(monster.mouthY + p * p * 80), 2, 3);
+      }
+    }
+    if (f >= FINISH_SPLASH) {
+      for (let ring=0;ring<4;ring++) {
+        const age=(f-FINISH_SPLASH+ring*13)%72, t=age/72;
+        this.seaFx.lineStyle(1, ring%2?0xc7eff3:0x77bfd0, (1-t)*0.45)
+          .strokeEllipse(320,247,28+t*132,4+t*16);
+      }
+      if(f<145 || f>248 && f<280) for(let drop=0;drop<14;drop++) {
+        const t=((f+drop*3)%24)/24;
+        this.seaFx.fillStyle(drop%2?0xc4f3ef:0x55a5bf,(1-t)*0.8)
+          .fillRect(Math.round(320+Math.cos(drop*2.4)*t*64),Math.round(243-38*4*t*(1-t)),2,3);
+      }
+    }
   }
 
   private sync(sprite: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite, pose: CaisActorPose): void {
@@ -157,7 +203,7 @@ export class CaisStageView {
   snapshot() {
     const a = this.ambience;
     const actor = (pose: CaisActorPose) => ({ ...pose, x: Math.round(pose.x), y: Math.round(pose.y) });
-    return { elapsed: a.elapsed, event: a.event, eventTime: a.eventTime, phase: a.phase,
+    return { finisherFrame: this.finisherFrame, elapsed: a.elapsed, event: a.event, eventTime: a.eventTime, phase: a.phase,
       idleRemaining: a.idleRemaining, counts: { ...a.counts }, shots: a.shots, breaths: a.breaths, completed: a.completed,
       ufo: { ...actor(a.ufo), depth: this.ufo.depth }, moonDepth: DEPTH.moon,
       witch: actor(a.witch), ship: actor(a.ship), monster: actor(a.monster), cannonball: actor(a.cannonball),

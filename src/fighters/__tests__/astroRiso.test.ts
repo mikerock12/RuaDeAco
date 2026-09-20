@@ -52,7 +52,7 @@ describe('Astro Riso', () => {
       scale: 1,
       visualOffset: { x: 0, y: 6 },
     });
-    expect(Object.values(astroRisoSpriteAsset.animations)).toHaveLength(35);
+    expect(Object.values(astroRisoSpriteAsset.animations)).toHaveLength(36);
     expect(astroRisoSpriteAsset.effects).toHaveLength(3);
     expect(astroRisoSpriteAsset.effects.map(({ moveId }) => moveId)).toEqual([
       'sorrisoRelampago',
@@ -65,7 +65,7 @@ describe('Astro Riso', () => {
 
   it('oferece seis normais terrestres, seis aéreos e três especiais', () => {
     const moves = Object.values(astroRiso.moves);
-    expect(moves.filter((move) => !move.air && move.state !== 'specialAttack')).toHaveLength(6);
+    expect(moves.filter((move) => !move.air && !move.grab && move.state !== 'specialAttack')).toHaveLength(6);
     expect(moves.filter((move) => move.air)).toHaveLength(6);
     expect(moves.filter((move) => move.state === 'specialAttack')).toHaveLength(3);
     expect(new Set(moves.map(({ id }) => id)).size).toBe(moves.length);

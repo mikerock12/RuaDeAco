@@ -1,3 +1,4 @@
+import { universalGrab } from './universalGrab';
 import type { FighterDefinition } from '../types/combat';
 import { CROUCHING_HURTBOXES, STANDING_HURTBOXES, STANDARD_ANIMATIONS } from './shared';
 
@@ -34,6 +35,7 @@ export const astroRiso: FighterDefinition = {
     skin: 0xc9825e,
   },
   moves: {
+    universalGrab,
     lightPunch: {
       id: 'lightPunch',
       label: 'Soco relâmpago',

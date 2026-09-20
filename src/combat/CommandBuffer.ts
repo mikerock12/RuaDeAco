@@ -51,6 +51,8 @@ function buttonActivationFrame(
   samples: readonly ButtonSample[],
 ): number | null {
   if (command.buttons.length === 0) return null;
+  if (command.simultaneous && (!command.buttons.every(b => input.held.has(b))
+    || !command.buttons.some(b => input.pressed.has(b)))) return null;
   let activationFrame: number | null = null;
   for (const button of command.buttons) {
     const action = buttonToAction[button];

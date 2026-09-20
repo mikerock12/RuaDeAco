@@ -1,3 +1,4 @@
+import { universalGrab } from './universalGrab';
 import type { FighterDefinition } from '../types/combat';
 import { CROUCHING_HURTBOXES, STANDARD_ANIMATIONS } from './shared';
 
@@ -36,6 +37,7 @@ export const gutoBarba: FighterDefinition = {
     skin: 0xad7658,
   },
   moves: {
+    universalGrab,
     elbow: {
       id: 'elbow',
       label: 'Cotovelada',

@@ -574,7 +574,8 @@ for (const fighterId of ['leo-violeta', 'noir-reflexo']) {
   const bodyEntries = results.filter(
     (candidate) => candidate.fighterId === fighterId
       && candidate.rasterKind === 'body'
-      && candidate.file?.endsWith('.png'),
+      && candidate.file?.endsWith('.png')
+      && candidate.file !== 'universal-grab-v2.png',
   );
   const keyedSourceCount = bodyEntries.filter((entry) => existsSync(
     join(ROOT, 'tmp', 'imagegen', fighterId, 'keyed', entry.file),
@@ -627,6 +628,29 @@ for (const fighterId of ['leo-violeta', 'noir-reflexo']) {
         );
       }
     }
+  }
+}
+
+
+// The new 12-pose atlases use versioned magenta sources and component slicing,
+// independently of the older four-frame Leo/Noir keyed-source cleanup pipeline.
+for (const entry of results.filter(e => e.file === 'universal-grab-v2.png')) {
+  try {
+    const manifest = JSON.parse(await readFile(join(ROOT, 'art-source/fighters/universal-grab-v2/export-manifest.json'), 'utf8'));
+    const report = manifest[entry.fighterId];
+    if (!report || report.frames !== entry.frames || report.transforms.length !== entry.frames) throw Error('12 poses e transformações obrigatórias');
+    for (const [path, hash] of [[report.source, report.sourceSha256], [report.file, report.outputSha256]]) {
+      if (createHash('sha256').update(await readFile(join(ROOT, path))).digest('hex') !== hash) throw Error('SHA-256 divergente: ' + path);
+    }
+    const scale = report.transforms[0].scale;
+    if (!Number.isFinite(scale) || scale <= 0) throw Error('escala inválida');
+    for (const t of report.transforms) {
+      const b = t.sourceBounds;
+      if (t.scale !== scale) throw Error('escala inconsistente entre poses');
+      if (b.left < 2 || b.top < 2 || b.right >= report.sourceWidth - 2 || b.bottom >= report.sourceHeight - 2) throw Error('recorte toca limite da fonte');
+    }
+  } catch (error) {
+    entry.issues.push('AUDITORIA DO AGARRÃO: ' + error.message);
   }
 }
 

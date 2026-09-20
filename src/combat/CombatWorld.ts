@@ -16,6 +16,8 @@ import type {
   LocalRect,
   MoveDefinition,
 } from '../types/combat';
+import { FINISH_WINDOW, FINISH_THROW, FINISH_SPLASH, FINISH_BITE, FINISH_END, finisherVictimPose } from './stageFinisher';
+import type { ArenaDefinition } from '../types/game';
 import type { GameMode } from '../types/game';
 import {
   FighterRuntime,
@@ -25,8 +27,9 @@ import {
 } from './FighterRuntime';
 import { horizontalOverlap, intersects, toWorldRect } from './geometry';
 import { resolveGrabVictimPose } from './grabTimeline';
+import { grabVictimArtPose } from '../fighters/grabArtTiming';
 
-export type CombatPhase = 'intro' | 'active' | 'roundOver' | 'matchOver';
+export type CombatPhase = 'intro' | 'active' | 'finishReady' | 'stageFinish' | 'roundOver' | 'matchOver';
 
 interface Contact {
   readonly attacker: FighterRuntime;
@@ -84,6 +87,8 @@ export interface GrabSnapshot {
 }
 
 export interface CombatWorldSnapshot {
+  readonly finisherWinner: 0 | 1 | null;
+  readonly finisherCompleted: boolean;
   readonly frame: number;
   readonly phase: CombatPhase;
   readonly phaseFrame: number;
@@ -102,6 +107,9 @@ export interface CombatWorldSnapshot {
 }
 
 export interface CombatWorldDeterministicState {
+  readonly arena: ArenaDefinition['id'] | null;
+  readonly finisherCompleted: boolean;
+  readonly finisherWinner: 0 | 1 | null;
   readonly schema: 1;
   readonly mode: GameMode;
   readonly frame: number;
@@ -169,8 +177,10 @@ export class CombatWorld {
   private lastDamage = 0;
   private roundDraw = false;
   private roundWinner: 0 | 1 | null = null;
+  private finisherWinner: 0 | 1 | null = null;
+  private finisherCompleted = false;
 
-  constructor(playerOne: FighterDefinition, playerTwo: FighterDefinition, mode: GameMode) {
+  constructor(playerOne: FighterDefinition, playerTwo: FighterDefinition, mode: GameMode, readonly arena: ArenaDefinition['id'] | null = null) {
     this.mode = mode;
     this.fighters = [
       new FighterRuntime(playerOne, 188, 1),
@@ -189,6 +199,8 @@ export class CombatWorld {
     this.frame += 1;
     this.phaseFrame += 1;
 
+    if (this.phase === 'finishReady') { this.stepFinishReady(playerOneInput, playerTwoInput); return; }
+    if (this.phase === 'stageFinish') { this.stepStageFinish(); return; }
     if (this.phase === 'matchOver') {
       this.stepPresentationFrame();
       return;
@@ -245,6 +257,8 @@ export class CombatWorld {
 
   snapshot(): CombatWorldSnapshot {
     return {
+      finisherWinner: this.finisherWinner,
+      finisherCompleted: this.finisherCompleted,
       frame: this.frame,
       phase: this.phase,
       phaseFrame: this.phaseFrame,
@@ -287,6 +301,9 @@ export class CombatWorld {
   exportDeterministicState(): CombatWorldDeterministicState {
     return {
       schema: 1,
+      arena: this.arena,
+      finisherWinner: this.finisherWinner,
+      finisherCompleted: this.finisherCompleted,
       mode: this.mode,
       frame: this.frame,
       phase: this.phase,
@@ -746,12 +763,14 @@ export class CombatWorld {
     const phaseEnd = phase?.range.to
       ?? (state === 'grabbedFront' ? definition.holdStartFrame - 1 : definition.releaseFrame - 1);
 
-    const victimX = attacker.x + attacker.facing * anchorX;
-    const victimY = attacker.y + anchorY;
+    const artPose = grab.move.id === 'universalGrab' ? grabVictimArtPose(attacker.id, defender.id, frame) : null;
+    const victimX = attacker.x + attacker.facing * (artPose?.x ?? anchorX);
+    const victimY = attacker.y + (artPose?.y ?? anchorY);
+    const victimRotation = attacker.facing * (artPose?.rotation ?? rotation);
 
     attacker.grabbedVictimX = victimX;
     attacker.grabbedVictimY = victimY;
-    attacker.grabbedVictimRotation = attacker.facing * rotation;
+    attacker.grabbedVictimRotation = victimRotation;
 
     defender.setGrabbedPose(
       attacker.id,
@@ -759,7 +778,7 @@ export class CombatWorld {
       victimX,
       victimY,
       attacker.facing,
-      attacker.facing * rotation,
+      victimRotation,
       frame - phaseStart,
       phaseEnd - phaseStart + 1,
       timelinePose?.poseFrame ?? null,
@@ -1008,6 +1027,15 @@ export class CombatWorld {
 
     const loser: 0 | 1 = winner === 0 ? 1 : 0;
     this.fighters[winner].roundWins += 1;
+    if (this.arena === 'cais-da-cidade' && this.mode !== 'training'
+      && this.fighters[winner].roundWins >= ROUNDS_TO_WIN) {
+      this.finisherWinner = winner;
+      this.phase = 'finishReady';
+      this.fighters[winner].setMatchState('idle');
+      this.fighters[loser].setMatchState('dizzy');
+      this.emit({ type: 'finishReady', frame: this.frame, attackerIndex: winner, defenderIndex: loser, text: 'FINALIZE!' });
+      return;
+    }
     this.fighters[winner].setMatchState('victory');
     this.fighters[loser].setMatchState('knockout');
     this.emit({
@@ -1017,6 +1045,65 @@ export class CombatWorld {
       defender: this.fighters[loser].id,
       text: knockout ? 'KO' : 'TEMPO',
     });
+  }
+
+  private completeFinish(): void {
+    this.projectiles = [];
+    this.finisherCompleted = this.phase === 'stageFinish';
+    const winner = this.finisherWinner!;
+    this.fighters[winner].setMatchState('victory');
+    this.fighters[winner === 0 ? 1 : 0].setMatchState('knockout');
+    this.phase = 'matchOver';
+    // Retain cinematic end frame so the eaten victim does not reappear.
+    this.phaseFrame = this.phaseFrame >= FINISH_END ? FINISH_END : 0;
+    this.emit({ type: 'matchEnd', frame: this.frame, attacker: this.fighters[winner].id,
+      defender: this.fighters[winner === 0 ? 1 : 0].id });
+  }
+
+  private stepFinishReady(oneInput: InputFrame, twoInput: InputFrame): void {
+    const winner = this.finisherWinner!;
+    const attacker = this.fighters[winner], defender = this.fighters[winner === 0 ? 1 : 0];
+    if (this.phaseFrame >= FINISH_WINDOW) { this.phaseFrame = 0; this.completeFinish(); return; }
+    if (!attacker.currentMove?.lockFacing && attacker.grounded) attacker.facing = attacker.x <= defender.x ? 1 : -1;
+    attacker.beginFrame(winner === 0 ? oneInput : twoInput, this.frame, defender.x);
+    defender.beginFrame(EMPTY_INPUT, this.frame, attacker.x);
+    attacker.captureCollisionPose(); defender.captureCollisionPose();
+    const contact = this.findContact(attacker, defender);
+    if (contact) {
+      if (contact.hitbox.kind === 'throw') {
+        attacker.setMatchState('idle'); defender.setMatchState('dizzy');
+        this.projectiles = [];
+        this.phase = 'stageFinish'; this.phaseFrame = 0;
+        this.emit({ type: 'finishThrow', frame: this.frame, attackerIndex: winner,
+          defenderIndex: winner === 0 ? 1 : 0 });
+        this.stepStageFinish();
+      } else { this.phaseFrame = 0; this.completeFinish(); }
+      return;
+    }
+    // Permit a projectile move to finish normally too, without leaving frozen projectiles.
+    this.consumeFighterEvents(attacker); this.updateProjectiles();
+    const previousHealth = defender.health;
+    this.resolveProjectileContacts();
+    if (defender.state !== 'dizzy' || defender.health < previousHealth) {
+      this.projectiles = []; this.phaseFrame = 0; this.completeFinish(); return;
+    }
+    this.resolvePushboxes(); attacker.finishFrame(); defender.finishFrame();
+  }
+
+  private stepStageFinish(): void {
+    const winner = this.finisherWinner!;
+    const attacker = this.fighters[winner], defender = this.fighters[winner === 0 ? 1 : 0];
+    const f = this.phaseFrame;
+    attacker.previousX = attacker.x; attacker.previousY = attacker.y;
+    defender.previousX = defender.x; defender.previousY = defender.y;
+    const pose = finisherVictimPose(f, attacker.x, attacker.facing, attacker.id, defender.id);
+    defender.setGrabbedPose(attacker.id, f < 14 ? 'grabbedFront' : 'grabbedLifted',
+      pose.x, pose.y, attacker.facing, pose.rotation, f, FINISH_END, f < 14 ? 0 : 7, 'front');
+    attacker.captureCollisionPose(); defender.captureCollisionPose();
+    const type = f === FINISH_THROW ? 'monsterRoar' : f === FINISH_SPLASH ? 'finishSplash'
+      : [FINISH_BITE, FINISH_BITE + 24, FINISH_BITE + 51].includes(f) ? 'monsterBite' : null;
+    if (type) this.emit({ type, frame: this.frame, attackerIndex: winner, defenderIndex: winner === 0 ? 1 : 0 });
+    if (f >= FINISH_END) this.completeFinish();
   }
 
   private emit(event: CombatEvent): void {

@@ -1,3 +1,4 @@
+import { universalGrabSprite } from './universalGrabSprite';
 import type {
   FighterAnimationAsset,
   FighterEffectAsset,
@@ -111,6 +112,7 @@ export const leoVioletaSpriteAsset: FighterSpriteAsset = {
   ],
   movePhases: {},
   animations: {
+    universalGrab: universalGrabSprite('leo-violeta', 256),
     idle: animation('idle', 8, -1),
     walk: animation('walk', 12, -1),
     walkBackward: animation('walkBackward', 10, -1),

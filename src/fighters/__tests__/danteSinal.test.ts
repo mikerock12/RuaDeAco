@@ -129,7 +129,7 @@ describe('Dante Sinal', () => {
       scale: 1,
       visualOffset: { x: 0, y: 6 },
     });
-    expect(Object.values(danteSinalSpriteAsset.animations)).toHaveLength(35);
+    expect(Object.values(danteSinalSpriteAsset.animations)).toHaveLength(36);
     expect(danteSinalSpriteAsset.effects).toHaveLength(3);
     expect(danteSinalSpriteAsset.effects.map(({ moveId, usage, statusField }) => ({
       moveId,

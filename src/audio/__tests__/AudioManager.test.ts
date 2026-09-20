@@ -111,6 +111,11 @@ class FakeAudioContext {
     return gain as unknown as GainNode;
   }
 
+  readonly sampleRate = 24000;
+  createBuffer(_channels: number, length: number, sampleRate: number): AudioBuffer {
+    const data = new Float32Array(length);
+    return { duration: length / sampleRate, getChannelData: () => data } as unknown as AudioBuffer;
+  }
   createBufferSource(): AudioBufferSourceNode {
     const source = new FakeBufferSourceNode();
     this.sources.push(source);
@@ -488,5 +493,21 @@ describe('AudioManager com músicas reais', () => {
     expect(source).not.toContain('musicTimer');
     expect(source).not.toContain('musicStep');
     expect(source).not.toContain('startMusic');
+  });
+});
+
+
+describe('foley original da finalização', () => {
+  it('produz áudio finito, limitado e reaproveita cada buffer através do volume de efeitos', async () => {
+    const { manager, context } = setup(); await manager.unlock();
+    for (const effect of ['dread', 'monsterRoar', 'waterCrash', 'boneCrunch'] as const) {
+      manager.play(effect); const a=context.sources.at(-1)!;
+      const samples=a.buffer!.getChannelData(0);
+      expect(samples.some(value=>Math.abs(value)>0.05)).toBe(true);
+      expect(samples.every(value=>Number.isFinite(value) && Math.abs(value)<=0.701)).toBe(true);
+      expect(a.connections).toContain(context.gains[1]);
+      manager.play(effect); expect(context.sources.at(-1)!.buffer).toBe(a.buffer);
+    }
+    await manager.destroy();
   });
 });

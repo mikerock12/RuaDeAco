@@ -68,6 +68,7 @@ export const CONCEPT_ASSETS: Readonly<Record<FighterId, PortraitAsset>> = {
 const logo: ImageAsset = { key: 'ruaDeAcoLogo', path: 'assets/references/rua-de-aco-logo.png' };
 
 const caisRemaster = {
+  finisherMonster: {key:'caisFinisherMonsterV2',path:'assets/stages/cais-da-cidade/remaster/monster-finisher-v2.png',frameWidth:192,frameHeight:192,frames:12,layout:'horizontal'},
   background: {key:'caisRemasterBackground',path:'assets/stages/cais-da-cidade/remaster/background.png'},
   moon: {key:'caisRemasterMoon',path:'assets/stages/cais-da-cidade/remaster/moon.png'},
   ufo: {key:'caisRemasterUfo',path:'assets/stages/cais-da-cidade/remaster/ufo.png'},
@@ -128,7 +129,7 @@ export const IMAGE_ASSETS: readonly ImageAsset[] = [
   ...Object.values(ui),
 ];
 
-export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [caisRemaster.monster, caisRemaster.fire, caisRemaster.splash, kitchen.witch, kitchen.bat, kitchen.rat, sitio.hen, sitio.duck, sitio.snake, sitio.lizard];
+export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [caisRemaster.finisherMonster, caisRemaster.monster, caisRemaster.fire, caisRemaster.splash, kitchen.witch, kitchen.bat, kitchen.rat, sitio.hen, sitio.duck, sitio.snake, sitio.lizard];
 
 export const REQUIRED_TEXTURE_KEYS: readonly string[] = [
   ...IMAGE_ASSETS.map((asset) => asset.key),

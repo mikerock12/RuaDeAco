@@ -1,3 +1,4 @@
+import { universalGrab } from './universalGrab';
 import type {
   FighterDefinition,
   HitLevel,
@@ -138,6 +139,7 @@ export const leoVioleta: FighterDefinition = {
     },
   },
   moves: {
+    universalGrab,
     lightPunch: normal({
       id: 'lightPunch', label: 'Direto curto', animation: 'standingLight',
       button: 'light', state: 'lightAttack', level: 'high', damage: 44,
