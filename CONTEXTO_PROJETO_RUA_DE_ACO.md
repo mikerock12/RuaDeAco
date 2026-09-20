@@ -5,12 +5,21 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
-> Última revisão: **14/09/2026**.
+> Última revisão: **20/09/2026**.
 >
-> Implementação local, ainda sem publicação: agarrão universal F+G (touch L+H)
-> nos seis lutadores e janela de finalização após a segunda derrota no Cais.
+> **Publicado em 20/09/2026:** agarrão universal com fraco + forte (F+G no P1,
+> J+K no P2, L+H no toque) nos seis lutadores, cada um com folha própria de 12
+> poses, e janela de finalização de oito segundos após a segunda derrota no
+> Cais, com o monstro em 12 poses exclusivas.
 > Detalhes e regras: [docs/AGARRAO_FINALIZACAO_CAIS.md](docs/AGARRAO_FINALIZACAO_CAIS.md).
-> Motor online v2 impede mistura com clientes anteriores. Sem mudança no Worker.
+> Motor online passa a `lockstep-v3-grab-art`, impedindo partida entre clientes
+> incompatíveis; o Worker não muda.
+> Commits `a934842` (funcionalidade) e `827ee8b` (estabilização do E2E).
+> CI 35492378514 aprovado nos quatro jobs: 550 testes de cliente, 71 de
+> servidor, 31 cenários de navegador e 9 online. Pages publicado.
+> A tolerância entre os dois botões é de três frames (`maxGapFrames` em
+> `src/fighters/universalGrab.ts`); se o agarrão falhar na prática, é a alavanca
+> a ajustar. Aparelho Android físico ainda não testado.
 >
 > Remaster de menus, HUD e controles: [docs/REMASTER_UI_CONTROLES.md](docs/REMASTER_UI_CONTROLES.md).
 > HUD 31,25% menor, analógico radial com dead zone de 18%, diamante H/L/S/D,

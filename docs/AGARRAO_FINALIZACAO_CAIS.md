@@ -1,6 +1,6 @@
 # Agarrão universal e finalização do Cais
 
-Implementação local de 14/09/2026. Ainda não publicada.
+Publicado em 20/09/2026, commits `a934842` e `827ee8b`.
 
 ## Como jogar
 
@@ -65,6 +65,14 @@ botões, timeout, pausa, espelho, CPU e hashes após serialização dos inputs.
 Playwright testa F+G no desktop e dois toques simultâneos no celular, percorre
 as fases da sequência e verifica o resultado e ausência de erros de textura.
 A suíte foi adicionada a `test:e2e:ci`.
+
+CI 35492378514 aprovado nos quatro jobs: 550 testes de cliente, 71 de servidor,
+31 cenários de navegador e 9 online.
+
+O acorde depende da tolerância de três frames entre os dois botões. No teclado,
+as duas teclas precisam ser despachadas sem espera entre elas — em runner lento,
+um intervalo maior faz sair um golpe comum, que encerra a luta em vez de abrir
+a finalização. O caminho de toque já envia os dois pontos num evento único.
 
 Validação em navegador e celular emulado; toque e desempenho em aparelho
 Android físico ainda precisam ser conferidos.
