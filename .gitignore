@@ -45,6 +45,7 @@ android/capacitor.build.gradle
 /tmp/ui-audit/
 /tmp/online-audit/
 /tmp/hitbox-audit/
+/tmp/grab-audit/
 
 # Cache local dos scripts Python
 __pycache__/
