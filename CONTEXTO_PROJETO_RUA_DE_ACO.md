@@ -7,6 +7,17 @@
 >
 > Última revisão: **20/09/2026**.
 >
+> **Controles, 20/09/2026 (commit `d2855f3`, CI 35505219515):** o analógico do
+> toque tinha oito setores de 45°, e 23° de desvio do polegar já somavam `down`
+> ou `up` — andar virava agachar ou pular. Horizontal puro agora vai até 30°,
+> `up` exige 38° e a zona morta caiu de 18% para 12%. Botões de ~45px para
+> ~64px em paisagem, e um dedo no vão entre dois botões vizinhos aciona os
+> dois, o que torna o agarrão viável com um polegar só. Nada de dano, frame
+> data, física ou protocolo mudou. Detalhes e medições em
+> [docs/REMASTER_UI_CONTROLES.md](docs/REMASTER_UI_CONTROLES.md).
+> Em aberto, por ser decisão de jogabilidade: velocidades de caminhada de
+> 105 px/s (Guto) a 201 px/s (Astro) num palco de 640px.
+>
 > **Publicado em 20/09/2026:** agarrão universal com fraco + forte (F+G no P1,
 > J+K no P2, L+H no toque) nos seis lutadores, cada um com folha própria de 12
 > poses, e janela de finalização de oito segundos após a segunda derrota no
