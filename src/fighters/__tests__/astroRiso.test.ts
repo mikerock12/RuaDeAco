@@ -34,8 +34,8 @@ describe('Astro Riso', () => {
     expect(AVAILABLE_FIGHTERS).toContain(astroRiso);
     expect(astroRiso.stats).toMatchObject({
       maxHealth: 930,
-      walkSpeed: 3.35,
-      backwardSpeed: 2.75,
+      walkSpeed: 4.1,
+      backwardSpeed: 3.35,
       jumpSpeed: 15.4,
       weight: 0.84,
     });

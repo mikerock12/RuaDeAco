@@ -90,8 +90,8 @@ export const noirReflexo: FighterDefinition = {
   abilities: ['Reflexo Negro', 'Quebra-Luz', 'Impacto Solar'],
   stats: {
     maxHealth: 980,
-    walkSpeed: 2.65,
-    backwardSpeed: 2.55,
+    walkSpeed: 3.25,
+    backwardSpeed: 3.1,
     jumpSpeed: 14.4,
     jumpForwardSpeed: 2.85,
     jumpBackwardSpeed: 2.7,

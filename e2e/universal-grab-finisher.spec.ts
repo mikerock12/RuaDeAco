@@ -5,6 +5,7 @@ import type { CombatWorld } from '../src/combat/CombatWorld';
 type W = Window & { __ruaWorld: CombatWorld; __RUA_SCENE_DEBUG__:()=>string[];
   __RUA_CAPTURE_DEBUG__: { pause():void; resume():void; step(held?:string[],pressed?:string[]):void };
   __RUA_FIGHTER_DEBUG__:()=>{bodySprites:{name:string;visible:boolean;texture:string}[]};
+  __RUA_UI_LAYOUT_DEBUG__?:()=>{name:string;text:string}[];
 };
 test('agarrão por teclado/multitoque e finalização completa do Cais', async ({ page, isMobile, context }, info) => {
   test.setTimeout(120000);
@@ -70,8 +71,16 @@ for (const [index, id] of fighters.entries()) test('sprites próprios do agarrã
   const box=(await page.locator('canvas').boundingBox())!;
   await page.mouse.move(box.x+(112+(index%3)*94)*box.width/640,box.y+(150+Math.floor(index/3)*102)*box.height/360);
   await page.waitForTimeout(100);
-  await clickCanvas(page,502,302,false); await page.waitForTimeout(300);
-  await clickCanvas(page,502,302,false); await page.waitForTimeout(300);
+  // Confirma cada fase esperando o rótulo mudar. Com 300ms fixos, um runner
+  // carregado perde o clique e a luta nunca começa.
+  const fase = () => page.evaluate(()=>(window as unknown as W).__RUA_UI_LAYOUT_DEBUG__?.().find(e=>e.name==='character-select-phase')?.text);
+  const confirmar = async (x:number, y:number) => {
+    const antes = await fase();
+    await clickCanvas(page,x,y,false);
+    await expect.poll(fase).not.toBe(antes);
+  };
+  await confirmar(502,302);
+  await confirmar(502,302);
   await clickCanvas(page,320,306,false);
   await expect.poll(scenes).toContain('FightScene');
   await expect.poll(()=>page.evaluate(()=>(window as unknown as W).__ruaWorld?.phase)).toBe('active');

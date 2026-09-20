@@ -90,8 +90,8 @@ export const leoVioleta: FighterDefinition = {
   abilities: ['Olhar Frio', 'Impacto Sombrio', 'Pressão Violeta'],
   stats: {
     maxHealth: 1050,
-    walkSpeed: 2.9,
-    backwardSpeed: 2.3,
+    walkSpeed: 3.55,
+    backwardSpeed: 2.8,
     jumpSpeed: 14.4,
     jumpForwardSpeed: 2.95,
     jumpBackwardSpeed: 2.55,

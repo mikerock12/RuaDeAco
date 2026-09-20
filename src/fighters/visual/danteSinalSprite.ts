@@ -150,8 +150,8 @@ export const danteSinalSpriteAsset: FighterSpriteAsset = {
   animations: {
     universalGrab: universalGrabSprite('dante-sinal', 256),
     idle: animation('idle', 6, -1),
-    walk: animation('walk', 10, -1),
-    walkBackward: animation('walkBackward', 8, -1),
+    walk: animation('walk', 14, -1),
+    walkBackward: animation('walkBackward', 13, -1),
     jumpNeutral: animation('jumpNeutral', 8, 0),
     jumpForward: animation('jumpForward', 8, 0),
     jumpBackward: animation('jumpBackward', 8, 0),

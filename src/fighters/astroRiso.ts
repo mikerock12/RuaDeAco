@@ -16,8 +16,8 @@ export const astroRiso: FighterDefinition = {
   abilities: ['Sorriso Relâmpago', 'Rajada Neon', 'Astro Giro'],
   stats: {
     maxHealth: 930,
-    walkSpeed: 3.35,
-    backwardSpeed: 2.75,
+    walkSpeed: 4.1,
+    backwardSpeed: 3.35,
     jumpSpeed: 15.4,
     jumpForwardSpeed: 3.65,
     jumpBackwardSpeed: 3.15,

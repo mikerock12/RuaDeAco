@@ -19,8 +19,8 @@ export const danteSinal: FighterDefinition = {
   abilities: ['Ponto Final', 'Bomba de Fumaça', 'Chave Binária'],
   stats: {
     maxHealth: 960,
-    walkSpeed: 2.85,
-    backwardSpeed: 2.65,
+    walkSpeed: 3.5,
+    backwardSpeed: 3.25,
     jumpSpeed: 14.8,
     jumpForwardSpeed: 3.05,
     jumpBackwardSpeed: 2.85,

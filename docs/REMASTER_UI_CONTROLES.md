@@ -61,7 +61,42 @@ latência de comando é de 1 frame, a inversão de direção também é de 1 fra
 a simulação roda a 60,8 passos por segundo. Os totais de golpe vão de 12 frames
 (Astro, fraco) a 36 (Guto, forte), dentro do costume do gênero.
 
-Fica em aberto, por ser decisão de jogabilidade e não defeito: as velocidades
-de caminhada, medidas em 105 px/s (Guto) a 201 px/s (Astro) num palco de 640px
-— Guto leva 6,1 s para atravessar a arena. A animação de andar usa a arte de
-corrida, o que reforça a impressão de lentidão.
+## Velocidades e cadência da caminhada — 20/09/2026
+
+Aprovado pelo usuário depois da rodada acima, já como decisão de jogabilidade.
+
+**Velocidades: +22% uniforme.** A escolha do percentual único é deliberada:
+multiplicar todos pelo mesmo fator preserva exatamente as proporções entre os
+seis, então nenhum confronto muda de equilíbrio — o jogo é o mesmo, só mais
+solto. As razões entre avanço e recuo de cada lutador também foram mantidas.
+
+| Lutador | antes | agora | travessia do palco útil (568px) |
+| --- | ---: | ---: | ---: |
+| Astro Riso | 201 px/s | 246 px/s | 2,8 s → 2,3 s |
+| Rafa Maré | 183 px/s | 222 px/s | 3,1 s → 2,6 s |
+| Léo Violeta | 174 px/s | 213 px/s | 3,3 s → 2,7 s |
+| Dante Sinal | 171 px/s | 210 px/s | 3,3 s → 2,7 s |
+| Noir Reflexo | 159 px/s | 195 px/s | 3,6 s → 2,9 s |
+| Guto Barba | 105 px/s | 129 px/s | 5,4 s → 4,4 s |
+
+**Cadência: recalculada, não só acelerada.** O que faz o pé patinar é a razão
+entre deslocamento e quadros da animação. Ela estava desigual — de 13,3 px por
+quadro no Noir a 18,3 no Rafa, que por isso patinava bem mais que os demais.
+As taxas foram recalculadas para ~15 px por quadro em todos, e não apenas
+multiplicadas pelos mesmos 22%:
+
+| Lutador | andar, antes → agora | recuar, antes → agora | px por quadro |
+| --- | --- | --- | ---: |
+| Rafa Maré | 10 → 15 fps | 8 → 12 fps | 18,3 → 14,8 |
+| Guto Barba | 7 → 9 fps | 6 → 7 fps | 15,0 → 14,3 |
+| Noir Reflexo | 12 → 13 fps | 10 → 12 fps | 13,3 → 15,0 |
+| Astro Riso | 13 → 16 fps | 10 → 13 fps | 15,5 → 15,4 |
+| Dante Sinal | 10 → 14 fps | 8 → 13 fps | 17,1 → 15,0 |
+| Léo Violeta | 12 → 14 fps | 10 → 11 fps | 14,5 → 15,2 |
+
+A faixa cai de 13,3–18,3 para 14,3–15,4. Como a animação de andar usa a arte de
+corrida, a velocidade maior também aproxima o que se vê do que acontece.
+
+Dano, frame data, hitboxes, física e protocolo continuam intactos; a latência
+de comando segue em 1 frame. Os testes de stats oficiais dos lutadores foram
+atualizados com os novos valores e seguem guardando a regressão.

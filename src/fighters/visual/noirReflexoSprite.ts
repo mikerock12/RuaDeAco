@@ -134,8 +134,8 @@ export const noirReflexoSpriteAsset: FighterSpriteAsset = {
   animations: {
     universalGrab: universalGrabSprite('noir-reflexo', 256),
     idle: animation('idle', 8, -1),
-    walk: animation('walk', 12, -1),
-    walkBackward: animation('walkBackward', 10, -1),
+    walk: animation('walk', 13, -1),
+    walkBackward: animation('walkBackward', 12, -1),
     jumpNeutral: animation('jumpNeutral', 10, 0),
     jumpForward: animation('jumpForward', 10, 0),
     jumpBackward: animation('jumpBackward', 10, 0),
