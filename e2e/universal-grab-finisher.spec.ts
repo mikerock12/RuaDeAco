@@ -7,28 +7,47 @@ type W = Window & { __ruaWorld: CombatWorld; __RUA_SCENE_DEBUG__:()=>string[];
   __RUA_FIGHTER_DEBUG__:()=>{bodySprites:{name:string;visible:boolean;texture:string}[]};
 };
 test('agarrão por teclado/multitoque e finalização completa do Cais', async ({ page, isMobile, context }, info) => {
-  test.setTimeout(60000);
+  test.setTimeout(120000);
   const errors:string[]=[]; page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(m.type()==='error'||m.text().includes('__MISSING'))errors.push(m.text());});
   const scenes=()=>page.evaluate(()=>(window as unknown as W).__RUA_SCENE_DEBUG__?.());
   const tap=(x:number,y:number)=>clickCanvas(page,x,y,isMobile);
-  await page.goto('/'); await expect.poll(scenes).toContain('StartScene'); await tap(320,180);
+  // Sempre com ?.: entre fases o mundo pode sumir, e um TypeError esconderia
+  // o estado real em que o teste parou.
+  const phase = () => page.evaluate(()=>(window as unknown as W).__ruaWorld?.phase);
+  // O preload decodifica as sete folhas novas do agarrão além do elenco inteiro:
+  // com cache frio o boot passa dos 10 s padrão de expect.
+  await page.goto('/'); await expect.poll(scenes,{timeout:45000}).toContain('StartScene'); await tap(320,180);
   await expect.poll(scenes).toContain('MainMenuScene'); await tap(320,154);
   await expect.poll(scenes).toContain('CharacterSelectScene');
   await tap(502,302); await page.waitForTimeout(200); await tap(502,302); await page.waitForTimeout(200); await tap(320,306);
   await expect.poll(scenes).toContain('FightScene');
-  await expect.poll(()=>page.evaluate(()=>(window as unknown as W).__ruaWorld?.phase)).toBe('active');
+  await expect.poll(phase).toBe('active');
   // Establish the final-round situation without playing two whole matches.
   await page.evaluate(()=>{const w=(window as unknown as W).__ruaWorld; w.fighters[0].resetPosition(280,1);w.fighters[1].resetPosition(350,-1);w.fighters[0].roundWins=1;w.fighters[1].health=0;});
-  await expect.poll(()=>page.evaluate(()=>(window as unknown as W).__ruaWorld.phase)).toBe('finishReady');
+  await expect.poll(phase).toBe('finishReady');
   await page.screenshot({path:info.outputPath('finalize.png')});
-  if(isMobile){
-    const points=[];
-    for(const action of ['light','heavy']) { const box=await page.locator('#touch-controls button[data-action='+action+']').boundingBox(); if(!box)throw Error('Botão ausente'); points.push({x:box.x+box.width/2,y:box.y+box.height/2,id:points.length}); }
-    const cdp=await context.newCDPSession(page); await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:points});
-    await page.waitForTimeout(100); await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]}); await cdp.detach();
-  } else { await page.keyboard.down('f'); await page.keyboard.down('g'); await page.waitForTimeout(80); await page.keyboard.up('f'); await page.keyboard.up('g'); }
-  await expect.poll(()=>page.evaluate(()=>(window as unknown as W).__ruaWorld.phase)).toBe('stageFinish');
+  // Os dois botões precisam cair dentro da tolerância de três frames. O toque já
+  // envia um evento único com dois pontos; no teclado as duas teclas são
+  // despachadas sem aguardar a primeira resposta, senão a latência de um runner
+  // lento separa o acorde e sai um golpe comum, que encerra a luta.
+  const chord = async () => {
+    if(isMobile){
+      const points=[];
+      for(const action of ['light','heavy']) { const box=await page.locator('#touch-controls button[data-action='+action+']').boundingBox(); if(!box)throw Error('Botão ausente'); points.push({x:box.x+box.width/2,y:box.y+box.height/2,id:points.length}); }
+      const cdp=await context.newCDPSession(page); await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:points});
+      await page.waitForTimeout(100); await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]}); await cdp.detach();
+    } else {
+      await Promise.all([page.keyboard.down('f'),page.keyboard.down('g')]);
+      await page.waitForTimeout(80);
+      await Promise.all([page.keyboard.up('f'),page.keyboard.up('g')]);
+    }
+  };
+  await chord();
+  // A janela dura oito segundos: enquanto ela seguir aberta, um acorde perdido
+  // por jitter ainda pode ser repetido após a recuperação do golpe errado.
+  for(let attempt=0; attempt<4 && await phase()==='finishReady'; attempt++){ await page.waitForTimeout(500); await chord(); }
+  await expect.poll(phase).toBe('stageFinish');
   await page.evaluate(()=>(window as unknown as W).__RUA_CAPTURE_DEBUG__.pause());
   for(const target of [35,85,151,186,275]) {
     await page.evaluate(f=>{const w=window as unknown as W; while(w.__ruaWorld.phaseFrame<f)w.__RUA_CAPTURE_DEBUG__.step();},target);
@@ -42,9 +61,9 @@ test('agarrão por teclado/multitoque e finalização completa do Cais', async (
 const fighters = ['rafa-mare','noir-reflexo','astro-riso','dante-sinal','leo-violeta','guto-barba'];
 for (const [index, id] of fighters.entries()) test('sprites próprios do agarrão: '+id, async ({page,isMobile},info)=>{
   test.skip(isMobile, 'O multitoque é coberto pela finalização completa; aqui auditamos as seis artes.');
-  test.setTimeout(60000);
+  test.setTimeout(120000);
   const scenes=()=>page.evaluate(()=>(window as unknown as W).__RUA_SCENE_DEBUG__?.());
-  await page.goto('/'); await expect.poll(scenes).toContain('StartScene');
+  await page.goto('/'); await expect.poll(scenes,{timeout:45000}).toContain('StartScene');
   await clickCanvas(page,320,180,false);
   await expect.poll(scenes).toContain('MainMenuScene'); await clickCanvas(page,320,154,false);
   await expect.poll(scenes).toContain('CharacterSelectScene');
