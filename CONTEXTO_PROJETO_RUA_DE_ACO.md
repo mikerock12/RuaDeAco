@@ -15,8 +15,14 @@
 > dois, o que torna o agarrão viável com um polegar só. Nada de dano, frame
 > data, física ou protocolo mudou. Detalhes e medições em
 > [docs/REMASTER_UI_CONTROLES.md](docs/REMASTER_UI_CONTROLES.md).
-> Em aberto, por ser decisão de jogabilidade: velocidades de caminhada de
-> 105 px/s (Guto) a 201 px/s (Astro) num palco de 640px.
+>
+> **Caminhada, 20/09/2026 (commit `6b46d1a`, CI 35533048991):** velocidades de
+> avanço e recuo subiram 22% nos seis, com percentual único para preservar as
+> proporções entre eles — nenhum confronto mudou de equilíbrio. Atravessar o
+> palco útil passou de 3,1 s para 2,6 s com Rafa e de 5,4 s para 4,4 s com
+> Guto. A cadência da animação foi recalculada para ~15 px por quadro em todos
+> (antes ia de 13,3 a 18,3; Rafa e Dante patinavam), e não apenas acelerada
+> junto. Latência de comando segue em 1 frame.
 >
 > **Publicado em 20/09/2026:** agarrão universal com fraco + forte (F+G no P1,
 > J+K no P2, L+H no toque) nos seis lutadores, cada um com folha própria de 12
