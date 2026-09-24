@@ -113,8 +113,8 @@ describe('Dante Sinal', () => {
     expect(danteSinal.passive).toBeUndefined();
     expect(danteSinal.stats).toMatchObject({
       maxHealth: 960,
-      walkSpeed: 3.5,
-      backwardSpeed: 3.25,
+      walkSpeed: 4.03,
+      backwardSpeed: 3.74,
       jumpSpeed: 14.8,
     });
   });

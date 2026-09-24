@@ -115,8 +115,8 @@ export const rafaMareSpriteAsset: FighterSpriteAsset = {
   animations: {
     universalGrab: universalGrabSprite('rafa-mare', 256),
     idle: animation('idle', 6, -1),
-    walk: animation('walk', 15, -1),
-    walkBackward: animation('walkBackward', 12, -1),
+    walk: animation('walk', 17, -1),
+    walkBackward: animation('walkBackward', 14, -1),
     jumpNeutral: animation('jumpNeutral', 8, 0),
     jumpForward: animation('jumpForward', 8, 0),
     jumpBackward: animation('jumpBackward', 8, 0),

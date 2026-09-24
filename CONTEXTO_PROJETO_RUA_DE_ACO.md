@@ -5,7 +5,15 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
-> Última revisão: **20/09/2026**.
+> Última revisão: **24/09/2026**.
+>
+> **Cozinha, movimento e botões, 24/09/2026:** na segunda derrota da Cozinha
+> Macabra o perdedor espera o agarrão e é jogado no panelão. A bruxa mexe e
+> sobram ossos; o interior da panela aparece sem o caldo verde. Botões de toque
+> em `clamp(78px, 23dvh, 104px)`. Andar/recuo e o eixo horizontal do pulo +15%,
+> gravidade cerca de 6% menor, correção no ar, pouso de 3 frames e pulo guardado
+> se cima estiver pressionado no pouso. Motor `lockstep-v4-kitchen-pot`.
+> Detalhe em [docs/COZINHA_MACABRA.md](docs/COZINHA_MACABRA.md).
 >
 > **Controles, 20/09/2026 (commit `d2855f3`, CI 35505219515):** o analógico do
 > toque tinha oito setores de 45°, e 23° de desvio do polegar já somavam `down`

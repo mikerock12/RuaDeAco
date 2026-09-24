@@ -11,15 +11,15 @@ export const rafaMare: FighterDefinition = {
   abilities: ['Mão da Maré', 'Chute da Ressaca', 'Eco Tatuado'],
   stats: {
     maxHealth: 1000,
-    walkSpeed: 3.7,
-    backwardSpeed: 3.05,
+    walkSpeed: 4.26,
+    backwardSpeed: 3.51,
     // Velocidades/aceleração verticais na escala do mundo 640x360
     // (dobradas na migração de 320x180; o tempo de voo não muda).
     jumpSpeed: 15.6,
     // Pulo diagonal mais rápido e longo (arquétipo ágil).
-    jumpForwardSpeed: 3.3,
-    jumpBackwardSpeed: 2.9,
-    gravity: 0.92,
+    jumpForwardSpeed: 3.8,
+    jumpBackwardSpeed: 3.34,
+    gravity: 0.86,
     weight: 0.9,
     pushbox: { x: -14, y: -54, width: 28, height: 54 },
   },

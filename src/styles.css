@@ -142,7 +142,7 @@ canvas,
   /* 44px era o mínimo de acessibilidade, não um alvo confortável para jogar:
      em paisagem o polegar precisa acertar o botão sem olhar e, no agarrão,
      dois de uma vez. */
-  --touch-button-size: clamp(58px, 17dvh, 76px);
+  --touch-button-size: clamp(78px, 23dvh, 104px);
   --stick-size: clamp(100px, 30dvh, 140px);
 }
 

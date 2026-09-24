@@ -4,7 +4,7 @@ import { CpuController } from '../../ai/CpuController';
 import { inputFrameFromWire, wireInputFrame } from '../../online/inputCodec';
 import { combatStateHash } from '../../online/stateHash';
 import { CombatWorld } from '../CombatWorld';
-import { finisherVictimPose, finisherMonsterPose, FINISH_END, FINISH_WINDOW } from '../stageFinisher';
+import { finisherVictimPose, finisherMonsterPose, kitchenVictimPose, kitchenFinishCue, FINISH_END, FINISH_WINDOW, KITCHEN_DROP, KITCHEN_BONES, KITCHEN_POT_X, KITCHEN_POT_FEET_Y } from '../stageFinisher';
 import type { InputAction, InputFrame } from '../../types/combat';
 const input = (held: InputAction[] = [], pressed: InputAction[] = held): InputFrame => ({ held: new Set(held), pressed: new Set(pressed), released: new Set() });
 const empty = input();
@@ -55,7 +55,8 @@ describe('agarrão universal', () => {
 describe('finalização do Cais', () => {
   it('só abre na segunda derrota e somente no Cais; treino e empate não abrem', () => {
     const first = setup(); first.fighters[1].health = 0; first.step(empty,empty); expect(first.phase).toBe('roundOver');
-    for(const arena of ['sitio','cozinha-macabra'] as const) { const w=setup(undefined,undefined,arena); w.fighters[0].roundWins=1; w.fighters[1].health=0; w.step(empty,empty); expect(w.phase).toBe('roundOver'); }
+    const sitio=setup(undefined,undefined,'sitio'); sitio.fighters[0].roundWins=1; sitio.fighters[1].health=0; sitio.step(empty,empty); expect(sitio.phase).toBe('roundOver');
+    const kitchen=setup(undefined,undefined,'cozinha-macabra'); kitchen.fighters[0].roundWins=1; kitchen.fighters[1].health=0; kitchen.step(empty,empty); expect(kitchen.phase).toBe('finishReady');
     const draw=setup(); draw.fighters[0].roundWins=1; draw.fighters[0].health=0; draw.fighters[1].health=0; draw.step(empty,empty); expect(draw.phase).toBe('roundOver');
     const training=new CombatWorld(FIGHTERS[0]!,FIGHTERS[1]!,'training','cais-da-cidade'); advance(training,105); training.fighters[0].roundWins=1; training.fighters[1].health=0; training.step(empty,empty); expect(training.phase).toBe('active');
   });
@@ -90,6 +91,59 @@ describe('finalização do Cais', () => {
     const cpu=new CpuController(FIGHTERS[1]!,1,'normal');
     for(let f=0;f<480 && w.phase==='finishReady';f++) w.step(empty,cpu.sample(w.snapshot()));
     expect(w.phase).toBe('stageFinish');
+  });
+});
+
+describe('finalização da Cozinha Macabra', () => {
+  it('joga o derrotado na panela, a bruxa mexe e sobram ossos sem o monstro do cais', () => {
+    const w = setup(undefined, undefined, 'cozinha-macabra');
+    ready(w);
+    w.drainEvents();
+    w.step(chord, empty);
+    for (let i = 0; i < 30 && w.phase !== 'stageFinish'; i++) w.step(empty, empty);
+    expect(w.phase).toBe('stageFinish');
+    while (w.phase === 'stageFinish' && w.phaseFrame < KITCHEN_DROP) w.step(empty, empty);
+    expect(w.phaseFrame).toBe(KITCHEN_DROP);
+    expect(Math.abs(w.fighters[1].x - KITCHEN_POT_X)).toBeLessThanOrEqual(4);
+    expect(Math.abs(w.fighters[1].y - KITCHEN_POT_FEET_Y)).toBeLessThanOrEqual(2);
+    const inPot = kitchenVictimPose(KITCHEN_DROP, w.fighters[0].x, w.fighters[0].facing, w.fighters[0].id, w.fighters[1].id);
+    expect(inPot.visible).toBe(true);
+    expect(inPot.scale).toBeGreaterThan(0.3);
+    expect(inPot.scale).toBeLessThan(0.5);
+    while (w.phase === 'stageFinish' && w.phaseFrame < KITCHEN_BONES) w.step(empty, empty);
+    expect(kitchenVictimPose(w.phaseFrame, 0, 1).visible).toBe(false);
+    expect(kitchenFinishCue(KITCHEN_DROP)).toBe('potDrop');
+    expect(kitchenFinishCue(KITCHEN_BONES)).toBe('bonesLeft');
+    while (w.phase === 'stageFinish') w.step(empty, empty);
+    const events = w.drainEvents();
+    expect(w.phase).toBe('matchOver');
+    expect(w.snapshot().finisherCompleted).toBe(true);
+    expect(w.fighters[0].roundWins).toBe(2);
+    expect(events.filter(e => e.type === 'potDrop')).toHaveLength(1);
+    expect(events.filter(e => e.type === 'witchStir')).toHaveLength(3);
+    expect(events.filter(e => e.type === 'bonesLeft')).toHaveLength(1);
+    expect(events.filter(e => e.type === 'monsterBite' || e.type === 'monsterRoar' || e.type === 'finishSplash')).toHaveLength(0);
+    expect(events.filter(e => e.type === 'matchEnd')).toHaveLength(1);
+  });
+
+  it('dois clientes mantêm o mesmo hash e a CPU finaliza na panela', () => {
+    const a = setup(undefined, undefined, 'cozinha-macabra');
+    const b = setup(undefined, undefined, 'cozinha-macabra');
+    ready(a); ready(b);
+    for (let f = 0; f < 340; f++) {
+      const i = f === 0 ? chord : empty;
+      const packet = wireInputFrame(f, i, f === 1 ? 48 : 0);
+      a.step(inputFrameFromWire(packet), empty);
+      b.step(inputFrameFromWire(JSON.parse(JSON.stringify(packet))), empty);
+      expect(combatStateHash(a)).toBe(combatStateHash(b));
+    }
+    expect(a.snapshot().finisherCompleted).toBe(true);
+    const cpuWorld = setup(undefined, undefined, 'cozinha-macabra');
+    ready(cpuWorld, 1);
+    cpuWorld.fighters[1].x = 520;
+    const cpu = new CpuController(FIGHTERS[1]!, 1, 'normal');
+    for (let f = 0; f < 480 && cpuWorld.phase === 'finishReady'; f++) cpuWorld.step(empty, cpu.sample(cpuWorld.snapshot()));
+    expect(cpuWorld.phase).toBe('stageFinish');
   });
 });
 

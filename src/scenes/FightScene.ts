@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { FINISH_THROW, FINISH_END, finisherAttackerFrame, finisherVictimPose } from '../combat/stageFinisher';
+import { FINISH_THROW, FINISH_END, KITCHEN_DROP, finisherAttackerFrame, finisherVictimPose, kitchenVictimPose } from '../combat/stageFinisher';
 import { CpuController } from '../ai/CpuController';
 import { audioManager } from '../audio/AudioManager';
 import { MUSIC_TRACK_BY_ARENA } from '../audio/musicCatalog';
@@ -288,13 +288,17 @@ export class FightScene extends Phaser.Scene {
       const victim = cinematic && i !== snapshot.finisherWinner;
       const f = snapshot.phaseFrame;
       const winner = snapshot.fighters[snapshot.finisherWinner ?? 0];
-      const pose = finisherVictimPose(f, winner.x, winner.facing, winner.id, snapshot.fighters[i].id);
+      const kitchen = this.world.arena === 'cozinha-macabra';
+      const pose = kitchen
+        ? kitchenVictimPose(f, winner.x, winner.facing, winner.id, snapshot.fighters[i].id)
+        : finisherVictimPose(f, winner.x, winner.facing, winner.id, snapshot.fighters[i].id);
       this.views?.[i].setVisible(!victim || pose.visible);
       let fighter = snapshot.fighters[i];
       if (cinematic && !victim && f < 84) fighter = { ...fighter, poseMoveId: 'universalGrab',
         poseState: 'heavyAttack', poseStateFrame: finisherAttackerFrame(f), poseMoveConnected: 'hit' };
+      const thrownDepth = kitchen ? (f >= KITCHEN_DROP ? -23.6 : 22) : (f >= FINISH_THROW ? -23.5 : 22);
       this.views?.[i].sync(fighter, renderAlpha, victim ? {
-        scale: pose.scale, depth: f >= FINISH_THROW ? -23.5 : 22, shadow: false,
+        scale: pose.scale, depth: thrownDepth, shadow: false,
       } : undefined);
     }
     this.drawProjectiles(snapshot);
@@ -424,7 +428,9 @@ export class FightScene extends Phaser.Scene {
     if (event.type === 'finishThrow') audioManager.play('dread');
     if (event.type === 'monsterRoar') audioManager.play('monsterRoar');
     if (event.type === 'finishSplash') audioManager.play('waterCrash');
-    if (event.type === 'monsterBite') audioManager.play('boneCrunch');
+    if (event.type === 'monsterBite' || event.type === 'bonesLeft') audioManager.play('boneCrunch');
+    if (event.type === 'potDrop') audioManager.play('potDrop');
+    if (event.type === 'witchStir') audioManager.play('spoonStir');
     if (event.type === 'matchEnd') this.scheduleResult();
   }
 

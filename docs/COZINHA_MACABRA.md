@@ -8,7 +8,15 @@ Em CPU, versus local ou treino, confirme os dois lutadores. Na tela **Arena e co
 
 No online, o criador da sala (P1) escolhe Cais da Cidade ou Cozinha Macabra pelas setas da linha Arena. No teclado/gamepad, navegue até essa linha com cima/baixo e altere com esquerda/direita. P2 vê a escolha automaticamente. Os dois confirmam em Ficar pronto. Mudar a arena cancela as confirmações; o servidor recusa um pronto atrasado que se refira à arena anterior. A arena persistida também é restaurada ao reconectar no lobby.
 
-Os dois clientes usam a arena do início sincronizado, incluindo sua trilha. Morcegos, ratos e bruxa são ambientação local e não alteram o estado determinístico da luta.
+Os dois clientes usam a arena do início sincronizado, incluindo sua trilha. Morcegos, ratos e o ciclo normal da bruxa são ambientação local e não entram no hash. A finalização, descrita abaixo, é estado de combate e entra no hash.
+
+## Finalização
+
+Na segunda derrota (melhor de três), fora do treino e sem empate, o perdedor fica tonto. O vencedor tem oito segundos para se aproximar e agarrar com fraco + forte. Golpe comum, tempo esgotado ou treino encerram como nas outras arenas sem cinema. A CPU vencedora também se aproxima e agarra.
+
+O agarrão conectado repete o levantamento e joga o corpo no panelão da bruxa. Ela mexe três vezes. O corpo encolhe dentro da boca da panela e, no lugar do caldo verde, aparece um interior escuro: o que está na panela fica visível, sem ácido. No fim só restam os ossos, cobertos pela colher e pela borda. Morcegos e ratos somem durante o cozimento. O Sítio não tem essa janela; o Cais continua com o monstro do lago.
+
+Os sons são síntese original: queda na panela, três mexidas de colher e o estalo dos ossos. Respeitam volume, efeitos e mute. O motor online passou a `lockstep-v4-kitchen-pot`.
 
 ## Composição e movimento
 
@@ -59,6 +67,6 @@ ffmpeg -i art-source/audio/cozinha-macabra-original.mpeg -map 0:a:0 -c:a libvorb
 
 ## Verificação
 
-`kitchenAmbience.test.ts` cobre a origem das revoadas, intervalos, sentidos dos ratos, limites de objetos e retomada após tempos inválidos ou muito longos. `kitchen-stage.spec.ts` integra o CI e verifica seleção por toque/teclado, entrada na arena, reprodução da trilha da cozinha, troca de música no retorno ao menu, animações, pausa, retorno e descarte na saída em desktop e celular emulado.
+`kitchenAmbience.test.ts` cobre a origem das revoadas, intervalos, sentidos dos ratos, limites de objetos e retomada após tempos inválidos ou muito longos. `universalGrabFinisher.test.ts` cobre a janela, a trajetória até a panela, os três mexidos, os ossos e o hash dos dois clientes. `kitchen-stage.spec.ts` integra o CI e verifica seleção por toque/teclado, entrada na arena, reprodução da trilha da cozinha, troca de música no retorno ao menu, animações, pausa, retorno e descarte na saída em desktop e celular emulado. `universal-grab-finisher.spec.ts` também percorre a finalização da cozinha nos dois perfis.
 
 A animação não depende de timers ou tweens externos à atualização da cena. Não foram alterados dano, balanceamento, simulação ou dimensões da área de luta.

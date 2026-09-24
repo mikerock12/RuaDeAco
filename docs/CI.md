@@ -59,6 +59,8 @@ não tratados continuam falhando o job; os 66 testes permanecem ativos.
 
 A suíte de navegador inclui a seleção e ambientação da Cozinha Macabra nos
 dois perfis: bruxa/fauna animadas, congelamento na pausa e descarte ao sair.
+O mesmo job percorre a finalização da cozinha (panela aberta, sem ácido, ossos)
+dentro de `universal-grab-finisher.spec.ts`.
 
 O teste de reagendamento de alarme aguarda a desconexão persistida antes
 de antecipar o prazo; o fechamento assíncrono não pode sobrescrever a

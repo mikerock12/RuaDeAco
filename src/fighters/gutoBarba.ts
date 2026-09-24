@@ -11,15 +11,15 @@ export const gutoBarba: FighterDefinition = {
   abilities: ['Muralha Norte', 'Gancho do Urso', 'Abraço Glacial'],
   stats: {
     maxHealth: 1250,
-    walkSpeed: 2.15,
-    backwardSpeed: 1.75,
+    walkSpeed: 2.47,
+    backwardSpeed: 2.01,
     // Velocidades/aceleração verticais na escala do mundo 640x360
     // (dobradas na migração de 320x180; o tempo de voo não muda).
     jumpSpeed: 12.8,
     // Pulo diagonal curto e pesado (arquétipo tanque).
-    jumpForwardSpeed: 1.9,
-    jumpBackwardSpeed: 1.7,
-    gravity: 0.86,
+    jumpForwardSpeed: 2.19,
+    jumpBackwardSpeed: 1.96,
+    gravity: 0.81,
     weight: 1.28,
     pushbox: { x: -19, y: -61, width: 38, height: 61 },
   },

@@ -16,7 +16,7 @@ import type {
   LocalRect,
   MoveDefinition,
 } from '../types/combat';
-import { FINISH_WINDOW, FINISH_THROW, FINISH_SPLASH, FINISH_BITE, FINISH_END, finisherVictimPose } from './stageFinisher';
+import { FINISH_WINDOW, FINISH_THROW, FINISH_SPLASH, FINISH_BITE, FINISH_END, finisherVictimPose, kitchenFinishCue, kitchenVictimPose } from './stageFinisher';
 import type { ArenaDefinition } from '../types/game';
 import type { GameMode } from '../types/game';
 import {
@@ -1027,7 +1027,7 @@ export class CombatWorld {
 
     const loser: 0 | 1 = winner === 0 ? 1 : 0;
     this.fighters[winner].roundWins += 1;
-    if (this.arena === 'cais-da-cidade' && this.mode !== 'training'
+    if ((this.arena === 'cais-da-cidade' || this.arena === 'cozinha-macabra') && this.mode !== 'training'
       && this.fighters[winner].roundWins >= ROUNDS_TO_WIN) {
       this.finisherWinner = winner;
       this.phase = 'finishReady';
@@ -1096,11 +1096,16 @@ export class CombatWorld {
     const f = this.phaseFrame;
     attacker.previousX = attacker.x; attacker.previousY = attacker.y;
     defender.previousX = defender.x; defender.previousY = defender.y;
-    const pose = finisherVictimPose(f, attacker.x, attacker.facing, attacker.id, defender.id);
+    const kitchen = this.arena === 'cozinha-macabra';
+    const pose = kitchen
+      ? kitchenVictimPose(f, attacker.x, attacker.facing, attacker.id, defender.id)
+      : finisherVictimPose(f, attacker.x, attacker.facing, attacker.id, defender.id);
     defender.setGrabbedPose(attacker.id, f < 14 ? 'grabbedFront' : 'grabbedLifted',
       pose.x, pose.y, attacker.facing, pose.rotation, f, FINISH_END, f < 14 ? 0 : 7, 'front');
     attacker.captureCollisionPose(); defender.captureCollisionPose();
-    const type = f === FINISH_THROW ? 'monsterRoar' : f === FINISH_SPLASH ? 'finishSplash'
+    const type = kitchen
+      ? kitchenFinishCue(f)
+      : f === FINISH_THROW ? 'monsterRoar' : f === FINISH_SPLASH ? 'finishSplash'
       : [FINISH_BITE, FINISH_BITE + 24, FINISH_BITE + 51].includes(f) ? 'monsterBite' : null;
     if (type) this.emit({ type, frame: this.frame, attackerIndex: winner, defenderIndex: winner === 0 ? 1 : 0 });
     if (f >= FINISH_END) this.completeFinish();

@@ -5,7 +5,7 @@ import {
   type MusicTrack,
 } from './musicCatalog';
 
-export type SoundEffect = 'confirm' | 'hitHeavy' | 'swing' | 'hit' | 'block' | 'special' | 'ko' | 'round' | 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch';
+export type SoundEffect = 'confirm' | 'hitHeavy' | 'swing' | 'hit' | 'block' | 'special' | 'ko' | 'round' | 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch' | 'potDrop' | 'spoonStir';
 
 interface Tone {
   readonly frequency: number;
@@ -37,7 +37,7 @@ export interface AudioDebugState {
   readonly autoplayBlocked: boolean;
 }
 
-const TONES: Readonly<Record<Exclude<SoundEffect, 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch'>, Tone>> = {
+const TONES: Readonly<Record<Exclude<SoundEffect, 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch' | 'potDrop' | 'spoonStir'>, Tone>> = {
   confirm: { frequency: 520, endFrequency: 760, duration: 0.09, wave: 'square', gain: 0.16 },
   hit: { frequency: 120, endFrequency: 55, duration: 0.11, wave: 'sawtooth', gain: 0.28 },
   hitHeavy: { frequency: 92, endFrequency: 32, duration: 0.15, wave: 'sawtooth', gain: 0.3 },
@@ -203,18 +203,18 @@ export class AudioManager {
 
   play(effect: SoundEffect): void {
     if (!this.context || !this.effectsGain) return;
-    if (effect === 'dread' || effect === 'monsterRoar' || effect === 'waterCrash' || effect === 'boneCrunch') {
+    if (effect === 'dread' || effect === 'monsterRoar' || effect === 'waterCrash' || effect === 'boneCrunch' || effect === 'potDrop' || effect === 'spoonStir') {
       this.playHorror(effect); return;
     }
     this.scheduleTone(TONES[effect], this.effectsGain);
   }
 
-  private playHorror(effect: 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch'): void {
+  private playHorror(effect: 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch' | 'potDrop' | 'spoonStir'): void {
     const context = this.context!;
     if (context.state !== 'running') return;
     let buffer = this.horrorBuffers.get(effect);
     if (!buffer) {
-      const duration = effect === 'dread' ? 1.5 : effect === 'monsterRoar' ? 1.1 : 0.36;
+      const duration = effect === 'dread' ? 1.5 : effect === 'monsterRoar' ? 1.1 : effect === 'spoonStir' ? 0.28 : effect === 'potDrop' ? 0.32 : 0.36;
       buffer = context.createBuffer(1, Math.ceil(context.sampleRate * duration), context.sampleRate);
       const data = buffer.getChannelData(0);
       let seed = 317, low = 0;
@@ -228,6 +228,8 @@ export class AudioManager {
           ? (Math.sin(t * 2 * Math.PI * 54) + Math.sin(t * 2 * Math.PI * 57.3)) * 0.15 + low * 0.25
           : effect === 'monsterRoar' ? Math.tanh(Math.sin(t * 2 * Math.PI * (75 - 24 * p)) * 3) * 0.22 + low * pulse
           : effect === 'boneCrunch' ? noise * Math.pow(pulse, 12) * 0.55 + low * 0.6 + Math.sin(t * 390) * 0.1
+          : effect === 'potDrop' ? Math.sin(t * 2 * Math.PI * (96 - 48 * p)) * 0.34 + noise * 0.06
+          : effect === 'spoonStir' ? Math.sin(t * 2 * Math.PI * (210 + 36 * Math.sin(t * 28))) * 0.1 + noise * 0.04
           : low * 1.4 + noise * 0.09;
         data[i] = Math.max(-0.7, Math.min(0.7, sample * envelope));
       }

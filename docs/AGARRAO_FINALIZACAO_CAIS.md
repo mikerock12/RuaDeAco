@@ -22,8 +22,10 @@ o perdedor fica tonto. O vencedor tem oito segundos para se aproximar e agir.
 Um agarrão conectado inicia uma sequência de cinco segundos: levantamento,
 arremesso para o lago, água deslocada, monstro emergindo, mordidas e submersão.
 Golpe comum encerra normalmente. Sem ação, a janela expira e confirma a vitória.
-Empate, primeira derrota e treinamento não abrem a janela. As outras arenas
-mantêm o encerramento normal. A CPU vencedora também sabe se aproximar e finalizar.
+Empate, primeira derrota e treinamento não abrem a janela. O Sítio mantém o
+encerramento normal. A Cozinha Macabra usa a mesma espera e o mesmo agarrão,
+mas o corpo vai para o panelão — ver [Cozinha Macabra](COZINHA_MACABRA.md).
+A CPU vencedora também sabe se aproximar e finalizar.
 
 Cada lutador tem uma folha própria de 12 poses para o agarrão, preservando
 roupa, identidade e proporções. A sequência inclui alcance, pegada, agachamento,

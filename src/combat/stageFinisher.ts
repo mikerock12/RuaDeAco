@@ -58,3 +58,57 @@ export function finisherVictimPose(frame: number, originX: number, facing: numbe
     y:mix(FINISH_LAKE_Y-2,monster.mouthY+Math.cos(rotation)*torso,caught),rotation,
     scale,visible:frame<FINISH_BITE};
 }
+
+/** Boca do panelão no espaço 640×360. O interior escuro cobre o caldo verde. */
+export const KITCHEN_POT_X = 442;
+export const KITCHEN_POT_Y = 152;
+export const KITCHEN_POT_FEET_Y = 170;
+export const KITCHEN_DROP = 108;
+export const KITCHEN_BONES = 210;
+const KITCHEN_STIR_AT = [140, 164, 188] as const;
+
+/** Deslocamento inteiro, sem seno: o hash online não depende de libm. */
+function stirShift(frame: number): number {
+  const t = frame % 16;
+  return t < 8 ? t - 4 : 12 - t;
+}
+
+export function kitchenFinishCue(frame: number): 'potDrop' | 'witchStir' | 'bonesLeft' | null {
+  if (frame === KITCHEN_DROP) return 'potDrop';
+  if ((KITCHEN_STIR_AT as readonly number[]).includes(frame)) return 'witchStir';
+  if (frame === KITCHEN_BONES) return 'bonesLeft';
+  return null;
+}
+
+/**
+ * Mesmo levantamento do agarrão, arco até o panelão e encolhimento enquanto a
+ * bruxa mexe. A partir de KITCHEN_BONES o corpo some: a panela mostra só ossos.
+ */
+export function kitchenVictimPose(frame: number, originX: number, facing: number,
+  attacker: FighterId = 'rafa-mare', victim: FighterId = 'noir-reflexo') {
+  const held = grabVictimArtPose(attacker, victim, finisherAttackerFrame(Math.min(frame, 59)));
+  if (frame < FINISH_THROW) {
+    return { x: originX + facing * held.x, y: 304 + held.y, rotation: facing * held.rotation, scale: 1, visible: true };
+  }
+  const startX = originX + facing * held.x;
+  const startY = 304 + held.y;
+  if (frame < KITCHEN_DROP) {
+    const flight = clamp((frame - FINISH_THROW) / (KITCHEN_DROP - FINISH_THROW));
+    return {
+      x: mix(startX, KITCHEN_POT_X, flight),
+      y: mix(startY, KITCHEN_POT_FEET_Y, flight) - 78 * 4 * flight * (1 - flight),
+      rotation: facing * mix(held.rotation, 0.6, flight),
+      scale: mix(1, 0.42, ease(flight)),
+      visible: true,
+    };
+  }
+  const sink = ease(clamp((frame - KITCHEN_DROP) / (KITCHEN_BONES - KITCHEN_DROP)));
+  const shift = stirShift(frame);
+  return {
+    x: KITCHEN_POT_X + shift,
+    y: KITCHEN_POT_FEET_Y + (frame % 2),
+    rotation: shift * 0.08,
+    scale: mix(0.42, 0.28, sink),
+    visible: frame < KITCHEN_BONES,
+  };
+}

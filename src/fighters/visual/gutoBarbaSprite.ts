@@ -175,8 +175,8 @@ export const gutoBarbaSpriteAsset: FighterSpriteAsset = {
   animations: {
     universalGrab: universalGrabSprite('guto-barba', 288),
     idle: animation('idle', 5, -1),
-    walk: animation('walk', 9, -1),
-    walkBackward: animation('walkBackward', 7, -1),
+    walk: animation('walk', 10, -1),
+    walkBackward: animation('walkBackward', 8, -1),
     jumpNeutral: animation('jumpNeutral', 6, 0),
     jumpForward: animation('jumpForward', 6, 0),
     jumpBackward: animation('jumpBackward', 6, 0),
