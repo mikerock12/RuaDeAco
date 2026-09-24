@@ -75,23 +75,23 @@ describe('Léo Violeta e Noir Reflexo', () => {
     expect(AVAILABLE_FIGHTERS).toEqual(expect.arrayContaining([leoVioleta, noirReflexo]));
     expect(leoVioleta.stats).toEqual({
       maxHealth: 1050,
-      walkSpeed: 3.55,
-      backwardSpeed: 2.8,
+      walkSpeed: 4.08,
+      backwardSpeed: 3.22,
       jumpSpeed: 14.4,
-      jumpForwardSpeed: 2.95,
-      jumpBackwardSpeed: 2.55,
-      gravity: 0.94,
+      jumpForwardSpeed: 3.39,
+      jumpBackwardSpeed: 2.93,
+      gravity: 0.88,
       weight: 1.05,
       pushbox: { x: -15, y: -56, width: 30, height: 56 },
     });
     expect(noirReflexo.stats).toEqual({
       maxHealth: 980,
-      walkSpeed: 3.25,
-      backwardSpeed: 3.1,
+      walkSpeed: 3.74,
+      backwardSpeed: 3.57,
       jumpSpeed: 14.4,
-      jumpForwardSpeed: 2.85,
-      jumpBackwardSpeed: 2.7,
-      gravity: 0.92,
+      jumpForwardSpeed: 3.28,
+      jumpBackwardSpeed: 3.11,
+      gravity: 0.86,
       weight: 0.98,
       pushbox: { x: -14, y: -54, width: 28, height: 54 },
     });

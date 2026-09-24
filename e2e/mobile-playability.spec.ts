@@ -193,7 +193,7 @@ test('um polegar no vão entre fraco e forte agarra, e a face do botão não', a
   const heavy = await center(page, '.touch-button[data-action="heavy"]');
   const largura = await page.locator('.touch-button[data-action="light"]').evaluate(el => el.getBoundingClientRect().width);
   // Alvo confortável: bem acima do mínimo de acessibilidade de 44px.
-  expect(largura).toBeGreaterThanOrEqual(56);
+  expect(largura).toBeGreaterThanOrEqual(72);
 
   // A face do botão continua exclusiva: encostar na borda voltada para o
   // vizinho não pode disparar o acorde sem querer.

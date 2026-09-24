@@ -500,7 +500,7 @@ describe('AudioManager com músicas reais', () => {
 describe('foley original da finalização', () => {
   it('produz áudio finito, limitado e reaproveita cada buffer através do volume de efeitos', async () => {
     const { manager, context } = setup(); await manager.unlock();
-    for (const effect of ['dread', 'monsterRoar', 'waterCrash', 'boneCrunch'] as const) {
+    for (const effect of ['dread', 'monsterRoar', 'waterCrash', 'boneCrunch', 'potDrop', 'spoonStir'] as const) {
       manager.play(effect); const a=context.sources.at(-1)!;
       const samples=a.buffer!.getChannelData(0);
       expect(samples.some(value=>Math.abs(value)>0.05)).toBe(true);

@@ -133,6 +133,7 @@ export interface FighterDeterministicState {
   readonly stun: readonly [number, number, number];
   readonly knockdownPending: boolean;
   readonly airDriftX: number;
+  readonly jumpQueued: boolean;
   readonly damageTowardPassive: number;
   readonly frozen: boolean;
   readonly moveConnected: 'none' | 'hit' | 'block';
@@ -189,8 +190,10 @@ export class FighterRuntime {
   private hitStunFrames = 0;
   private blockStunFrames = 0;
   private knockdownPending = false;
-  // Impulso horizontal do pulo, fixado na decolagem (sem controle aéreo).
+  // Impulso da decolagem. No ar, segurar uma direção corrige aos poucos.
   private airDriftX = 0;
+  // Cima apertado ou segurado no pouso sai no primeiro frame em que o corpo libera.
+  private jumpQueued = false;
   private damageTowardPassive = 0;
   private frozen = false;
   private moveConnected: 'none' | 'hit' | 'block' = 'none';
@@ -257,8 +260,12 @@ export class FighterRuntime {
 
     // A entrada já foi registrada no CommandBuffer acima. Durante estes
     // poucos frames o corpo conclui o pouso, e comandos feitos no fim da
-    // janela continuam disponíveis ao voltar para idle.
-    if (this.state === 'landing') return;
+    // janela continuam disponíveis ao voltar para idle. Cima entra na fila
+    // para o pulo não se perder no frame em que o pé toca o chão.
+    if (this.state === 'landing') {
+      if (input.pressed.has('up') || input.held.has('up')) this.jumpQueued = true;
+      return;
+    }
 
     if (this.state === 'hitStun' || this.state === 'thrown') {
       this.x += this.velocityX;
@@ -304,6 +311,14 @@ export class FighterRuntime {
     }
 
     if (this.y < GROUND_Y) {
+      const airHorizontal = Number(input.held.has('right')) - Number(input.held.has('left'));
+      if (airHorizontal !== 0) {
+        const movingForward = airHorizontal === this.facing;
+        const target = airHorizontal * (movingForward
+          ? this.definition.stats.jumpForwardSpeed
+          : this.definition.stats.jumpBackwardSpeed);
+        this.airDriftX = this.airDriftX * 0.72 + target * 0.28;
+      }
       let trajectory: 'neutral' | 'forward' | 'backward' = 'neutral';
       if (this.airDriftX > 0) trajectory = this.facing === 1 ? 'forward' : 'backward';
       else if (this.airDriftX < 0) trajectory = this.facing === 1 ? 'backward' : 'forward';
@@ -325,15 +340,12 @@ export class FighterRuntime {
       return;
     }
 
-    if (input.held.has('block')) {
-      this.transition(input.held.has('down') ? 'blockCrouching' : 'blockStanding');
-      return;
-    }
-
-    // Pulo tem prioridade sobre golpes terrestres no frame da decolagem. O
-    // botão de ataque já foi registrado no CommandBuffer e será consumido no
+    // Pulo tem prioridade sobre defesa e golpes terrestres no frame da decolagem.
+    // O botão de ataque já foi registrado no CommandBuffer e será consumido no
     // primeiro frame aéreo, tornando W+F/W+G e equivalentes responsivos.
-    if (input.pressed.has('up')) {
+    // jumpQueued cobre o cima apertado durante o pouso, antes deste frame.
+    if (input.pressed.has('up') || this.jumpQueued) {
+      this.jumpQueued = false;
       const horizontal = Number(input.held.has('right')) - Number(input.held.has('left'));
       const movingForward = horizontal === this.facing;
       const jumpDrift = movingForward
@@ -346,6 +358,11 @@ export class FighterRuntime {
       // próximo beginFrame trata o lutador como se estivesse no chão,
       // cancelando o salto para idle/walk.
       this.updateVertical();
+      return;
+    }
+
+    if (input.held.has('block')) {
+      this.transition(input.held.has('down') ? 'blockCrouching' : 'blockStanding');
       return;
     }
 
@@ -784,6 +801,7 @@ export class FighterRuntime {
     this.blockStunFrames = 0;
     this.knockdownPending = false;
     this.airDriftX = 0;
+    this.jumpQueued = false;
     this.frozen = false;
     this.moveConnected = 'none';
     this.transition('idle');
@@ -930,6 +948,7 @@ export class FighterRuntime {
       stun: [this.hitStopFrames, this.hitStunFrames, this.blockStunFrames],
       knockdownPending: this.knockdownPending,
       airDriftX: this.airDriftX,
+      jumpQueued: this.jumpQueued,
       damageTowardPassive: this.damageTowardPassive,
       frozen: this.frozen,
       moveConnected: this.moveConnected,
@@ -993,6 +1012,7 @@ export class FighterRuntime {
     this.velocityX = 0;
     this.velocityY = 0;
     this.airDriftX = 0;
+    this.jumpQueued = false;
     this.hitStopFrames = 0;
     this.hitStunFrames = 0;
     this.blockStunFrames = 0;

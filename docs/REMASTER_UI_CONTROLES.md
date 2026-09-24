@@ -47,6 +47,9 @@ antes de o lutador reagir, e essa distância era sentida como atraso.
 **Tamanho e alcance dos botões.** De `clamp(44px, 12dvh, 56px)` para
 `clamp(58px, 17dvh, 76px)` — em paisagem de celular, de ~45px para ~64px. 44px
 é o mínimo de acessibilidade, não um alvo confortável para jogar sem olhar.
+Em 24/09/2026 os botões passaram a `clamp(78px, 23dvh, 104px)` e o vão
+compartilhado de 18% para 20% da largura, para o agarrão caber melhor no
+polegar. A face de cada botão continua exclusiva.
 
 **Acorde com um polegar só.** Cada dedo acionava exatamente um botão, então
 fraco + forte — o agarrão — exigia dois dedos na mesma mão, o que era inviável
@@ -97,6 +100,16 @@ multiplicadas pelos mesmos 22%:
 A faixa cai de 13,3–18,3 para 14,3–15,4. Como a animação de andar usa a arte de
 corrida, a velocidade maior também aproxima o que se vê do que acontece.
 
-Dano, frame data, hitboxes, física e protocolo continuam intactos; a latência
+Dano, frame data, hitboxes e protocolo de inputs continuam intactos; a latência
 de comando segue em 1 frame. Os testes de stats oficiais dos lutadores foram
 atualizados com os novos valores e seguem guardando a regressão.
+
+## Andar e pular menos travados — 24/09/2026
+
+O +22% de 20/09 ainda deixava o passeio longo e o pulo preso no chão.
+
+- Andar e recuar, e o deslocamento horizontal do pulo, subiram mais 15% no mesmo fator para os seis. A cadência foi recalculada para continuar perto de 15 px por quadro.
+- A gravidade caiu cerca de 6%, sem aumentar o impulso vertical: o arco dura um pouco mais e não corta o topo da tela.
+- No ar, segurar esquerda ou direita corrige o drift (72% do valor anterior + 28% do alvo por frame). Soltar a direção mantém o impulso da decolagem.
+- O pouso dura 3 frames em vez de 6. Cima apertado ou segurado durante o pouso sai no primeiro frame livre, sem precisar tocar de novo.
+- Motor `lockstep-v4-kitchen-pot`, porque posição e tempo de voo mudam o hash.

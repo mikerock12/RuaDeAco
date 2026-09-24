@@ -195,17 +195,56 @@ describe('pulo diagonal', () => {
     expect(forward.x - 300).toBeGreaterThan(300 - backward.x);
   });
 
-  it('pulo vertical não desloca ao segurar direção depois da decolagem', () => {
-    const fighter = new FighterRuntime(rafaMare, 200, 1);
-    fighter.beginFrame(input([], ['up']), 1, 400);
-    fighter.finishFrame();
+  it('pulo vertical continua reto sem direção e aceita correção no ar', () => {
+    const straight = new FighterRuntime(rafaMare, 200, 1);
+    straight.beginFrame(input([], ['up']), 1, 400);
+    straight.finishFrame();
     let frameNumber = 1;
-    while (fighter.y < GROUND_Y && frameNumber < 240) {
+    while (straight.y < GROUND_Y && frameNumber < 240) {
       frameNumber += 1;
-      fighter.beginFrame(input(['right']), frameNumber, 400);
+      straight.beginFrame(input(), frameNumber, 400);
+      straight.finishFrame();
+    }
+    expect(straight.x).toBe(200);
+
+    const steered = new FighterRuntime(rafaMare, 200, 1);
+    steered.beginFrame(input([], ['up']), 1, 400);
+    steered.finishFrame();
+    frameNumber = 1;
+    while (steered.y < GROUND_Y && frameNumber < 240) {
+      frameNumber += 1;
+      steered.beginFrame(input(['right']), frameNumber, 400);
+      steered.finishFrame();
+    }
+    expect(steered.x).toBeGreaterThan(230);
+    const forward = new FighterRuntime(rafaMare, 200, 1);
+    forward.beginFrame(input(['right'], ['up']), 1, 400);
+    forward.finishFrame();
+    rideJump(forward, 1);
+    expect(forward.x - 200).toBeGreaterThan(steered.x - 200);
+  });
+
+  it('segurar cima no pouso faz o próximo pulo sair sem novo toque', () => {
+    const fighter = new FighterRuntime(rafaMare, 200, 1);
+    fighter.beginFrame(input(['up'], ['up']), 1, 400);
+    fighter.finishFrame();
+    let frame = 1;
+    while (fighter.state !== 'landing' && frame < 240) {
+      frame += 1;
+      fighter.beginFrame(input(['up']), frame, 400);
       fighter.finishFrame();
     }
-    expect(fighter.x).toBe(200);
+    expect(fighter.state).toBe('landing');
+    while (fighter.state === 'landing' && frame < 280) {
+      frame += 1;
+      fighter.beginFrame(input(['up']), frame, 400);
+      fighter.finishFrame();
+    }
+    expect(fighter.state).toBe('idle');
+    frame += 1;
+    fighter.beginFrame(input(['up']), frame, 400);
+    expect(fighter.state).toBe('jump');
+    expect(fighter.y).toBeLessThan(GROUND_Y);
   });
 
   it('Rafa tem pulo diagonal mais longo que Guto', () => {
@@ -215,7 +254,7 @@ describe('pulo diagonal', () => {
 });
 
 describe('pouso', () => {
-  it('mantém o buffer de comando ativo durante os 6 frames de landing', () => {
+  it('mantém o buffer de comando ativo durante o pouso', () => {
     const fighter = new FighterRuntime(rafaMare, 200, 1);
     fighter.beginFrame(input(['up'], ['up']), 1, 400);
     fighter.finishFrame();

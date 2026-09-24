@@ -114,8 +114,8 @@ export const leoVioletaSpriteAsset: FighterSpriteAsset = {
   animations: {
     universalGrab: universalGrabSprite('leo-violeta', 256),
     idle: animation('idle', 8, -1),
-    walk: animation('walk', 14, -1),
-    walkBackward: animation('walkBackward', 11, -1),
+    walk: animation('walk', 16, -1),
+    walkBackward: animation('walkBackward', 13, -1),
     jumpNeutral: animation('jumpNeutral', 10, 0),
     jumpForward: animation('jumpForward', 10, 0),
     jumpBackward: animation('jumpBackward', 10, 0),

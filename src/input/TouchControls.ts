@@ -12,7 +12,9 @@ const ALL_TOUCH_ACTIONS = [...DIRECTION_ACTIONS, ...COMBAT_ACTIONS];
 // Alcance extra de cada botão, em fração da própria largura. Calibrado sobre o
 // diamante: no vão entre dois vizinhos os dois respondem, mas um toque na borda
 // interna de um botão ainda aciona só ele, para não sair agarrão sem querer.
-const BRIDGE_RATIO = 0.18;
+// 0.20 alarga o vão compartilhado junto com o botão maior, e ainda deixa a
+// borda interna de cada face exclusiva: encostar num botão não agarra sozinho.
+const BRIDGE_RATIO = 0.2;
 
 interface DirectionSpec {
   readonly action: InputAction;
