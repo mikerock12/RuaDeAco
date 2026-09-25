@@ -31,8 +31,16 @@ import {
   resolveSafeFrameIndex,
 } from './safeAnimationFrame';
 
+export interface FighterViewPresentation {
+  readonly scale: number;
+  readonly depth: number;
+  readonly shadow: boolean;
+  /** Linha horizontal da tela abaixo da qual o corpo é cortado (ex.: dentro do panelão). */
+  readonly cutBelowY?: number | null;
+}
+
 export interface FighterView {
-  sync(snapshot: FighterSnapshot, alpha: number, presentation?: { scale: number; depth: number; shadow: boolean }): void;
+  sync(snapshot: FighterSnapshot, alpha: number, presentation?: FighterViewPresentation): void;
   setVisible(visible: boolean): void;
   destroy(): void;
 }
@@ -88,7 +96,7 @@ class SpriteFighterView implements FighterView {
     this.moveEffect?.setName(`${definition.id}-move-effect`);
   }
 
-  sync(snapshot: FighterSnapshot, alpha: number, presentation?: { scale: number; depth: number; shadow: boolean }): void {
+  sync(snapshot: FighterSnapshot, alpha: number, presentation?: FighterViewPresentation): void {
     if (this.destroyed) return;
 
     const worldX = Phaser.Math.Linear(snapshot.previousX, snapshot.x, alpha);
@@ -135,6 +143,7 @@ class SpriteFighterView implements FighterView {
     }
 
     keepFighterBodyColorsNeutral(this.sprite, snapshot);
+    this.applyCut(presentation?.cutBelowY ?? null);
     this.groundShadow.sync(snapshot, roundPixel(worldToScreen(worldX)));
     this.groundShadow.setVisible(this.viewVisible && (presentation?.shadow ?? true));
     this.statusPresentation.sync(snapshot, roundPixel(x), roundPixel(y), 18);
@@ -219,6 +228,50 @@ class SpriteFighterView implements FighterView {
     for (const entry of this.statusEffectSprites) entry.sprite.destroy();
     this.groundShadow.destroy();
     this.statusPresentation.destroy();
+  }
+
+  /**
+   * Esconde a parte do corpo abaixo de uma linha da tela. O recorte é feito no
+   * espaço da textura, então cobre corpo em pé (corta linhas de baixo), de
+   * cabeça para baixo (corta linhas de cima) e deitado (corta colunas).
+   */
+  private applyCut(cutBelowY: number | null): void {
+    const sprite = this.sprite;
+    if (cutBelowY === null) {
+      if (sprite.isCropped) sprite.setCrop();
+      return;
+    }
+    const frame = sprite.frame;
+    const width = frame.width;
+    const height = frame.height;
+    const scaleY = Math.abs(sprite.scaleY) || 1;
+    const scaleX = Math.abs(sprite.scaleX) || 1;
+    const cos = Math.cos(sprite.rotation);
+    const sin = Math.sin(sprite.rotation);
+    // Distância vertical na tela entre a linha de corte e a raiz (origem nos pés).
+    const drop = cutBelowY - sprite.y;
+    if (Math.abs(cos) >= 0.5) {
+      // Linha r da textura fica em y = raiz + (r - altura) * escala * cos.
+      const rows = drop / (scaleY * cos);
+      if (cos > 0) {
+        const visibleRows = Math.max(0, Math.min(height, Math.floor(height + rows)));
+        sprite.setCrop(0, 0, width, visibleRows);
+      } else {
+        const firstRow = Math.max(0, Math.min(height, Math.ceil(height + rows)));
+        sprite.setCrop(0, firstRow, width, height - firstRow);
+      }
+      return;
+    }
+    // Corpo deitado: a coluna c fica em y = raiz + (c - largura/2) * escala * sin (espelho incluso).
+    const mirror = sprite.scaleX < 0 ? -1 : 1;
+    const columns = drop / (scaleX * sin * mirror);
+    if (sin * mirror > 0) {
+      const visibleColumns = Math.max(0, Math.min(width, Math.floor(width / 2 + columns)));
+      sprite.setCrop(0, 0, visibleColumns, height);
+    } else {
+      const firstColumn = Math.max(0, Math.min(width, Math.ceil(width / 2 + columns)));
+      sprite.setCrop(firstColumn, 0, width - firstColumn, height);
+    }
   }
 
   private createGroundShadow(scene: Phaser.Scene, definition: FighterDefinition): FighterGroundShadow {

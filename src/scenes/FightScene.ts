@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { FINISH_THROW, FINISH_END, KITCHEN_DROP, finisherAttackerFrame, finisherVictimPose, kitchenVictimPose } from '../combat/stageFinisher';
+import { FINISH_THROW, FINISH_END, KITCHEN_DROP, SITIO_IMPALE, SITIO_STEP_BACK_END, SITIO_STEP_BACK_START, finisherAttackerFrame, finisherVictimPose, sitioAttackerShift } from '../combat/stageFinisher';
 import { CpuController } from '../ai/CpuController';
 import { audioManager } from '../audio/AudioManager';
 import { MUSIC_TRACK_BY_ARENA } from '../audio/musicCatalog';
@@ -283,22 +283,31 @@ export class FightScene extends Phaser.Scene {
     const renderAlpha = this.capturePaused ? 1 : this.runner.alpha;
     const cinematic = snapshot.finisherWinner !== null && (snapshot.phase === 'stageFinish'
       || snapshot.finisherCompleted);
-    this.stageView.setFinisherFrame?.(cinematic ? Math.min(FINISH_END, snapshot.phaseFrame) : snapshot.phase === 'finishReady' ? 0 : null);
+    const finisherActor = snapshot.fighters[snapshot.finisherWinner ?? 0];
+    this.stageView.setFinisherFrame?.(cinematic ? Math.min(FINISH_END, snapshot.phaseFrame) : snapshot.phase === 'finishReady' ? 0 : null,
+      { originX: finisherActor.x, facing: finisherActor.facing });
     for (const i of [0, 1] as const) {
       const victim = cinematic && i !== snapshot.finisherWinner;
       const f = snapshot.phaseFrame;
       const winner = snapshot.fighters[snapshot.finisherWinner ?? 0];
-      const kitchen = this.world.arena === 'cozinha-macabra';
-      const pose = kitchen
-        ? kitchenVictimPose(f, winner.x, winner.facing, winner.id, snapshot.fighters[i].id)
-        : finisherVictimPose(f, winner.x, winner.facing, winner.id, snapshot.fighters[i].id);
+      const arena = this.world.arena;
+      const pose = finisherVictimPose(arena, f, winner.x, winner.facing, winner.id, snapshot.fighters[i].id);
       this.views?.[i].setVisible(!victim || pose.visible);
       let fighter = snapshot.fighters[i];
       if (cinematic && !victim && f < 84) fighter = { ...fighter, poseMoveId: 'universalGrab',
         poseState: 'heavyAttack', poseStateFrame: finisherAttackerFrame(f), poseMoveConnected: 'hit' };
-      const thrownDepth = kitchen ? (f >= KITCHEN_DROP ? -23.6 : 22) : (f >= FINISH_THROW ? -23.5 : 22);
+      else if (cinematic && !victim && arena === 'sitio' && f >= SITIO_STEP_BACK_START && f < SITIO_STEP_BACK_END
+        && sitioAttackerShift(f, fighter.x, fighter.facing) !== 0) {
+        fighter = { ...fighter, poseMoveId: null, poseState: 'walkBackward', poseStateFrame: f - SITIO_STEP_BACK_START };
+      }
+      // Depois do arremesso o corpo entra na camada do cenário de cada arena:
+      // entre o interior e a borda do panelão, à frente do monstro, ou entre o
+      // mascarado e as pontas do tridente.
+      const thrownDepth = arena === 'cozinha-macabra' ? (f >= KITCHEN_DROP ? -23.6 : 22)
+        : arena === 'sitio' ? (f >= SITIO_IMPALE ? -37.6 : 22)
+        : (f >= FINISH_THROW ? -23.5 : 22);
       this.views?.[i].sync(fighter, renderAlpha, victim ? {
-        scale: pose.scale, depth: thrownDepth, shadow: false,
+        scale: pose.scale, depth: thrownDepth, shadow: false, cutBelowY: f >= FINISH_THROW ? pose.cutBelowY : null,
       } : undefined);
     }
     this.drawProjectiles(snapshot);
@@ -431,6 +440,9 @@ export class FightScene extends Phaser.Scene {
     if (event.type === 'monsterBite' || event.type === 'bonesLeft') audioManager.play('boneCrunch');
     if (event.type === 'potDrop') audioManager.play('potDrop');
     if (event.type === 'witchStir') audioManager.play('spoonStir');
+    if (event.type === 'shedDoors') audioManager.play('woodCreak');
+    if (event.type === 'tridentStab') audioManager.play('fleshStab');
+    if (event.type === 'shedSlam') audioManager.play('doorSlam');
     if (event.type === 'matchEnd') this.scheduleResult();
   }
 

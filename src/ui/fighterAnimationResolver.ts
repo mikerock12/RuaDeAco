@@ -123,7 +123,12 @@ export function resolveFighterAnimation(
   if (state === 'blockStanding') return { id: 'blockStanding', localFrame: snapshot.stateFrame };
   if (state === 'blockCrouching') return { id: 'blockCrouching', localFrame: snapshot.stateFrame };
   if (state === 'hitStun') return { id: 'hit', localFrame: snapshot.stateFrame };
-  if (state === 'knockdown') return { id: 'knockdown', localFrame: snapshot.stateFrame };
+  if (state === 'knockdown') {
+    // Cravada do agarrão: a vítima já está estendida; não repete o tombo em pé.
+    return snapshot.victimPoseFrame !== null
+      ? { id: 'knockdown', localFrame: snapshot.stateFrame, explicitFrame: snapshot.victimPoseFrame }
+      : { id: 'knockdown', localFrame: snapshot.stateFrame };
+  }
   if (state === 'wakeUp') {
     return { id: 'wakeUp', localFrame: snapshot.stateFrame, phaseFrames: WAKE_UP_FRAMES };
   }

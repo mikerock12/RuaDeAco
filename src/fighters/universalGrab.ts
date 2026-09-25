@@ -7,19 +7,20 @@ export const universalGrab: MoveDefinition = {
   totalFrames: 66, meterCost: 0, meterGainOnHit: 10, meterGainOnBlock: 0, lockFacing: true,
   hitboxes: [{ range: { from: 6, to: 9 }, boxes: [{
     id: 'universal-grab', kind: 'throw', level: 'mid', x: 0, y: -120, width: 58, height: 115,
-    airAvoidable: true, damage: 125, chipDamage: 0, hitStun: 32, blockStun: 0,
+    airAvoidable: true, damage: 125, chipDamage: 0, hitStun: 8, blockStun: 0,
     hitStop: 3, priority: 3, knockbackX: 2, knockbackY: 10, knockdown: true,
   }] }],
   grab: {
-    holdStartFrame: 14, releaseFrame: 42, throwVelocityX: 2, throwVelocityY: 12,
+    // Cravada: a vítima chega ao chão deitada de costas nas mãos do atacante e
+    // é solta já em knockdown, sem pairar em 'thrown' nem levantar antes de cair.
+    holdStartFrame: 14, releaseFrame: 46, slam: true, throwVelocityX: 2, throwVelocityY: 0,
     victimAnchorX: 48, victimAnchorY: -80, victimRotation: 0, whiffRecoveryFrame: 50,
+    // Estados de referência; posição, quadro e rotação vêm de grabVictimArtPose,
+    // que mede o ponto de pega em cada folha de vítima e o prende às mãos.
     victimTimeline: [
-      { frame: 6, state: 'grabbedFront', poseFrame: 0, victimAnchorX: 50, victimAnchorY: 0, victimRotation: 0 },
-      { frame: 13, state: 'grabbedFront', poseFrame: 5, victimAnchorX: 44, victimAnchorY: -6, victimRotation: 0 },
+      { frame: 6, state: 'grabbedFront', poseFrame: 0, victimAnchorX: 44, victimAnchorY: 0, victimRotation: 0 },
       { frame: 14, state: 'grabbedLifted', poseFrame: 0, victimAnchorX: 44, victimAnchorY: -12, victimRotation: 0 },
-      { frame: 28, state: 'grabbedLifted', poseFrame: 7, victimAnchorX: 48, victimAnchorY: -85, victimRotation: 0 },
-      { frame: 34, state: 'grabbedLifted', poseFrame: 7, victimAnchorX: 48, victimAnchorY: -85, victimRotation: 0 },
-      { frame: 41, state: 'grabbedLifted', poseFrame: 7, victimAnchorX: 60, victimAnchorY: -40, victimRotation: 1.2 },
+      { frame: 45, state: 'grabbedLifted', poseFrame: 4, victimAnchorX: 60, victimAnchorY: 0, victimRotation: 0 },
     ],
   },
 };

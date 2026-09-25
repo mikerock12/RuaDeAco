@@ -173,6 +173,8 @@ export interface GrabDefinition extends GrabVictimTransform {
   readonly throwVelocityY: number;
   readonly victimPhases?: readonly GrabVictimPhase[];
   readonly victimTimeline?: readonly GrabVictimKeyframe[];
+  /** Cravada no chão: a soltura entra direto em knockdown deitado, sem a fase 'thrown'. */
+  readonly slam?: boolean;
   readonly victimOffsets?: Partial<Readonly<Record<FighterId, GrabVictimOffset>>>;
   /** Frame absoluto para o qual um agarrão que errou salta antes da recuperação. */
   readonly whiffRecoveryFrame?: number;
@@ -311,6 +313,9 @@ export interface CombatEvent {
     | 'potDrop'
     | 'witchStir'
     | 'bonesLeft'
+    | 'shedDoors'
+    | 'tridentStab'
+    | 'shedSlam'
     | 'hit'
     | 'blocked'
     | 'special'

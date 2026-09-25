@@ -142,6 +142,9 @@ export interface FighterDeterministicState {
 const orderedActions = (actions: ReadonlySet<string>): readonly string[] =>
   [...actions].sort();
 
+/** Último quadro da folha knockdown: corpo estendido no chão. */
+const KNOCKDOWN_LYING_FRAME = 3;
+
 export class FighterRuntime {
   readonly id: FighterId;
   readonly definition: FighterDefinition;
@@ -432,6 +435,7 @@ export class FighterRuntime {
       this.stateFrame += 1;
       if (this.stateFrame >= 42) {
         this.invulnerableFrames = 23;
+        this.victimPoseFrame = null;
         this.transition('wakeUp');
       }
       return;
@@ -721,13 +725,25 @@ export class FighterRuntime {
     infiniteHealth: boolean,
     throwVelocityX: number,
     throwVelocityY: number,
+    slam = false,
   ): AppliedHit {
     this.grabbedBy = null;
     const result = this.applyHit(hitbox, attackerFacing, false, comboHits, infiniteHealth);
     this.velocityX = attackerFacing * throwVelocityX;
     this.velocityY = throwVelocityY;
     this.victimRotation = 0;
-    if (!result.knockout) this.transition('thrown');
+    if (result.knockout) return result;
+    if (slam) {
+      // Já no chão, de costas: começa o knockdown pelo quadro deitado.
+      this.y = GROUND_Y;
+      this.velocityY = 0;
+      this.hitStunFrames = 0;
+      this.knockdownPending = false;
+      this.transition('knockdown');
+      this.victimPoseFrame = KNOCKDOWN_LYING_FRAME;
+      return result;
+    }
+    this.transition('thrown');
     return result;
   }
 

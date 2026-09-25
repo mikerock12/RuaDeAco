@@ -5,7 +5,18 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
-> Última revisão: **24/09/2026**.
+> Última revisão: **25/09/2026**.
+>
+> **Agarrão e finalizações refeitos, 25/09/2026:** o agarrão universal prende a
+> vítima pelo ponto de pega medido nas folhas aprovadas (`grabVictimLandmarks.ts`),
+> sem rotação dupla: levanta, sustenta deitada acima da cabeça e crava de costas
+> no chão, entrando direto em knockdown. Cais reencenado com o monstro em escala
+> 1,35 à frente do atacante e a vítima nas mandíbulas; Cozinha com mergulho de
+> cabeça, corte na borda do panelão e caveira em pixel art; **Sítio ganhou
+> finalização**: portas do galpão abrem, mascarado com tridente, corpo empalado,
+> portas fecham. Adereços novos são arte pixel autoral em grades de texto
+> (`npm run assets:finisher`). Motor `lockstep-v5-finisher-restage`.
+> Detalhe em [docs/AGARRAO_FINALIZACAO_CAIS.md](docs/AGARRAO_FINALIZACAO_CAIS.md).
 >
 > **Cozinha, movimento e botões, 24/09/2026:** na segunda derrota da Cozinha
 > Macabra o perdedor espera o agarrão e é jogado no panelão. A bruxa mexe e

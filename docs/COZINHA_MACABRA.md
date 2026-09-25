@@ -14,9 +14,9 @@ Os dois clientes usam a arena do início sincronizado, incluindo sua trilha. Mor
 
 Na segunda derrota (melhor de três), fora do treino e sem empate, o perdedor fica tonto. O vencedor tem oito segundos para se aproximar e agarrar com fraco + forte. Golpe comum, tempo esgotado ou treino encerram como nas outras arenas sem cinema. A CPU vencedora também se aproxima e agarra.
 
-O agarrão conectado repete o levantamento e joga o corpo no panelão da bruxa. Ela mexe três vezes. O corpo encolhe dentro da boca da panela e, no lugar do caldo verde, aparece um interior escuro: o que está na panela fica visível, sem ácido. No fim só restam os ossos, cobertos pela colher e pela borda. Morcegos e ratos somem durante o cozimento. O Sítio não tem essa janela; o Cais continua com o monstro do lago.
+Reencenada em 25/09/2026. O agarrão conectado repete o levantamento e o atacante arremessa o corpo em arco até a boca do panelão: a vítima gira no ar e entra **de cabeça**, em escala 0,55 (coerente com a bruxa), com as pernas chutando para fora enquanto afunda (frames 108–178). A parte do corpo abaixo da borda é cortada no espaço da textura (`cutBelowY`), então a panela oclui de verdade, sem sobreposição falsa. O caldo verde da arte fica coberto por um caldo escuro fervendo; a bruxa mexe três vezes; no frame 210 sobe uma caveira com ossos, desenhada em pixel art (`skull-bones.txt`), que balança no caldo. Morcegos e ratos somem durante o cozimento. Faixa final: "O JANTAR ESTA SERVIDO".
 
-Os sons são síntese original: queda na panela, três mexidas de colher e o estalo dos ossos. Respeitam volume, efeitos e mute. O motor online passou a `lockstep-v4-kitchen-pot`.
+Os sons são síntese original: queda na panela, três mexidas de colher e o estalo dos ossos. Respeitam volume, efeitos e mute. O motor online passou a `lockstep-v5-finisher-restage`. Coreografia comum às três arenas em [AGARRAO_FINALIZACAO_CAIS.md](AGARRAO_FINALIZACAO_CAIS.md).
 
 ## Composição e movimento
 
@@ -49,6 +49,7 @@ A foto originalmente recebida como `public/assets/stages/cozinha.jpeg` foi prese
 | witch.png | 640 × 160 | Quatro poses de 160 × 160 |
 | bat.png | 160 × 32 | Quatro poses de 40 × 32 |
 | rat.png | 160 × 24 | Quatro poses de 40 × 24 |
+| skull-bones.png | 32 × 24 | Caveira e ossos da finalização (`npm run assets:finisher`) |
 
 Os quatro PNGs somam aproximadamente 675 KiB e 1,3 MiB em RGBA decodificado (estimativa das texturas, não uma medição de RAM total). As fontes de geração não são distribuídas no site.
 
