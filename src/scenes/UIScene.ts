@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { finisherBanner as finisherBannerText } from '../combat/stageFinisher';
 import { audioManager } from '../audio/AudioManager';
 import type { CombatWorld, CombatWorldSnapshot } from '../combat/CombatWorld';
 import { MAX_METER } from '../config/gameConfig';
@@ -512,7 +513,8 @@ export class UIScene extends Phaser.Scene {
     } else if (snapshot.phase === 'finishReady') {
       banner = { text: 'FINALIZE!  FRACO + FORTE  ' + Math.ceil((480 - snapshot.phaseFrame) / 60), tint: PALETTE.danger };
     } else if (snapshot.phase === 'stageFinish') {
-      banner = snapshot.phaseFrame >= 238 ? { text: 'O CAIS COBRA SUA ALMA', tint: PALETTE.danger } : null;
+      const text = finisherBannerText(snapshot.arena, snapshot.phaseFrame);
+      banner = text ? { text, tint: PALETTE.danger } : null;
     } else if (snapshot.phase === 'roundOver') {
       const winner = snapshot.fighters.find((fighter) => fighter.state === 'victory');
       const knockout = snapshot.timeSeconds > 0;

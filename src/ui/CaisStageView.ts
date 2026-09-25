@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { FINISH_SPLASH, FINISH_BITE, finisherMonsterPose } from '../combat/stageFinisher';
+import { FINISH_SPLASH, FINISH_BITE, FINISH_WATER_Y, finisherMonsterPose } from '../combat/stageFinisher';
+import type { FinisherContext } from './createStageView';
 import { ASSET_MANIFEST } from '../assets/assetManifest';
 import { CaisAmbience, type CaisActorPose } from './caisAmbience';
 import { CAIS_STAGE_DEPTHS as DEPTH, CAIS_STAGE_LAYOUT as LAYOUT } from './stagePresentation';
@@ -10,6 +11,7 @@ export class CaisStageView {
   private readonly moonGlows: Phaser.GameObjects.Ellipse[] = [];
   private skyOffset = 0;
   private finisherFrame: number | null = null;
+  private finisherContext: FinisherContext = { originX: 280, facing: 1 };
   private readonly dread: Phaser.GameObjects.Rectangle;
   private readonly reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   private readonly water: Phaser.GameObjects.TileSprite[];
@@ -99,7 +101,11 @@ export class CaisStageView {
     this.renderFinisher();
   }
 
-  setFinisherFrame(frame: number | null): void { this.finisherFrame = frame; this.renderFinisher(); }
+  setFinisherFrame(frame: number | null, context?: FinisherContext): void {
+    this.finisherFrame = frame;
+    if (context) this.finisherContext = context;
+    this.renderFinisher();
+  }
 
   private renderFinisher(): void {
     const f = this.finisherFrame;
@@ -107,17 +113,22 @@ export class CaisStageView {
     this.ufo.setVisible(false); this.witch.setVisible(false); this.ship.setVisible(false);
     this.fire.setVisible(false); this.beam.clear(); this.cannonFx.clear(); this.seaFx.clear();
     this.floorLight.setAlpha(0); this.heatReflection.setAlpha(0);
-    this.dread.setAlpha(0.2);
-    const monster = finisherMonsterPose(f);
+    this.dread.setAlpha(0.2 + (f >= FINISH_SPLASH ? 0.12 : 0));
+    // O monstro emerge grande, à frente do atacante e virado para ele; o corte
+    // horizontal na textura faz a linha d'água, logo atrás da borda do cais.
+    const monster = finisherMonsterPose(f, this.finisherContext.originX, this.finisherContext.facing);
     const reveal = monster.reveal;
     const chewing = f >= FINISH_BITE && f < 238;
     this.monster.setVisible(false);
     this.finisherMonster.setVisible(reveal > 0).setPosition(Math.round(monster.x), Math.round(monster.y))
-      .setFrame(monster.frame).setCrop(0, 0, 192, Math.ceil(192 - (1-reveal)*160));
+      .setScale(monster.scale).setFlipX(monster.flip)
+      .setFrame(monster.frame).setCrop(0, 0, 192, Math.ceil(192 - (1 - reveal) * 160));
+    const waterX = Math.round(monster.x);
+    const waterY = FINISH_WATER_Y - 12;
     const splash = f >= FINISH_SPLASH && f < 155 || f >= 240 && f < 282;
-    this.splash.setVisible(splash).setPosition(320, 247).setScale(1).setAlpha(0.85).setFrame(Math.floor(f / 6) % 4);
+    this.splash.setVisible(splash).setPosition(waterX, waterY + 4).setScale(1.5).setAlpha(0.9).setFrame(Math.floor(f / 6) % 4);
     if (chewing) {
-      // Small crimson pixels and ripples; the victim remains its own raster sprite.
+      // Pixels carmesim escorrendo das mandíbulas; a vítima continua sendo seu próprio sprite.
       for (let i = 0; i < 9; i++) {
         const p = ((f - FINISH_BITE + i * 7) % 24) / 24;
         this.seaFx.fillStyle(i % 2 ? 0x8c1736 : 0xc4424f, (1 - p) * 0.85)
@@ -125,15 +136,15 @@ export class CaisStageView {
       }
     }
     if (f >= FINISH_SPLASH) {
-      for (let ring=0;ring<4;ring++) {
-        const age=(f-FINISH_SPLASH+ring*13)%72, t=age/72;
-        this.seaFx.lineStyle(1, ring%2?0xc7eff3:0x77bfd0, (1-t)*0.45)
-          .strokeEllipse(320,247,28+t*132,4+t*16);
+      for (let ring = 0; ring < 4; ring++) {
+        const age = (f - FINISH_SPLASH + ring * 13) % 72, t = age / 72;
+        this.seaFx.lineStyle(1, ring % 2 ? 0xc7eff3 : 0x77bfd0, (1 - t) * 0.45)
+          .strokeEllipse(waterX, waterY, 40 + t * 180, 5 + t * 20);
       }
-      if(f<145 || f>248 && f<280) for(let drop=0;drop<14;drop++) {
-        const t=((f+drop*3)%24)/24;
-        this.seaFx.fillStyle(drop%2?0xc4f3ef:0x55a5bf,(1-t)*0.8)
-          .fillRect(Math.round(320+Math.cos(drop*2.4)*t*64),Math.round(243-38*4*t*(1-t)),2,3);
+      if (f < 150 || f > 248 && f < 280) for (let drop = 0; drop < 18; drop++) {
+        const t = ((f + drop * 3) % 26) / 26;
+        this.seaFx.fillStyle(drop % 2 ? 0xc4f3ef : 0x55a5bf, (1 - t) * 0.8)
+          .fillRect(Math.round(waterX + Math.cos(drop * 2.4) * t * 90), Math.round(waterY - 4 - 56 * 4 * t * (1 - t)), 2, 3);
       }
     }
   }

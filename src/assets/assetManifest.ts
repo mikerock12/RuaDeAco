@@ -87,6 +87,8 @@ const kitchen = {
   witch: { key: 'kitchenWitch', path: 'assets/stages/cozinha-macabra/witch.png', frameWidth: 160, frameHeight: 160, frames: 4, layout: 'horizontal' },
   bat: { key: 'kitchenBat', path: 'assets/stages/cozinha-macabra/bat.png', frameWidth: 40, frameHeight: 32, frames: 4, layout: 'horizontal' },
   rat: { key: 'kitchenRat', path: 'assets/stages/cozinha-macabra/rat.png', frameWidth: 40, frameHeight: 24, frames: 4, layout: 'horizontal' },
+  // Arte pixel autoral (art-source/stages/cozinha-macabra/skull-bones.txt): sobra da finalização.
+  skull: { key: 'kitchenSkull', path: 'assets/stages/cozinha-macabra/skull-bones.png' },
 } satisfies Record<string, ImageAsset | SpriteSheetAsset>;
 
 const sitio = {
@@ -95,6 +97,9 @@ const sitio = {
   duck: { key: 'sitioDuck', path: 'assets/stages/sitio/duck.png', frameWidth: 64, frameHeight: 48, frames: 4, layout: 'horizontal' },
   snake: { key: 'sitioSnake', path: 'assets/stages/sitio/snake.png', frameWidth: 64, frameHeight: 48, frames: 4, layout: 'horizontal' },
   lizard: { key: 'sitioLizard', path: 'assets/stages/sitio/lizard.png', frameWidth: 64, frameHeight: 48, frames: 4, layout: 'horizontal' },
+  // Finalização: arte pixel autoral em art-source/stages/sitio-finisher (npm run assets:finisher).
+  farmer: { key: 'sitioMaskedFarmer', path: 'assets/stages/sitio/masked-farmer.png', frameWidth: 32, frameHeight: 72, frames: 3, layout: 'horizontal' },
+  trident: { key: 'sitioTrident', path: 'assets/stages/sitio/trident.png' },
 } satisfies Record<string, ImageAsset | SpriteSheetAsset>;
 
 const ui = {
@@ -124,12 +129,12 @@ export const IMAGE_ASSETS: readonly ImageAsset[] = [
   logo,
   caisRemaster.background, caisRemaster.moon, caisRemaster.ufo, caisRemaster.witch, caisRemaster.ship,
   caisRemaster.water0, caisRemaster.water1, caisRemaster.water2,
-  kitchen.background,
-  sitio.background,
+  kitchen.background, kitchen.skull,
+  sitio.background, sitio.trident,
   ...Object.values(ui),
 ];
 
-export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [caisRemaster.finisherMonster, caisRemaster.monster, caisRemaster.fire, caisRemaster.splash, kitchen.witch, kitchen.bat, kitchen.rat, sitio.hen, sitio.duck, sitio.snake, sitio.lizard];
+export const SPRITESHEET_ASSETS: readonly SpriteSheetAsset[] = [caisRemaster.finisherMonster, caisRemaster.monster, caisRemaster.fire, caisRemaster.splash, kitchen.witch, kitchen.bat, kitchen.rat, sitio.hen, sitio.duck, sitio.snake, sitio.lizard, sitio.farmer];
 
 export const REQUIRED_TEXTURE_KEYS: readonly string[] = [
   ...IMAGE_ASSETS.map((asset) => asset.key),

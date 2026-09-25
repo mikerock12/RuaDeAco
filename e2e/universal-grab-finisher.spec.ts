@@ -168,6 +168,116 @@ test('finalização da cozinha: panela sem ácido, bruxa mexe e sobram ossos', a
   expect(errors).toEqual([]);
 });
 
+test('finalização do Sítio: portas do galpão, mascarado com tridente e corpo empalado', async ({ page, isMobile, context }, info) => {
+  test.setTimeout(120000);
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  page.on('console', m => { if (m.type() === 'error' || m.text().includes('__MISSING')) errors.push(m.text()); });
+  const scenes = () => page.evaluate(() => (window as unknown as W).__RUA_SCENE_DEBUG__?.());
+  const tap = (x: number, y: number) => clickCanvas(page, x, y, isMobile);
+  const phase = () => page.evaluate(() => (window as unknown as W).__ruaWorld?.phase);
+  const stage = () => page.evaluate(() => (window as unknown as W & {
+    __RUA_STAGE_DEBUG__?: () => { arena?: string; ambience?: { doorsOpen: number; farmerVisible: boolean; tridentTip: { x: number; y: number } | null } };
+  }).__RUA_STAGE_DEBUG__?.());
+  await page.goto('/');
+  await expect.poll(scenes, { timeout: 45000 }).toContain('StartScene');
+  await tap(320, 180);
+  await expect.poll(scenes).toContain('MainMenuScene');
+  await tap(320, 154);
+  await expect.poll(scenes).toContain('CharacterSelectScene');
+  const fase = () => page.evaluate(() => (window as unknown as W).__RUA_UI_LAYOUT_DEBUG__?.().find(e => e.name === 'character-select-phase')?.text);
+  const arena = () => page.evaluate(() => (window as unknown as W).__RUA_UI_LAYOUT_DEBUG__?.().find(e => e.name === 'arena-name')?.text);
+  await tap(502, 302);
+  await expect.poll(fase).toContain('JOGADOR 2');
+  await tap(502, 302);
+  await expect.poll(arena).toBe('CAIS DA CIDADE');
+  for (const expected of ['COZINHA MACABRA', 'SITIO']) {
+    if (isMobile) await tap(590, 86);
+    else await page.keyboard.press('KeyD');
+    await expect.poll(arena).toBe(expected);
+  }
+  await tap(320, 306);
+  await expect.poll(scenes).toContain('FightScene');
+  await expect.poll(phase).toBe('active');
+  await expect.poll(async () => (await stage())?.arena).toBe('sitio');
+  await page.evaluate(() => {
+    const w = (window as unknown as W).__ruaWorld;
+    w.fighters[0].resetPosition(280, 1);
+    w.fighters[1].resetPosition(350, -1);
+    w.fighters[0].roundWins = 1;
+    w.fighters[1].health = 0;
+  });
+  await expect.poll(phase).toBe('finishReady');
+  const chord = async () => {
+    if (isMobile) {
+      const points = [];
+      for (const action of ['light', 'heavy']) {
+        const box = await page.locator('#touch-controls button[data-action=' + action + ']').boundingBox();
+        if (!box) throw Error('Botão ausente');
+        points.push({ x: box.x + box.width / 2, y: box.y + box.height / 2, id: points.length });
+      }
+      const cdp = await context.newCDPSession(page);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
+      await page.waitForTimeout(100);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await cdp.detach();
+    } else {
+      await Promise.all([page.keyboard.down('f'), page.keyboard.down('g')]);
+      await page.waitForTimeout(80);
+      await Promise.all([page.keyboard.up('f'), page.keyboard.up('g')]);
+    }
+  };
+  await chord();
+  for (let attempt = 0; attempt < 4 && await phase() === 'finishReady'; attempt++) {
+    await page.waitForTimeout(500);
+    await chord();
+  }
+  await expect.poll(phase).toBe('stageFinish');
+  await page.evaluate(() => (window as unknown as W).__RUA_CAPTURE_DEBUG__.pause());
+  const bodyVisible = () => page.evaluate(() => {
+    const w = window as unknown as W;
+    const id = w.__ruaWorld.fighters[1].id;
+    return w.__RUA_FIGHTER_DEBUG__().bodySprites.find(s => s.name === id + '-fighter-sprite')!.visible;
+  });
+  for (const target of [20, 90, 130, 290]) {
+    await page.evaluate(f => {
+      const w = window as unknown as W;
+      while (w.__ruaWorld.phase === 'stageFinish' && w.__ruaWorld.phaseFrame < f) w.__RUA_CAPTURE_DEBUG__.step();
+    }, target);
+    await page.waitForTimeout(80);
+    const ambience = (await stage())?.ambience;
+    if (target === 20) {
+      expect(ambience?.doorsOpen).toBe(0);
+      expect(ambience?.farmerVisible).toBe(false);
+    }
+    if (target === 90) {
+      expect(ambience?.doorsOpen).toBe(1);
+      expect(ambience?.farmerVisible).toBe(true);
+      expect(await bodyVisible()).toBe(true);
+    }
+    if (target === 130) {
+      // Empalado: o corpo fica à vista sobre o tridente, dentro da abertura do galpão.
+      expect(ambience?.farmerVisible).toBe(true);
+      expect(await bodyVisible()).toBe(true);
+      const victim = await page.evaluate(() => { const v = (window as unknown as W).__ruaWorld.fighters[1]; return { x: v.x, y: v.y }; });
+      expect(victim.y).toBeGreaterThan(129);
+      expect(victim.y).toBeLessThan(216);
+    }
+    if (target === 290) {
+      expect(ambience?.doorsOpen).toBe(0);
+      expect(ambience?.farmerVisible).toBe(false);
+      expect(await bodyVisible()).toBe(false);
+    }
+    await page.screenshot({ path: info.outputPath('sitio-finisher-' + target + '.png') });
+  }
+  await page.evaluate(() => {
+    const w = window as unknown as W;
+    while (w.__ruaWorld.phase !== 'matchOver') w.__RUA_CAPTURE_DEBUG__.step();
+  });
+  await expect.poll(scenes).toContain('ResultScene');
+  expect(errors).toEqual([]);
+});
+
 const fighters = ['rafa-mare','noir-reflexo','astro-riso','dante-sinal','leo-violeta','guto-barba'];
 for (const [index, id] of fighters.entries()) test('sprites próprios do agarrão: '+id, async ({page,isMobile},info)=>{
   test.skip(isMobile, 'O multitoque é coberto pela finalização completa; aqui auditamos as seis artes.');

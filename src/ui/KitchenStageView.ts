@@ -10,8 +10,9 @@ export class KitchenStageView {
   private readonly rats: Phaser.GameObjects.Sprite[];
   private readonly steam: Phaser.GameObjects.Rectangle[];
   private readonly potInterior: Phaser.GameObjects.Graphics;
-  private readonly potBones: Phaser.GameObjects.Graphics;
+  private readonly skull: Phaser.GameObjects.Image;
   private readonly potRim: Phaser.GameObjects.Graphics;
+  private readonly splashFx: Phaser.GameObjects.Graphics;
   private finisherFrame: number | null = null;
 
   constructor(scene: Phaser.Scene) {
@@ -21,8 +22,11 @@ export class KitchenStageView {
     this.witch = scene.add.sprite(408, 163, assets.witch.key)
       .setDepth(-25).setName('kitchen-witch');
     this.potInterior = scene.add.graphics().setDepth(-24.2).setName('kitchen-pot-interior');
-    this.potBones = scene.add.graphics().setDepth(-23.5).setName('kitchen-pot-bones');
+    // A vítima é desenhada em -23.6 pelo FightScene: entre o interior e a borda.
+    this.skull = scene.add.image(KITCHEN_POT_X, KITCHEN_POT_Y, assets.skull.key)
+      .setOrigin(0.5, 0.6).setDepth(-23.5).setVisible(false).setName('kitchen-pot-bones');
     this.potRim = scene.add.graphics().setDepth(-23.15).setName('kitchen-pot-rim');
+    this.splashFx = scene.add.graphics().setDepth(-23.1).setName('kitchen-pot-splash');
     this.bats = this.ambience.bats.map((_, index) => scene.add.sprite(139, 142, assets.bat.key)
       .setDepth(-20).setVisible(false).setName('kitchen-bat-' + index));
     this.rats = this.ambience.rats.map((_, index) => scene.add.sprite(-30, 260, assets.rat.key)
@@ -63,63 +67,61 @@ export class KitchenStageView {
     });
     this.steam.forEach((puff, index) => {
       const clock = stirring ? frame * 16 : time;
+      const boil = cooking ? 1.6 : 1;
       const progress = ((clock + index * 430) % 2600) / 2600;
-      puff.setPosition(443 + Math.round(Math.sin(progress * 6 + index) * 7), 148 - Math.round(progress * 30))
-        .setFillStyle(cooking ? 0xd9d2c3 : 0xa8bf78, (1 - progress) * (cooking ? 0.45 : 0.28))
+      puff.setPosition(443 + Math.round(Math.sin(progress * 6 + index) * 7 * boil), 148 - Math.round(progress * 30 * boil))
+        .setFillStyle(cooking ? 0xd9d2c3 : 0xa8bf78, (1 - progress) * (cooking ? 0.5 : 0.28))
         .setSize(2 + Math.floor(progress * 4), 3 + Math.floor(progress * 5));
     });
   }
 
-  /** O caldo verde da arte some: o que está na panela fica visível, sem ácido. */
+  /** O caldo verde da arte some: o interior escuro mostra o que afunda na panela. */
   private renderPot(): void {
     const interior = this.potInterior;
-    const bones = this.potBones;
     const rim = this.potRim;
+    const splash = this.splashFx;
     interior.clear();
-    bones.clear();
     rim.clear();
+    splash.clear();
     const frame = this.finisherFrame;
-    if (frame === null || frame < KITCHEN_DROP) return;
-    interior.fillStyle(0x3b291c, 1).fillEllipse(KITCHEN_POT_X, KITCHEN_POT_Y, 62, 42);
-    interior.fillStyle(0xc4a06a, 1).fillEllipse(KITCHEN_POT_X, KITCHEN_POT_Y - 1, 48, 30);
-    if (frame >= KITCHEN_BONES) this.drawBones(frame);
-    rim.lineStyle(3, 0x161616, 1).strokeEllipse(KITCHEN_POT_X, KITCHEN_POT_Y, 58, 40);
-    rim.lineStyle(1, 0x3a3a3a, 1).strokeEllipse(KITCHEN_POT_X, KITCHEN_POT_Y - 2, 46, 30);
+    if (frame === null || frame < KITCHEN_DROP) { this.skull.setVisible(false); return; }
+    // Caldo escuro em anéis, sem o verde da arte: o que afunda fica visível.
+    interior.fillStyle(0x24160e, 1).fillEllipse(KITCHEN_POT_X, KITCHEN_POT_Y, 62, 42);
+    interior.fillStyle(0x3a2416, 1).fillEllipse(KITCHEN_POT_X, KITCHEN_POT_Y - 1, 52, 34);
+    interior.fillStyle(0x4c3020, 1).fillEllipse(KITCHEN_POT_X + 2, KITCHEN_POT_Y - 3, 36, 20);
+    // Caldo escuro fervendo: bolhas inteiras que sobem e estouram na borda.
+    for (let i = 0; i < 7; i++) {
+      const p = ((frame * 3 + i * 37) % 90) / 90;
+      const bx = KITCHEN_POT_X + Math.round(Math.cos(i * 2.1) * 18 * (1 - p * 0.4));
+      const by = KITCHEN_POT_Y + 10 - Math.round(p * 14);
+      interior.fillStyle(i % 2 ? 0x7d5330 : 0xa5743f, (1 - p) * 0.9).fillRect(bx, by, 2 + (i % 2), 2);
+    }
     const shift = frame % 16;
     const spoon = shift < 8 ? shift - 4 : 12 - shift;
+    if (frame >= KITCHEN_BONES) {
+      const wobble = spoon;
+      this.skull.setVisible(true).setPosition(KITCHEN_POT_X + wobble, KITCHEN_POT_Y + 4 + (frame % 2));
+    } else {
+      this.skull.setVisible(false);
+    }
+    rim.lineStyle(3, 0x161616, 1).strokeEllipse(KITCHEN_POT_X, KITCHEN_POT_Y, 58, 40);
+    rim.lineStyle(1, 0x3a3a3a, 1).strokeEllipse(KITCHEN_POT_X, KITCHEN_POT_Y - 2, 46, 30);
     rim.lineStyle(3, 0x6b3e22, 1).lineBetween(
       KITCHEN_POT_X - 18, KITCHEN_POT_Y - 30,
       KITCHEN_POT_X + spoon * 2, KITCHEN_POT_Y + 2,
     );
     rim.fillStyle(0x8d5a32, 1).fillRect(KITCHEN_POT_X + spoon * 2 - 2, KITCHEN_POT_Y, 5, 3);
-  }
-
-  private drawBones(frame: number): void {
-    const g = this.potBones;
-    const shift = frame % 16;
-    const wobble = shift < 8 ? shift - 4 : 12 - shift;
-    const x = KITCHEN_POT_X + wobble;
-    const y = KITCHEN_POT_Y + 2 + (frame % 2);
-    const bone = 0xf3ead8;
-    const shade = 0xd7c4a4;
-    g.fillStyle(bone, 1);
-    g.fillRect(x - 8, y - 18, 16, 12);
-    g.fillStyle(0x2a1c14, 1);
-    g.fillRect(x - 5, y - 15, 3, 3);
-    g.fillRect(x + 2, y - 15, 3, 3);
-    g.fillStyle(bone, 1);
-    g.fillRect(x - 5, y - 7, 10, 3);
-    g.fillRect(x - 2, y - 5, 3, 16);
-    g.fillStyle(shade, 1);
-    g.fillRect(x - 11, y - 2, 22, 3);
-    g.fillRect(x - 10, y + 2, 20, 3);
-    g.fillRect(x - 8, y + 6, 16, 3);
-    g.fillStyle(bone, 1);
-    g.fillRect(x - 16, y - 1, 6, 3);
-    g.fillRect(x + 10, y - 1, 6, 3);
-    g.fillRect(x - 6, y + 10, 12, 3);
-    g.fillRect(x - 7, y + 13, 3, 8);
-    g.fillRect(x + 4, y + 13, 3, 8);
+    // Respingos do mergulho: gotas de caldo lançadas para fora da panela.
+    const age = frame - KITCHEN_DROP;
+    if (age < 26) {
+      for (let drop = 0; drop < 14; drop++) {
+        const t = age / 26;
+        const dx = Math.cos(drop * 2.4) * (10 + (drop % 5) * 8) * t;
+        const dy = -Math.abs(Math.sin(drop * 1.7)) * 34 * t + 60 * t * t;
+        splash.fillStyle(drop % 2 ? 0x8fb24a : 0x5b7d2a, 1 - t)
+          .fillRect(Math.round(KITCHEN_POT_X + dx), Math.round(KITCHEN_POT_Y - 8 + dy), 2, 3);
+      }
+    }
   }
 
   snapshot() {

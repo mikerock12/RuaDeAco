@@ -5,7 +5,10 @@ import {
   type MusicTrack,
 } from './musicCatalog';
 
-export type SoundEffect = 'confirm' | 'hitHeavy' | 'swing' | 'hit' | 'block' | 'special' | 'ko' | 'round' | 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch' | 'potDrop' | 'spoonStir';
+export type SoundEffect = 'confirm' | 'hitHeavy' | 'swing' | 'hit' | 'block' | 'special' | 'ko' | 'round' | 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch' | 'potDrop' | 'spoonStir' | 'woodCreak' | 'fleshStab' | 'doorSlam';
+/** Efeitos sintetizados por buffer (terror e cenário), fora da tabela de tons. */
+export type HorrorEffect = 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch' | 'potDrop' | 'spoonStir' | 'woodCreak' | 'fleshStab' | 'doorSlam';
+const HORROR_EFFECTS: readonly SoundEffect[] = ['dread', 'monsterRoar', 'waterCrash', 'boneCrunch', 'potDrop', 'spoonStir', 'woodCreak', 'fleshStab', 'doorSlam'];
 
 interface Tone {
   readonly frequency: number;
@@ -37,7 +40,7 @@ export interface AudioDebugState {
   readonly autoplayBlocked: boolean;
 }
 
-const TONES: Readonly<Record<Exclude<SoundEffect, 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch' | 'potDrop' | 'spoonStir'>, Tone>> = {
+const TONES: Readonly<Record<Exclude<SoundEffect, HorrorEffect>, Tone>> = {
   confirm: { frequency: 520, endFrequency: 760, duration: 0.09, wave: 'square', gain: 0.16 },
   hit: { frequency: 120, endFrequency: 55, duration: 0.11, wave: 'sawtooth', gain: 0.28 },
   hitHeavy: { frequency: 92, endFrequency: 32, duration: 0.15, wave: 'sawtooth', gain: 0.3 },
@@ -203,18 +206,19 @@ export class AudioManager {
 
   play(effect: SoundEffect): void {
     if (!this.context || !this.effectsGain) return;
-    if (effect === 'dread' || effect === 'monsterRoar' || effect === 'waterCrash' || effect === 'boneCrunch' || effect === 'potDrop' || effect === 'spoonStir') {
-      this.playHorror(effect); return;
+    if (HORROR_EFFECTS.includes(effect)) {
+      this.playHorror(effect as HorrorEffect); return;
     }
-    this.scheduleTone(TONES[effect], this.effectsGain);
+    this.scheduleTone(TONES[effect as Exclude<SoundEffect, HorrorEffect>], this.effectsGain);
   }
 
-  private playHorror(effect: 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch' | 'potDrop' | 'spoonStir'): void {
+  private playHorror(effect: HorrorEffect): void {
     const context = this.context!;
     if (context.state !== 'running') return;
     let buffer = this.horrorBuffers.get(effect);
     if (!buffer) {
-      const duration = effect === 'dread' ? 1.5 : effect === 'monsterRoar' ? 1.1 : effect === 'spoonStir' ? 0.28 : effect === 'potDrop' ? 0.32 : 0.36;
+      const duration = effect === 'dread' ? 1.5 : effect === 'monsterRoar' ? 1.1 : effect === 'spoonStir' ? 0.28 : effect === 'potDrop' ? 0.32
+        : effect === 'woodCreak' ? 0.9 : effect === 'fleshStab' ? 0.3 : effect === 'doorSlam' ? 0.45 : 0.36;
       buffer = context.createBuffer(1, Math.ceil(context.sampleRate * duration), context.sampleRate);
       const data = buffer.getChannelData(0);
       let seed = 317, low = 0;
@@ -230,6 +234,12 @@ export class AudioManager {
           : effect === 'boneCrunch' ? noise * Math.pow(pulse, 12) * 0.55 + low * 0.6 + Math.sin(t * 390) * 0.1
           : effect === 'potDrop' ? Math.sin(t * 2 * Math.PI * (96 - 48 * p)) * 0.34 + noise * 0.06
           : effect === 'spoonStir' ? Math.sin(t * 2 * Math.PI * (210 + 36 * Math.sin(t * 28))) * 0.1 + noise * 0.04
+          // Rangido de madeira: tom grave que oscila com estalos de atrito.
+          : effect === 'woodCreak' ? Math.sin(t * 2 * Math.PI * (68 + 22 * Math.sin(t * 9))) * 0.16 * (0.6 + 0.4 * Math.sin(t * 61)) + noise * 0.05 * pulse
+          // Estocada: golpe seco de ruído com um tom curto de impacto na carne.
+          : effect === 'fleshStab' ? noise * Math.pow(1 - p, 3) * 0.5 + Math.sin(t * 2 * Math.PI * (140 - 90 * p)) * 0.3 * (1 - p)
+          // Porta batendo: pancada grave e ressonância curta da madeira.
+          : effect === 'doorSlam' ? Math.sin(t * 2 * Math.PI * (58 - 20 * p)) * 0.4 * (1 - p) + low * 0.9 + noise * 0.12 * Math.pow(1 - p, 4)
           : low * 1.4 + noise * 0.09;
         data[i] = Math.max(-0.7, Math.min(0.7, sample * envelope));
       }

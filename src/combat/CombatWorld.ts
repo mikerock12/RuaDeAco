@@ -16,7 +16,7 @@ import type {
   LocalRect,
   MoveDefinition,
 } from '../types/combat';
-import { FINISH_WINDOW, FINISH_THROW, FINISH_SPLASH, FINISH_BITE, FINISH_END, finisherVictimPose, kitchenFinishCue, kitchenVictimPose } from './stageFinisher';
+import { FINISH_WINDOW, FINISH_END, FINISHER_ARENAS, finisherCue, finisherVictimPose, sitioAttackerShift } from './stageFinisher';
 import type { ArenaDefinition } from '../types/game';
 import type { GameMode } from '../types/game';
 import {
@@ -104,6 +104,7 @@ export interface CombatWorldSnapshot {
   readonly debugBoxes: boolean;
   readonly trainingCpuEnabled: boolean;
   readonly roundDraw: boolean;
+  readonly arena: ArenaDefinition['id'] | null;
 }
 
 export interface CombatWorldDeterministicState {
@@ -295,6 +296,7 @@ export class CombatWorld {
       debugBoxes: this.debugBoxes,
       trainingCpuEnabled: this.trainingCpuEnabled,
       roundDraw: this.roundDraw,
+      arena: this.arena,
     };
   }
 
@@ -725,6 +727,7 @@ export class CombatWorld {
         this.mode === 'training',
         grab.definition.throwVelocityX,
         grab.definition.throwVelocityY,
+        grab.definition.slam ?? false,
       );
       grab.attacker.addHitStop(grab.hitbox.hitStop);
       this.resolveContactResult(
@@ -774,15 +777,15 @@ export class CombatWorld {
 
     defender.setGrabbedPose(
       attacker.id,
-      state,
+      artPose?.state ?? state,
       victimX,
       victimY,
       attacker.facing,
       victimRotation,
       frame - phaseStart,
       phaseEnd - phaseStart + 1,
-      timelinePose?.poseFrame ?? null,
-      timelinePose?.depth ?? 'behind',
+      artPose ? artPose.poseFrame : timelinePose?.poseFrame ?? null,
+      artPose?.depth ?? timelinePose?.depth ?? 'behind',
     );
   }
 
@@ -1027,7 +1030,7 @@ export class CombatWorld {
 
     const loser: 0 | 1 = winner === 0 ? 1 : 0;
     this.fighters[winner].roundWins += 1;
-    if ((this.arena === 'cais-da-cidade' || this.arena === 'cozinha-macabra') && this.mode !== 'training'
+    if (this.arena !== null && FINISHER_ARENAS.includes(this.arena) && this.mode !== 'training'
       && this.fighters[winner].roundWins >= ROUNDS_TO_WIN) {
       this.finisherWinner = winner;
       this.phase = 'finishReady';
@@ -1096,17 +1099,14 @@ export class CombatWorld {
     const f = this.phaseFrame;
     attacker.previousX = attacker.x; attacker.previousY = attacker.y;
     defender.previousX = defender.x; defender.previousY = defender.y;
-    const kitchen = this.arena === 'cozinha-macabra';
-    const pose = kitchen
-      ? kitchenVictimPose(f, attacker.x, attacker.facing, attacker.id, defender.id)
-      : finisherVictimPose(f, attacker.x, attacker.facing, attacker.id, defender.id);
-    defender.setGrabbedPose(attacker.id, f < 14 ? 'grabbedFront' : 'grabbedLifted',
-      pose.x, pose.y, attacker.facing, pose.rotation, f, FINISH_END, f < 14 ? 0 : 7, 'front');
+    if (this.arena === 'sitio') {
+      attacker.x = Math.max(STAGE_LEFT, Math.min(STAGE_RIGHT, attacker.x + sitioAttackerShift(f, attacker.x, attacker.facing)));
+    }
+    const pose = finisherVictimPose(this.arena, f, attacker.x, attacker.facing, attacker.id, defender.id);
+    defender.setGrabbedPose(attacker.id, pose.state, pose.x, pose.y, attacker.facing, pose.rotation,
+      f, FINISH_END, pose.poseFrame, pose.depth);
     attacker.captureCollisionPose(); defender.captureCollisionPose();
-    const type = kitchen
-      ? kitchenFinishCue(f)
-      : f === FINISH_THROW ? 'monsterRoar' : f === FINISH_SPLASH ? 'finishSplash'
-      : [FINISH_BITE, FINISH_BITE + 24, FINISH_BITE + 51].includes(f) ? 'monsterBite' : null;
+    const type = finisherCue(this.arena, f);
     if (type) this.emit({ type, frame: this.frame, attackerIndex: winner, defenderIndex: winner === 0 ? 1 : 0 });
     if (f >= FINISH_END) this.completeFinish();
   }

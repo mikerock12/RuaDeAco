@@ -38,7 +38,9 @@
     "assets:kitchen": "node scripts/export-kitchen-assets.mjs",
     "assets:sitio": "node scripts/export-sitio-assets.mjs",
     "assets:cais": "node scripts/export-cais-assets.mjs",
-    "assets:grab": "node scripts/export-grab-assets.mjs"
+    "assets:grab": "node scripts/export-grab-assets.mjs",
+    "assets:finisher": "node scripts/export-finisher-props.mjs",
+    "measure:grab-victims": "node scripts/measure-grab-victim-landmarks.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.2",
