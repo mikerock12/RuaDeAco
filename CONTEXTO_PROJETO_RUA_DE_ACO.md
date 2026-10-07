@@ -5,6 +5,9 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
+> [`AGENTS.md`](AGENTS.md) resume as regras obrigatórias para assistentes e
+> aponta para este arquivo; mantenha os dois coerentes.
+>
 > Última revisão: **07/10/2026**.
 >
 > **Rostos novos e Play Store, 07/10/2026:** os rostos de Rafa, Noir, Astro, Dante e
