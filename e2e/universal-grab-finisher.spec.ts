@@ -208,6 +208,12 @@ test('finalização do Sítio: portas do galpão, mascarado com tridente e corpo
     w.fighters[1].health = 0;
   });
   await expect.poll(phase).toBe('finishReady');
+  // Antes do agarrão o galpão está fechado e o mascarado escondido. Conferir
+  // aqui e não num quadro da cena: em runner lento o acorde leva alguns
+  // quadros e a cena já passou do início quando o teste a congela.
+  const closed = (await stage())?.ambience;
+  expect(closed?.doorsOpen).toBe(0);
+  expect(closed?.farmerVisible).toBe(false);
   const chord = async () => {
     if (isMobile) {
       const points = [];
@@ -239,17 +245,13 @@ test('finalização do Sítio: portas do galpão, mascarado com tridente e corpo
     const id = w.__ruaWorld.fighters[1].id;
     return w.__RUA_FIGHTER_DEBUG__().bodySprites.find(s => s.name === id + '-fighter-sprite')!.visible;
   });
-  for (const target of [20, 90, 130, 290]) {
+  for (const target of [90, 130, 290]) {
     await page.evaluate(f => {
       const w = window as unknown as W;
       while (w.__ruaWorld.phase === 'stageFinish' && w.__ruaWorld.phaseFrame < f) w.__RUA_CAPTURE_DEBUG__.step();
     }, target);
     await page.waitForTimeout(80);
     const ambience = (await stage())?.ambience;
-    if (target === 20) {
-      expect(ambience?.doorsOpen).toBe(0);
-      expect(ambience?.farmerVisible).toBe(false);
-    }
     if (target === 90) {
       expect(ambience?.doorsOpen).toBe(1);
       expect(ambience?.farmerVisible).toBe(true);
