@@ -5,6 +5,9 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
+> [`AGENTS.md`](AGENTS.md) resume as regras obrigatórias para assistentes e
+> aponta para este arquivo; mantenha os dois coerentes.
+>
 > Última revisão: **07/10/2026**.
 >
 > **Rostos novos e Play Store, 07/10/2026:** os rostos de Rafa, Noir, Astro, Dante e
@@ -14,7 +17,11 @@
 > ([docs/ROSTOS_E_RETRATOS.md](docs/ROSTOS_E_RETRATOS.md)). Android 1.0.0 (versionCode 3)
 > otimizado, compilado no GitHub Actions e assinado com chave de upload fora do Git;
 > ficha, classificação, segurança de dados e passos em [docs/PLAY_STORE.md](docs/PLAY_STORE.md).
-> Política de privacidade em `public/privacidade.html`.
+> Política de privacidade em `public/privacidade.html`. PR #5 mesclado (`5d5d188`),
+> `master` = `web-beta`, Pages publicado (run 37605730953) e pré-lançamento
+> `android-v1.0.0` criado pelo workflow `android-release.yml` (arquivos sem assinatura;
+> os assinados ficam só com o autor). **Pendente, manual:** cadastro na Play Console
+> e teste fechado (12 testadores por 14 dias) antes da Produção.
 >
 > **Agarrão e finalizações refeitos, 25/09/2026:** o agarrão universal prende a
 > vítima pelo ponto de pega medido nas folhas aprovadas (`grabVictimLandmarks.ts`),
@@ -161,7 +168,7 @@ provisórios; áudio e ícones do PWA são temporários.
 | Motor | Phaser 4.1, pixel art em 640 × 360 |
 | Build | Vite 8 — sem React, sem framework de UI, sem banco de dados |
 | Servidor online | Cloudflare Workers + Durable Objects com SQLite |
-| Mobile | Capacitor 8 (APK Android) |
+| Mobile | Capacitor 8 (AAB/APK Android 1.0.0, compilado no GitHub Actions) |
 | Testes | Vitest e Playwright |
 | Publicação | GitHub Pages via GitHub Actions |
 
@@ -171,11 +178,12 @@ as colisões automáticas dele.
 
 Separação obrigatória de assets, que nunca deve ser quebrada:
 
-- `PortraitAsset` — retratos conceituais para menu, seleção, ficha, versus, HUD
-  e resultado;
+- `PortraitAsset` — retratos de menu, seleção, ficha, versus, HUD e resultado
+  (`public/assets/portraits/`; desde 07/10/2026 gerados do próprio sprite em pixel
+  art por `scripts/faces/portraits.py`, exceto o do Guto);
 - `FighterSpriteAsset` — sprites e spritesheets usados durante a luta.
 
-Fichas conceituais **não** são spritesheets e nunca viram corpo em combate.
+Retratos **não** são spritesheets e nunca viram corpo em combate.
 
 Estrutura de pastas, contrato de sprites e o passo a passo para adicionar um
 personagem estão em [`docs/PIPELINE_DE_ARTE.md`](docs/PIPELINE_DE_ARTE.md).
@@ -194,8 +202,12 @@ suavizado; gradientes realistas modernos; fotos borradas. Redimensionamento de
 pixel art sempre em `nearest-neighbor`, com alpha 255 no corpo e transparência
 apenas nos efeitos.
 
-O logo em estética arcade aparece no menu principal e será reaproveitado em
-ícones de `.exe`, `.apk`, abertura e material promocional.
+O logo em estética arcade aparece no menu principal e já gera o ícone, a tela de
+abertura do Android e as imagens da Play Store (`scripts/android/generate-android-art.py`).
+
+Rostos: os cinco lutadores além do Guto têm rostos fictícios desenhados em pixel art
+(não podem lembrar pessoas reais). O Guto é baseado no autor e não deve ser alterado.
+Regras e scripts em [docs/ROSTOS_E_RETRATOS.md](docs/ROSTOS_E_RETRATOS.md).
 
 ---
 
@@ -406,6 +418,10 @@ grandes alterações, lembrar que o backup pode ser atualizado.
 | 29/07/2026 | Léo Violeta e Noir Reflexo implementados, escala e recortes corrigidos, CI ajustado |
 | 01/08/2026 | Correção global de hitboxes auditada e publicada |
 | 28/08/2026 | README reescrito com prints reais; contexto unificado neste arquivo; atribuição de IA removida do histórico |
+| 14–20/09/2026 | Agarrão universal com arte própria e finalização do Cais; controles de toque e caminhada revisados |
+| 24/09/2026 | Finalização da Cozinha Macabra no panelão |
+| 25/09/2026 | Agarrão e finalizações refeitos; finalização do Sítio (galpão e tridente); PR #4 |
+| 07/10/2026 | Rostos novos de cinco lutadores, retratos em pixel art, Android 1.0.0 e kit da Play Store; PR #5 |
 
 Registrar aqui também tentativas que falharam, para que ninguém repita uma
 solução já rejeitada.
