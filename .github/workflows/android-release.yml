@@ -1,0 +1,71 @@
+name: Android release
+
+# Gera o AAB (Play Store) e o APK (instalação direta) otimizados.
+# Disparo: tag android-v* ou manualmente. Se os segredos de assinatura
+# existirem, os arquivos já saem assinados; senão saem sem assinatura e
+# são assinados depois com a chave de upload (docs/PLAY_STORE.md).
+on:
+  push:
+    tags: ['android-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: AAB e APK de release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VITE_MULTIPLAYER_URL: ${{ vars.VITE_MULTIPLAYER_URL }}
+      KEYSTORE_B64: ${{ secrets.RUA_UPLOAD_KEYSTORE_B64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npx cap sync android
+      - name: Enxuga o pacote (OGG basta no WebView; MP3 é só fallback da web)
+        run: |
+          rm -f android/app/src/main/assets/public/assets/audio/music/*.mp3
+          du -sh android/app/src/main/assets/public
+      - name: Prepara chave de upload (opcional)
+        if: ${{ env.KEYSTORE_B64 != '' }}
+        run: echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks" && echo "RUA_UPLOAD_STORE_FILE=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+      - name: Compila
+        working-directory: android
+        env:
+          RUA_UPLOAD_STORE_PASSWORD: ${{ secrets.RUA_UPLOAD_STORE_PASSWORD }}
+          RUA_UPLOAD_KEY_PASSWORD: ${{ secrets.RUA_UPLOAD_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon bundleRelease assembleRelease
+      - name: Reúne os arquivos
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/bundle/release/*.aab out/rua-de-aco-release.aab
+          cp android/app/build/outputs/apk/release/*.apk out/rua-de-aco-release.apk
+          ls -la out
+          sha256sum out/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rua-de-aco-android
+          path: out/
+          retention-days: 14
+      - name: Publica na página de releases (pré-lançamento)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" out/* --prerelease \
+            --title "Android ${GITHUB_REF_NAME#android-v} (build)" \
+            --notes "Build automático do Android. Se os segredos de assinatura não estiverem configurados, os arquivos estão sem assinatura e precisam ser assinados com a chave de upload antes de enviar à Play." \
+            || gh release upload "${GITHUB_REF_NAME}" out/* --clobber

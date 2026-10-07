@@ -5,7 +5,16 @@
 > que assumir o projeto deve ler só este arquivo, e o estado real do Git
 > sempre prevalece sobre o que estiver escrito aqui.
 >
-> Última revisão: **25/09/2026**.
+> Última revisão: **07/10/2026**.
+>
+> **Rostos novos e Play Store, 07/10/2026:** os rostos de Rafa, Noir, Astro, Dante e
+> Léo pareciam pessoas reais e foram trocados nas 864 células por visuais novos em
+> pixel art; o Guto (baseado no autor) ficou igual, com acabamento gelado no retrato.
+> Retratos de menu/seleção/HUD passam a sair do próprio sprite
+> ([docs/ROSTOS_E_RETRATOS.md](docs/ROSTOS_E_RETRATOS.md)). Android 1.0.0 (versionCode 3)
+> otimizado, compilado no GitHub Actions e assinado com chave de upload fora do Git;
+> ficha, classificação, segurança de dados e passos em [docs/PLAY_STORE.md](docs/PLAY_STORE.md).
+> Política de privacidade em `public/privacidade.html`.
 >
 > **Agarrão e finalizações refeitos, 25/09/2026:** o agarrão universal prende a
 > vítima pelo ponto de pega medido nas folhas aprovadas (`grabVictimLandmarks.ts`),

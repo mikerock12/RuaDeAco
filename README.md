@@ -8,7 +8,7 @@ Jogo de luta 2D em pixel art para navegador, com modos local, treinamento, CPU e
 
 ## Destaques
 
-- 6 lutadores jogáveis, cada um com golpes, especiais e frame data próprios;
+- 6 lutadores jogáveis, cada um com golpes, especiais, frame data e visual próprios;
 - três arenas: [Cais da Cidade remasterizado](docs/CAIS_DA_CIDADE.md), [Cozinha Macabra](docs/COZINHA_MACABRA.md) e [Sítio](docs/SITIO.md), com ambientações animadas, seleção também online e [finalização de fase](docs/AGARRAO_FINALIZACAO_CAIS.md) em cada uma;
 - melhor de três rounds;
 - suporte a teclado, controles touch e gamepad;
@@ -91,6 +91,8 @@ Para o servidor multiplayer, consulte [`server/README.md`](server/README.md).
 - [Arquitetura do servidor multiplayer](docs/MULTIPLAYER_SERVER_ARCHITECTURE.md)
 - [Arquitetura do cliente online](docs/ONLINE_CLIENT_ARCHITECTURE.md)
 - [Pipeline de arte e sprites](docs/PIPELINE_DE_ARTE.md)
+- [Publicação na Google Play](docs/PLAY_STORE.md)
+- [Rostos e retratos](docs/ROSTOS_E_RETRATOS.md)
 - [Beta Android](README_ANDROID_BETA.md)
 - [Plano de melhorias com prioridade mobile](PLANO_MELHORIAS_RUA_DE_ACO.md)
 - [Auditoria de jogabilidade mobile](docs/AUDITORIA_MOBILE_2026-09-06.md)

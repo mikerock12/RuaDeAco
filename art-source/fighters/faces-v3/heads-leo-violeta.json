@@ -1,0 +1,1462 @@
+{
+ "air-heavy-backward.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 129.5,
+    "cy": 98.5,
+    "angle": 0,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 489.7957458496094
+   },
+   {
+    "cx": 173.5,
+    "cy": 86.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 728.2993774414062
+   },
+   {
+    "cx": 54.5,
+    "cy": 104.5,
+    "angle": 25,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 1145.20703125
+   },
+   {
+    "cx": 149.5,
+    "cy": 84.5,
+    "angle": 5,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 839.93896484375
+   }
+  ]
+ },
+ "air-heavy-forward.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 146.0,
+    "cy": 109.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 495.2987060546875
+   },
+   {
+    "cx": 137.0,
+    "cy": 110.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 521.0194702148438
+   },
+   {
+    "cx": 115.0,
+    "cy": 113.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 571.0064697265625
+   },
+   {
+    "cx": 149.0,
+    "cy": 117.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 512.8863525390625
+   }
+  ]
+ },
+ "air-heavy-neutral.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 140.0,
+    "cy": 84.0,
+    "angle": 355,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 528.9471435546875
+   },
+   {
+    "cx": 120.5,
+    "cy": 101.5,
+    "angle": 355,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 497.96331787109375
+   },
+   {
+    "cx": 89.5,
+    "cy": 121.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 685.2775268554688
+   },
+   {
+    "cx": 87.5,
+    "cy": 92.5,
+    "angle": 5,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 670.7677001953125
+   }
+  ]
+ },
+ "air-light-backward.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 114.5,
+    "cy": 92.5,
+    "angle": 5,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 760.0427856445312
+   },
+   {
+    "cx": 148.5,
+    "cy": 91.5,
+    "angle": 15,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 1153.75537109375
+   },
+   {
+    "cx": 121.5,
+    "cy": 109.5,
+    "angle": 15,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 1109.4617919921875
+   },
+   {
+    "cx": 156.5,
+    "cy": 104.5,
+    "angle": 5,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 1306.3587646484375
+   }
+  ]
+ },
+ "air-light-forward.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 173.0,
+    "cy": 99.0,
+    "angle": 0,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 412.6407470703125
+   },
+   {
+    "cx": 166.0,
+    "cy": 100.0,
+    "angle": 0,
+    "scale": 1.1,
+    "mirror": false,
+    "score": 413.71929931640625
+   },
+   {
+    "cx": 151.0,
+    "cy": 106.0,
+    "angle": 0,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 516.3037109375
+   },
+   {
+    "cx": 176.0,
+    "cy": 115.0,
+    "angle": 0,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 482.0740661621094
+   }
+  ]
+ },
+ "air-light-neutral.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 138.5,
+    "cy": 122.5,
+    "angle": 0,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 785.7957153320312
+   },
+   {
+    "cx": 158.5,
+    "cy": 97.5,
+    "angle": 5,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 548.052001953125
+   },
+   {
+    "cx": 133.5,
+    "cy": 105.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 735.5265502929688
+   },
+   {
+    "cx": 154.5,
+    "cy": 100.5,
+    "angle": 5,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 585.9096069335938
+   }
+  ]
+ },
+ "block-crouching.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 144.0,
+    "cy": 132.0,
+    "angle": 350,
+    "scale": 1.1,
+    "mirror": false,
+    "score": 1006.1216430664062
+   },
+   {
+    "cx": 148.0,
+    "cy": 139.0,
+    "angle": 0,
+    "scale": 1.15,
+    "mirror": true,
+    "score": 1465.34375
+   },
+   {
+    "cx": 127.5,
+    "cy": 135.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1506.284912109375
+   },
+   {
+    "cx": 139.5,
+    "cy": 143.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1447.1004638671875
+   }
+  ]
+ },
+ "block-standing.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 144.5,
+    "cy": 91.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1077.4632568359375
+   },
+   {
+    "cx": 143.5,
+    "cy": 96.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 842.350830078125
+   },
+   {
+    "cx": 143.5,
+    "cy": 92.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1109.7601318359375
+   },
+   {
+    "cx": 142.5,
+    "cy": 92.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 641.6011962890625
+   }
+  ]
+ },
+ "corrida.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 176.5,
+    "cy": 106.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 563.0322875976562
+   },
+   {
+    "cx": 172.5,
+    "cy": 104.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 532.0619506835938
+   },
+   {
+    "cx": 167.5,
+    "cy": 110.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 500.3432312011719
+   },
+   {
+    "cx": 173.5,
+    "cy": 99.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 470.221923828125
+   }
+  ]
+ },
+ "crouch-heavy.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 154.5,
+    "cy": 149.5,
+    "angle": 5,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 959.006103515625
+   },
+   {
+    "cx": 139.5,
+    "cy": 101.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 669.0653076171875
+   },
+   {
+    "cx": 68.5,
+    "cy": 136.5,
+    "angle": 5,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 936.4780883789062
+   },
+   {
+    "cx": 164.5,
+    "cy": 147.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 794.9346923828125
+   }
+  ]
+ },
+ "crouch-light.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 142.5,
+    "cy": 142.5,
+    "angle": 355,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 904.832763671875
+   },
+   {
+    "cx": 137.5,
+    "cy": 97.5,
+    "angle": 355,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 926.8983154296875
+   },
+   {
+    "cx": 94.5,
+    "cy": 122.5,
+    "angle": 355,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 1035.006103515625
+   },
+   {
+    "cx": 145.5,
+    "cy": 98.5,
+    "angle": 355,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 918.4463500976562
+   }
+  ]
+ },
+ "crouch.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 141.0,
+    "cy": 98.0,
+    "angle": 355,
+    "scale": 1.15,
+    "mirror": false,
+    "score": 942.350830078125
+   },
+   {
+    "cx": 139.0,
+    "cy": 131.0,
+    "angle": 355,
+    "scale": 1.1,
+    "mirror": false,
+    "score": 1031.43505859375
+   },
+   {
+    "cx": 149.0,
+    "cy": 120.0,
+    "angle": 0,
+    "scale": 1.1,
+    "mirror": false,
+    "score": 951.614013671875
+   },
+   {
+    "cx": 148.0,
+    "cy": 117.0,
+    "angle": 0,
+    "scale": 1.1,
+    "mirror": false,
+    "score": 961.9087524414062
+   }
+  ]
+ },
+ "fall.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 139.0,
+    "cy": 114.0,
+    "angle": 355,
+    "scale": 1.1,
+    "mirror": false,
+    "score": 841.888671875
+   },
+   {
+    "cx": 152.0,
+    "cy": 95.0,
+    "angle": 355,
+    "scale": 1.1,
+    "mirror": false,
+    "score": 671.2243041992188
+   },
+   {
+    "cx": 110.0,
+    "cy": 92.0,
+    "angle": 355,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 785.458740234375
+   },
+   {
+    "cx": 155.0,
+    "cy": 131.0,
+    "angle": 350,
+    "scale": 1.1,
+    "mirror": false,
+    "score": 783.0169067382812
+   }
+  ]
+ },
+ "forward-heavy.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 143.5,
+    "cy": 95.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 882.8903198242188
+   },
+   {
+    "cx": 140.5,
+    "cy": 98.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 2855.21728515625
+   },
+   {
+    "cx": 162.5,
+    "cy": 123.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1355.21435546875
+   },
+   {
+    "cx": 162.5,
+    "cy": 119.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1262.1768798828125
+   }
+  ]
+ },
+ "forward-light.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 159.5,
+    "cy": 94.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 409.51837158203125
+   },
+   {
+    "cx": 136.5,
+    "cy": 93.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 417.8571472167969
+   },
+   {
+    "cx": 135.5,
+    "cy": 91.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 433.3102111816406
+   },
+   {
+    "cx": 157.5,
+    "cy": 87.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 407.6244812011719
+   }
+  ]
+ },
+ "frozen.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 137.5,
+    "cy": 100.5,
+    "angle": 350,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 1116.33251953125
+   },
+   {
+    "cx": 118.0,
+    "cy": 91.0,
+    "angle": 35,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 1164.968017578125
+   },
+   {
+    "cx": 147.5,
+    "cy": 114.5,
+    "angle": 340,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 1005.5094604492188
+   },
+   {
+    "cx": 138.5,
+    "cy": 100.5,
+    "angle": 355,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 855.079345703125
+   }
+  ]
+ },
+ "grabbed-front.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 129.5,
+    "cy": 77.5,
+    "angle": 5,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 1003.9797973632812
+   },
+   {
+    "cx": 99.5,
+    "cy": 84.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 864.0719604492188
+   },
+   {
+    "cx": 149.5,
+    "cy": 83.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 629.8941650390625
+   },
+   {
+    "cx": 151.5,
+    "cy": 85.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 685.1019287109375
+   },
+   {
+    "cx": 139.5,
+    "cy": 115.5,
+    "angle": 355,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 1083.53564453125
+   },
+   {
+    "cx": 138.5,
+    "cy": 99.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 644.0309448242188
+   },
+   {
+    "cx": 90.5,
+    "cy": 85.5,
+    "angle": 30,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1347.30224609375
+   },
+   {
+    "cx": 129.5,
+    "cy": 90.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 960.1199340820312
+   }
+  ]
+ },
+ "grabbed-lifted.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 130.0,
+    "cy": 60.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 1718.1492919921875
+   },
+   {
+    "cx": 133.5,
+    "cy": 71.5,
+    "angle": 5,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 787.8030395507812
+   },
+   {
+    "cx": 131.5,
+    "cy": 141.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 497.5045166015625
+   },
+   {
+    "cx": 92.0,
+    "cy": 96.0,
+    "angle": 30,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 938.1435546875
+   },
+   {
+    "cx": 124.5,
+    "cy": 85.5,
+    "angle": 15,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 793.3051147460938
+   },
+   {
+    "cx": 150.5,
+    "cy": 85.5,
+    "angle": 350,
+    "scale": 0.85,
+    "mirror": true,
+    "score": 615.7799682617188
+   },
+   {
+    "cx": 132.5,
+    "cy": 109.5,
+    "angle": 350,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 811.5844116210938
+   },
+   {
+    "cx": 125.5,
+    "cy": 75.5,
+    "angle": 5,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 713.7903442382812
+   }
+  ]
+ },
+ "hit.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 56.0,
+    "cy": 87.0,
+    "angle": 55,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 2884.073486328125
+   },
+   {
+    "cx": 109.5,
+    "cy": 121.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": true,
+    "score": 1808.5517578125
+   },
+   {
+    "cx": 116.5,
+    "cy": 162.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 2052.737548828125
+   },
+   {
+    "cx": 195.5,
+    "cy": 128.5,
+    "angle": 340,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 1809.93212890625
+   }
+  ]
+ },
+ "idle.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 143.5,
+    "cy": 86.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 182.2653045654297
+   },
+   {
+    "cx": 140.5,
+    "cy": 88.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 359.2775573730469
+   },
+   {
+    "cx": 148.5,
+    "cy": 88.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 374.9510192871094
+   },
+   {
+    "cx": 139.5,
+    "cy": 80.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 282.5306091308594
+   }
+  ]
+ },
+ "impacto-sombrio.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 159.5,
+    "cy": 143.5,
+    "angle": 355,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 1078.647216796875
+   },
+   {
+    "cx": 179.5,
+    "cy": 161.5,
+    "angle": 350,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 744.1262817382812
+   },
+   {
+    "cx": 104.0,
+    "cy": 94.0,
+    "angle": 35,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 2976.939208984375
+   },
+   {
+    "cx": 72.5,
+    "cy": 99.5,
+    "angle": 45,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 2099.9384765625
+   }
+  ]
+ },
+ "jump-backward.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 155.5,
+    "cy": 105.5,
+    "angle": 350,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 604.9773559570312
+   },
+   {
+    "cx": 151.5,
+    "cy": 122.5,
+    "angle": 355,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 353.6402282714844
+   },
+   {
+    "cx": 132.5,
+    "cy": 149.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 455.69415283203125
+   },
+   {
+    "cx": 137.5,
+    "cy": 108.5,
+    "angle": 355,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 494.83837890625
+   }
+  ]
+ },
+ "jump-forward.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 193.5,
+    "cy": 108.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 646.187744140625
+   },
+   {
+    "cx": 141.5,
+    "cy": 87.5,
+    "angle": 0,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 527.964111328125
+   },
+   {
+    "cx": 183.5,
+    "cy": 155.5,
+    "angle": 5,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 690.3939208984375
+   },
+   {
+    "cx": 159.5,
+    "cy": 111.5,
+    "angle": 350,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 724.4684448242188
+   }
+  ]
+ },
+ "jump-neutral.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 144.0,
+    "cy": 142.0,
+    "angle": 350,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 1017.4681396484375
+   },
+   {
+    "cx": 134.0,
+    "cy": 118.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 1204.6590576171875
+   },
+   {
+    "cx": 130.0,
+    "cy": 152.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 1457.7012939453125
+   },
+   {
+    "cx": 134.0,
+    "cy": 118.0,
+    "angle": 350,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 1754.649658203125
+   }
+  ]
+ },
+ "knockdown.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 84.5,
+    "cy": 97.5,
+    "angle": 10,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 1237.7330322265625
+   },
+   {
+    "cx": 72.5,
+    "cy": 159.5,
+    "angle": 40,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 954.9533081054688
+   },
+   {
+    "cx": 67.5,
+    "cy": 179.5,
+    "angle": 35,
+    "scale": 0.9,
+    "mirror": true,
+    "score": 1234.120849609375
+   },
+   {
+    "cx": 192.5,
+    "cy": 225.5,
+    "angle": 320,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 2064.0361328125
+   }
+  ]
+ },
+ "knockout.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 59.0,
+    "cy": 91.0,
+    "angle": 40,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 1460.23291015625
+   },
+   {
+    "cx": 155.0,
+    "cy": 150.0,
+    "angle": 355,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 2023.18994140625
+   },
+   {
+    "cx": 129.0,
+    "cy": 215.0,
+    "angle": 320,
+    "scale": 0.8,
+    "mirror": true,
+    "score": 2835.35986328125
+   },
+   {
+    "cx": 207.5,
+    "cy": 226.5,
+    "angle": 275,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 1295.5909423828125
+   }
+  ]
+ },
+ "landing.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 128.0,
+    "cy": 143.0,
+    "angle": 0,
+    "scale": 1.15,
+    "mirror": false,
+    "score": 1148.440673828125
+   },
+   {
+    "cx": 129.0,
+    "cy": 142.0,
+    "angle": 0,
+    "scale": 1.15,
+    "mirror": false,
+    "score": 1566.8499755859375
+   },
+   {
+    "cx": 140.0,
+    "cy": 97.0,
+    "angle": 355,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 910.9796142578125
+   },
+   {
+    "cx": 138.5,
+    "cy": 80.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 625.8571166992188
+   }
+  ]
+ },
+ "olhar-frio.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 145.5,
+    "cy": 113.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1639.031494140625
+   },
+   {
+    "cx": 142.5,
+    "cy": 101.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 955.2825927734375
+   },
+   {
+    "cx": 126.5,
+    "cy": 95.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 1010.7974243164062
+   },
+   {
+    "cx": 145.5,
+    "cy": 100.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 615.9354858398438
+   }
+  ]
+ },
+ "pressao-violeta.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 142.5,
+    "cy": 98.5,
+    "angle": 355,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 898.5050659179688
+   },
+   {
+    "cx": 130.5,
+    "cy": 73.5,
+    "angle": 355,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 869.131103515625
+   },
+   {
+    "cx": 149.0,
+    "cy": 80.0,
+    "angle": 355,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 970.0009155273438
+   },
+   {
+    "cx": 138.5,
+    "cy": 85.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1517.625244140625
+   }
+  ]
+ },
+ "standing-heavy.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 146.0,
+    "cy": 83.0,
+    "angle": 0,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 288.8333435058594
+   },
+   {
+    "cx": 159.0,
+    "cy": 94.0,
+    "angle": 0,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 344.96295166015625
+   },
+   {
+    "cx": 151.5,
+    "cy": 92.5,
+    "angle": 0,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 1199.7261962890625
+   },
+   {
+    "cx": 181.5,
+    "cy": 95.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 581.5020141601562
+   }
+  ]
+ },
+ "standing-light.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 142.5,
+    "cy": 100.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 743.7625732421875
+   },
+   {
+    "cx": 140.5,
+    "cy": 108.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 800.8845825195312
+   },
+   {
+    "cx": 142.0,
+    "cy": 102.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 2404.782470703125
+   },
+   {
+    "cx": 143.5,
+    "cy": 101.5,
+    "angle": 0,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 682.510986328125
+   }
+  ]
+ },
+ "thrown.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 65.5,
+    "cy": 120.5,
+    "angle": 45,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 1037.036865234375
+   },
+   {
+    "cx": 65.0,
+    "cy": 158.0,
+    "angle": 30,
+    "scale": 1.1,
+    "mirror": true,
+    "score": 1328.7891845703125
+   },
+   {
+    "cx": 123.0,
+    "cy": 151.0,
+    "angle": 0,
+    "scale": 1.1,
+    "mirror": false,
+    "score": 1673.3193359375
+   },
+   {
+    "cx": 110.5,
+    "cy": 148.5,
+    "angle": 0,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 918.3434448242188
+   }
+  ]
+ },
+ "universal-grab-v2.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 147.5,
+    "cy": 89.5,
+    "angle": 0,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 531.8428955078125
+   },
+   {
+    "cx": 163.5,
+    "cy": 91.5,
+    "angle": 0,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 703.955078125
+   },
+   {
+    "cx": 154.5,
+    "cy": 93.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 606.2694091796875
+   },
+   {
+    "cx": 154.0,
+    "cy": 127.0,
+    "angle": 355,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 828.2576293945312
+   },
+   {
+    "cx": 126.5,
+    "cy": 57.5,
+    "angle": 25,
+    "scale": 0.9,
+    "mirror": false,
+    "score": 1154.2208251953125
+   },
+   {
+    "cx": 137.5,
+    "cy": 69.5,
+    "angle": 5,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 1101.9005126953125
+   },
+   {
+    "cx": 111.0,
+    "cy": 79.0,
+    "angle": 55,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 2171.658203125
+   },
+   {
+    "cx": 95.5,
+    "cy": 91.5,
+    "angle": 140,
+    "scale": 0.9,
+    "mirror": true,
+    "score": 2166.095703125
+   },
+   {
+    "cx": 156.5,
+    "cy": 87.5,
+    "angle": 355,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 667.2476806640625
+   },
+   {
+    "cx": 162.0,
+    "cy": 108.0,
+    "angle": 355,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 1000.654296875
+   },
+   {
+    "cx": 160.0,
+    "cy": 155.0,
+    "angle": 340,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 1019.5259399414062
+   },
+   {
+    "cx": 144.5,
+    "cy": 87.5,
+    "angle": 0,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 526.8938598632812
+   }
+  ]
+ },
+ "victory.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 131.5,
+    "cy": 76.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 835.2354125976562
+   },
+   {
+    "cx": 133.5,
+    "cy": 76.5,
+    "angle": 0,
+    "scale": 0.85,
+    "mirror": false,
+    "score": 1280.0928955078125
+   },
+   {
+    "cx": 138.0,
+    "cy": 65.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 1792.052001953125
+   },
+   {
+    "cx": 120.0,
+    "cy": 65.0,
+    "angle": 0,
+    "scale": 0.8,
+    "mirror": false,
+    "score": 2429.3701171875
+   }
+  ]
+ },
+ "wake-up.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 195.0,
+    "cy": 211.0,
+    "angle": 330,
+    "scale": 1.05,
+    "mirror": false,
+    "score": 848.45556640625
+   },
+   {
+    "cx": 167.5,
+    "cy": 156.5,
+    "angle": 355,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 821.12744140625
+   },
+   {
+    "cx": 144.5,
+    "cy": 120.5,
+    "angle": 355,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 785.4617919921875
+   },
+   {
+    "cx": 146.5,
+    "cy": 85.5,
+    "angle": 355,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 766.2350463867188
+   }
+  ]
+ },
+ "walk-backward.png": {
+  "frameSize": 256,
+  "frames": [
+   {
+    "cx": 137.5,
+    "cy": 88.5,
+    "angle": 355,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 1020.9347534179688
+   },
+   {
+    "cx": 145.5,
+    "cy": 92.5,
+    "angle": 355,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 981.908447265625
+   },
+   {
+    "cx": 138.5,
+    "cy": 82.5,
+    "angle": 355,
+    "scale": 1.0,
+    "mirror": false,
+    "score": 920.8124389648438
+   },
+   {
+    "cx": 138.5,
+    "cy": 86.5,
+    "angle": 355,
+    "scale": 0.95,
+    "mirror": false,
+    "score": 793.3570556640625
+   }
+  ]
+ }
+}

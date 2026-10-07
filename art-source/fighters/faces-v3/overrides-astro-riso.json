@@ -1,0 +1,19 @@
+{
+ "universal-grab-v2.png": {
+  "6": {
+   "cx": 126,
+   "cy": 89,
+   "angle": 0,
+   "scale": 1.0,
+   "mirror": false
+  }
+ },
+ "block-crouching.png": {
+  "0": {
+   "mode": "hair",
+   "cx": 156,
+   "cy": 156,
+   "r": 15
+  }
+ }
+}

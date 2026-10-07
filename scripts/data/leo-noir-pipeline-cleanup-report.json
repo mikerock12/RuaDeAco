@@ -2,7 +2,7 @@
   "leo-violeta": {
     "idle": {
       "sourceSha256": "034216cf37bc5a437c32bf6c20f76f516e3d99d925105934c1ad8cc80e5126ab",
-      "outputSha256": "3eeb75bf42e367102ed5bc637fc78025ef0897dadee7d7dcc2990cf158480d22",
+      "outputSha256": "f9379ef505d1204d7544b164492ed67d297db6994f435830fef1599b25d3238c",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -69,11 +69,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "3eeb75bf42e367102ed5bc637fc78025ef0897dadee7d7dcc2990cf158480d22",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "corrida": {
       "sourceSha256": "495a03d0f4055648d8ae198a37df41b1d54c80082cdd2390a673697cdbabf09a",
-      "outputSha256": "8a3b76623c5ce8252f43031fc1e1331c35210b9a7d1c2e68f2366b6fc4c758b7",
+      "outputSha256": "3f048bf8820777b983a6523abd615c68c4279df57c91cbdcb90161268b0ccb48",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -140,11 +142,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "8a3b76623c5ce8252f43031fc1e1331c35210b9a7d1c2e68f2366b6fc4c758b7",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "walk-backward": {
       "sourceSha256": "7991a3c5fb124f281ba1e8b5a8548a945f308d1dce1da81e53230a551f4cb224",
-      "outputSha256": "983e668949b00d93f46721ab4bfd56627dc126d93275e6b86aacac050e4a5d37",
+      "outputSha256": "467a7fc5934e79e24641564cc315cca9290dfcd4373e11f54e7cf85f06e6df41",
       "scaleFactor": 0.92,
       "frames": [
         {
@@ -211,11 +215,13 @@
           "scale": 0.3413057,
           "scaleFactor": 0.92
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "983e668949b00d93f46721ab4bfd56627dc126d93275e6b86aacac050e4a5d37",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "jump-neutral": {
       "sourceSha256": "8e2bff5e01706cd9aebef62c723ffe2980785508e75c699d9c8b07b35da163aa",
-      "outputSha256": "73c3e0a77ad8cea521d2e23752bdfbd35cb2cf27504a84cce3708fbfa50b7e44",
+      "outputSha256": "15f3301ccc7f79d08b73860844c424b832a8d896e7774268a5f4cada936471a9",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -282,11 +288,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "73c3e0a77ad8cea521d2e23752bdfbd35cb2cf27504a84cce3708fbfa50b7e44",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "jump-forward": {
       "sourceSha256": "4905f860f030e7775915c4ff47d95ed9a2fd723377bbd48504a84164d7f7bda1",
-      "outputSha256": "a7de95f622ee14f60f4ca6785fd8839a25ac9bfa4a01c304fe7d4869062c721f",
+      "outputSha256": "3a00e36e4e64fc851a8699d69d48f4725811f441fde260b33b2db484ece0783b",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -353,11 +361,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "a7de95f622ee14f60f4ca6785fd8839a25ac9bfa4a01c304fe7d4869062c721f",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "jump-backward": {
       "sourceSha256": "5d1d12ddcfc8a5b98c443829d02f1f47b07d422e97bd3c45a8c003996a37cccc",
-      "outputSha256": "bee3267b26c1e18d812938ca9519b322f6e1b7e450962c542a247ee3b23517ea",
+      "outputSha256": "931f74820579e66b3270ed9b02190092f110d5ddcc52e62ccd8045dc98eca36d",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -424,11 +434,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "bee3267b26c1e18d812938ca9519b322f6e1b7e450962c542a247ee3b23517ea",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "fall": {
       "sourceSha256": "7259513563537ce921c9c7d3532dd48b1f03a5c9d4171721f12c7417aeb311ab",
-      "outputSha256": "9e0045a2e0e6d6376a2f0cc9e68817caebfe1ed5ec240a32bdee90f4683d9014",
+      "outputSha256": "8b7c246dd9b15e6cd014451016f6f7f60364d3c49b128fb5c540b38fc567d513",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -495,11 +507,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "9e0045a2e0e6d6376a2f0cc9e68817caebfe1ed5ec240a32bdee90f4683d9014",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "landing": {
       "sourceSha256": "104f269ea173772de1aaec1d66c1ff8d0265a37b411955db9ac4ad94a27f2bba",
-      "outputSha256": "f76d709becf0ab05ffd81751a1b1f588f433bde956b8c1da799b330279925e56",
+      "outputSha256": "d95afeb8f4a232682ee1676d04e19566352dd0e05bc2d40238094b1a5870d3e0",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -566,11 +580,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "f76d709becf0ab05ffd81751a1b1f588f433bde956b8c1da799b330279925e56",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "crouch": {
       "sourceSha256": "588f76e8dd6a08b5e7c4010bcd4de3dd13b254024f3ccc1de9ee5497fa9c0e66",
-      "outputSha256": "859f36ec0a56e8802ba3b3eaa5ece1c61a477e9e00ef376fbda3ec952169c572",
+      "outputSha256": "fe226315f22954cc6f985bf9d5eb847dee08acd04b4c8b1e84d2bee0c938b16d",
       "scaleFactor": 0.84,
       "frames": [
         {
@@ -637,11 +653,13 @@
           "scale": 0.31162694,
           "scaleFactor": 0.84
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "859f36ec0a56e8802ba3b3eaa5ece1c61a477e9e00ef376fbda3ec952169c572",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "standing-light": {
       "sourceSha256": "59d957bdd789bdb0a0de90c14103c27866606a12ff0440bb3a4df46c9089a671",
-      "outputSha256": "d88ef5ed45b9457019314a9457c42b2c4409b6b48149c6d0fbad24e4bad1f1ee",
+      "outputSha256": "44e26fa1ea815a2d55b417833783987f140b274a4005877d9334b21c7475f1a2",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -708,11 +726,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "d88ef5ed45b9457019314a9457c42b2c4409b6b48149c6d0fbad24e4bad1f1ee",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "standing-heavy": {
       "sourceSha256": "3ae7d2ec00b3bf94b6a0d4e4092c52a42bb91b12f1178411403d0840ec88db08",
-      "outputSha256": "9756e5f13aef4f79a3f85f8ffe028413bd0e5d362c43bc82a0d0283378afdc46",
+      "outputSha256": "1e796f16229db4670f46213505a84dc0d2ab0dcbe977f9a22ce82f1c3c746a82",
       "scaleFactor": 0.92,
       "frames": [
         {
@@ -779,11 +799,13 @@
           "scale": 0.3413057,
           "scaleFactor": 0.92
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "9756e5f13aef4f79a3f85f8ffe028413bd0e5d362c43bc82a0d0283378afdc46",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "forward-light": {
       "sourceSha256": "68717b4cdcf089940c3bae1e13f63a2919ac78163db5b48f0bae310e4be275a8",
-      "outputSha256": "a6239cdee65ca450b08b2e5302003aeaa2658c441339049774b42e77e14579cf",
+      "outputSha256": "7b38cafdc20c6fd7e73deaa014cff730cd7a9ae1669239f334194cb6df9f89dd",
       "scaleFactor": 0.94,
       "frames": [
         {
@@ -850,11 +872,13 @@
           "scale": 0.34872539,
           "scaleFactor": 0.94
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "a6239cdee65ca450b08b2e5302003aeaa2658c441339049774b42e77e14579cf",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "forward-heavy": {
       "sourceSha256": "6a199eb3732fe9ace653a2a5b78cb7bc6d2a462845c221e8c0b5873aac5e8d66",
-      "outputSha256": "7df162132889e72770bf54251d01c125b777dc4f1a018c2f27080467272ee4c4",
+      "outputSha256": "cbc1ee36fa61d24cb87070d85e3c2a96be9ea6c1ffd7adf426a0dde0d20390bd",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -921,11 +945,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "7df162132889e72770bf54251d01c125b777dc4f1a018c2f27080467272ee4c4",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "crouch-light": {
       "sourceSha256": "56c20f8798d3a3c9499af525410827015b0ccaeeeef294fff4f024b48c5010a8",
-      "outputSha256": "ba26efecc31a3005884be6f7c7e18d3737e1de5b77fc012c6c2db3159abed362",
+      "outputSha256": "6959f7c1cb5e937d97ba0be2f3379d9cf497b0f8fe8f0b0988c1a4c57bad1344",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -992,11 +1018,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "ba26efecc31a3005884be6f7c7e18d3737e1de5b77fc012c6c2db3159abed362",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "crouch-heavy": {
       "sourceSha256": "aa067d3f9568913fecd708598d2f5b968f6ccd28c8ce60dee1950e0edc12a4e8",
-      "outputSha256": "1ab5bcdcf14cb1280e49b8e6f0194e6bb9aa38f278fea632d9e4b5e1710db337",
+      "outputSha256": "dc1be5ac2d6d1c74b8cb2b6c15789824c26a2619304b6279b34c7711768a8ea5",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1063,11 +1091,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "1ab5bcdcf14cb1280e49b8e6f0194e6bb9aa38f278fea632d9e4b5e1710db337",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-light-neutral": {
       "sourceSha256": "123fe90aeacc4f347dbe3fcab6a464e37f77cfbbe76c5b78f623579207a1fb2b",
-      "outputSha256": "78c57b480bbf983d5218771d3d49060892db761dd0a23671c8f77f52055510d3",
+      "outputSha256": "a3a8ca4fcb157140d88485303be2e4441dc9a23e4fab073dfc1620faffe74100",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1134,11 +1164,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "78c57b480bbf983d5218771d3d49060892db761dd0a23671c8f77f52055510d3",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-heavy-neutral": {
       "sourceSha256": "e78e27973be965bcf9d4a197bf9335a07b87ae0df11fa94ba1f1b1e6c55d11c8",
-      "outputSha256": "f7ad254e6cb1ae2a517194d44a36199298522e546bb45f56ad0614c0edb767c3",
+      "outputSha256": "a9a0fc20170445f173601e3041a62511c7e0c0b3b4651be688a24755228757c5",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1205,11 +1237,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "f7ad254e6cb1ae2a517194d44a36199298522e546bb45f56ad0614c0edb767c3",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-light-forward": {
       "sourceSha256": "0d759efec587cfd455c32675b73a0647bcc6b532f4ce300a49a562d3aff60a8e",
-      "outputSha256": "0aab041cb8cad5d20dc5edf5cab74bcb1f93ab06a80c1e436605cf94c5d1a9c1",
+      "outputSha256": "0cc57cb26a24724e84a1194e5798c1aaf1dfc2b342c64355f733f30a8f831ed2",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1276,11 +1310,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "0aab041cb8cad5d20dc5edf5cab74bcb1f93ab06a80c1e436605cf94c5d1a9c1",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-heavy-forward": {
       "sourceSha256": "7b7992759c4d3747e3da7904e43b83aa45425706fd853a580e48b296ec06566c",
-      "outputSha256": "bfb4b36ae7965b54fb84298df49fa7f4426ec82e010939c07f552c2bf561c6f8",
+      "outputSha256": "b6776249616938a1e95992143c67e60f0555c9cf2d460dc575f55f179b3a55b5",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1347,11 +1383,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "bfb4b36ae7965b54fb84298df49fa7f4426ec82e010939c07f552c2bf561c6f8",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-light-backward": {
       "sourceSha256": "553abfc14311d2c0563c5bc92ccf6a19a9cd01467c262b247be39deee9feaa2c",
-      "outputSha256": "b0d1163aaa85445835b90d2c9fc0ded5e2ece1b5cae8c070bf6126acc16f5fe9",
+      "outputSha256": "835a919fff4b6e7ffb2d9c3222478ef8930bc7924580e1761982f1b447c527a1",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1418,11 +1456,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "b0d1163aaa85445835b90d2c9fc0ded5e2ece1b5cae8c070bf6126acc16f5fe9",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-heavy-backward": {
       "sourceSha256": "ff3e0fcc29ae6303f8f76b9b67ac938b7a313fa7d2a4261d67b9ca5d3020e997",
-      "outputSha256": "6304a0f0c9138ed82bec3bff810f0a63215d884032c8bce2b5a0b6bf988d05b9",
+      "outputSha256": "e8078b7ecc1bf300911907d55724cecd6f9ee6aec436988406f5c74465c9444b",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1489,11 +1529,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "6304a0f0c9138ed82bec3bff810f0a63215d884032c8bce2b5a0b6bf988d05b9",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "block-standing": {
       "sourceSha256": "b6e6e209cfeb78e650588f88a83470ba8c9cb2e4b8cb75693953996574d5be31",
-      "outputSha256": "be7db8471ba3c0a9712308063375d99669ef51bcbfcc74e6a743c572d299cc50",
+      "outputSha256": "afdc5f287dfd17609d46d4e46bfc102fe0f281215a215921d9c5ece435733412",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1560,11 +1602,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "be7db8471ba3c0a9712308063375d99669ef51bcbfcc74e6a743c572d299cc50",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "block-crouching": {
       "sourceSha256": "204b4e2368df5f051b06c23721dcff4fd0e61fa5f00703de38a2007390c054b7",
-      "outputSha256": "c5e79df6033848a1b990055a8f1675111bd9fc6be3e2958373d135dc80378d7b",
+      "outputSha256": "7992de3639364e3c1b10a67f2ee1f97b670c24553119be9b75aee2228a0250b8",
       "scaleFactor": 0.92,
       "frames": [
         {
@@ -1631,11 +1675,13 @@
           "scale": 0.3413057,
           "scaleFactor": 0.92
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "c5e79df6033848a1b990055a8f1675111bd9fc6be3e2958373d135dc80378d7b",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "hit": {
       "sourceSha256": "a5fc1ca0a98071d8df06be52ba1cb79b9ef9655998b7925973adf0fba1eea3b9",
-      "outputSha256": "3cef1d5bac95608549ca44acaa98e896af1672cdf4df67e1624f66be2a7ec49e",
+      "outputSha256": "f444adcf28c776f7e9aac2b34a9a583581ce050fc52708a71e60fa8b92fe19a6",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1702,11 +1748,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "3cef1d5bac95608549ca44acaa98e896af1672cdf4df67e1624f66be2a7ec49e",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "knockdown": {
       "sourceSha256": "4af0b013d611d3e7057a5bd0d8e598485641f6c3cbdf0b1112e53f1a90c18b26",
-      "outputSha256": "102dd9813fa3855143e87c5e99d87835ef4f155617caac6986e4add2306ec3cb",
+      "outputSha256": "9b49ef87e032f6e2b7069252d80c4483877350ed6cc2e6078317fa076f8b1279",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1773,11 +1821,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "102dd9813fa3855143e87c5e99d87835ef4f155617caac6986e4add2306ec3cb",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "wake-up": {
       "sourceSha256": "b382d189952d283ea4da016c018b4352ff8a5b90032171d61ed728ff29d373db",
-      "outputSha256": "7b264cfbabc6dc9fbf636d969d0061482175119514c9d45ebb026a56ff9b86fd",
+      "outputSha256": "0a3c6d6685005af88d462564bd23c0f7ded903bb37724cf9239f53c6e663a20d",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -1844,11 +1894,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "7b264cfbabc6dc9fbf636d969d0061482175119514c9d45ebb026a56ff9b86fd",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "grabbed-front": {
       "sourceSha256": "1c0d303318663d972b65dfc55433f815c9199d4f40cd827cce675f0ef6ef2a07",
-      "outputSha256": "ce40c699765ec0804e1c94f6312b392109f560ccfe6c7f37e546bb7c959fad0a",
+      "outputSha256": "74b4eb7ef36f948d42fd197b7fb50a85ef78b9340a9a39ba3921dcd611d120c7",
       "scaleFactor": 1.23,
       "frames": [
         {
@@ -1979,11 +2031,13 @@
           "scale": 0.45631088,
           "scaleFactor": 1.23
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "ce40c699765ec0804e1c94f6312b392109f560ccfe6c7f37e546bb7c959fad0a",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "grabbed-lifted": {
       "sourceSha256": "fd81f2355f2984e9e93fe8d3ac90f898f88c8a930d74f22e6ed637449000ecff",
-      "outputSha256": "940ec0b5ead7a3ea3e69b0e996912ec412d30a527208ddc50813451968439caa",
+      "outputSha256": "4b54376cef0b03e83435ce0c8506ace175e98f50697539370df3fc4f9d0500a0",
       "scaleFactor": 1.35,
       "frames": [
         {
@@ -2114,11 +2168,13 @@
           "scale": 0.50082902,
           "scaleFactor": 1.35
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "940ec0b5ead7a3ea3e69b0e996912ec412d30a527208ddc50813451968439caa",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "thrown": {
       "sourceSha256": "ff20967e2024aa10cf0263a0acbcf50e90f5d3c2f2ad5f2a55a54089aecea179",
-      "outputSha256": "ffa4d8f2d42d66b01b52a53852f0dd11304b6fda4dd5719dc3a1fa428ebc8458",
+      "outputSha256": "cf2414aa84832acf72dab074ee3ad32d05a6cc1c982f80e6aabef46568f0d2e6",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -2185,11 +2241,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "ffa4d8f2d42d66b01b52a53852f0dd11304b6fda4dd5719dc3a1fa428ebc8458",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "frozen": {
       "sourceSha256": "962554861529f302462d7b334a9b37d097356676ea9a6bb0cfd481175fca31ab",
-      "outputSha256": "f585650be2fb6608e877654b18b12ced7a76a61a0bbfd28eb949b5737fc6a867",
+      "outputSha256": "d97f01bd2e22d478eae93651f8b4cd1167c240cf4186478364d43b42153a1eda",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -2274,11 +2332,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "f585650be2fb6608e877654b18b12ced7a76a61a0bbfd28eb949b5737fc6a867",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "knockout": {
       "sourceSha256": "b215a1fd8b0ae600c8e03aab3a849315811b17a9d9418b2c37e9a658caef8f5c",
-      "outputSha256": "9a91a1f33efeadcdb487bd5f1d904057cf10845f1688a95671eaf640ae1b3a31",
+      "outputSha256": "0c42461b259ccc62bcad94fb84a1d057c7cf10b594eb48e742be5ae594a47761",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -2345,11 +2405,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "9a91a1f33efeadcdb487bd5f1d904057cf10845f1688a95671eaf640ae1b3a31",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "victory": {
       "sourceSha256": "6e86c9a7e24678107f85e7395fb46ab01eb58bf1174c854b528f8ebb00062cb3",
-      "outputSha256": "622e2a5f0f9aa329ed13674d37e94f3998398fb38b49268533f37b6a66e616b6",
+      "outputSha256": "a261f90ef51fadb5a0ba387765f5e268e4acbe7e4e5b2e65a798bbf583f94fc6",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -2416,11 +2478,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "622e2a5f0f9aa329ed13674d37e94f3998398fb38b49268533f37b6a66e616b6",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "olhar-frio": {
       "sourceSha256": "cea2556a771b4381d1c624c3868c77a46f9781d06b51272fa42717307adfc764",
-      "outputSha256": "1122e2975cd83f50ea074f14bc3eb183b930ab483d8f02bd01da23f50ada1386",
+      "outputSha256": "f8f2356ac1f1302d224153b1c00765e6a71587361c401b69859536d958c1075e",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -2487,11 +2551,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "1122e2975cd83f50ea074f14bc3eb183b930ab483d8f02bd01da23f50ada1386",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "impacto-sombrio": {
       "sourceSha256": "28bf4ff905105bb3ad82a7ea6cb6658030267f90e68a1e8d66f89b50d63de3dd",
-      "outputSha256": "2123c6ae0d5efca4077e763e74a7e78c2adeaa74e6ab6bda9499cdfc28169b7c",
+      "outputSha256": "380517b01d8eb589e7a4336f53bb8f626db1191c501e53a419e98bf05f7dcbe1",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -2558,11 +2624,13 @@
           "scale": 0.37098446,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "2123c6ae0d5efca4077e763e74a7e78c2adeaa74e6ab6bda9499cdfc28169b7c",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "pressao-violeta": {
       "sourceSha256": "360fde82a66b0e91560fff115d3b69bc52d93f914686a8fe624f958405ec6007",
-      "outputSha256": "91c5537f08eb73656f1ace0d408b834227e145129e4cb4a1af23caae1ae31525",
+      "outputSha256": "96466bbf1527aa956afbbe9f9b809434a19b1a2bed7a04ffcd714f0953e857dc",
       "scaleFactor": 1.12,
       "frames": [
         {
@@ -2629,13 +2697,15 @@
           "scale": 0.41550259,
           "scaleFactor": 1.12
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "91c5537f08eb73656f1ace0d408b834227e145129e4cb4a1af23caae1ae31525",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     }
   },
   "noir-reflexo": {
     "idle": {
       "sourceSha256": "2f57900e71ed4d2eef65c060950302e2ff01be5b9011588502f1974ea876cb78",
-      "outputSha256": "ac4ca7a90249ba535a6a108957bc81eb181b2c69b390cafe698b3273e4313cdc",
+      "outputSha256": "57a2557688797ebf710a155a5715b075262553200e0b7e836c216160670e59f4",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -2702,11 +2772,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "ac4ca7a90249ba535a6a108957bc81eb181b2c69b390cafe698b3273e4313cdc",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "corrida": {
       "sourceSha256": "0f361606f09e01a05761bb969ca6165ef8e66fd8d4f1648ab5d58d0ff86260d7",
-      "outputSha256": "3e1acf85bbed3b2cbde439ba7f05265aa22d2f6b589f41334c747832aed8c74c",
+      "outputSha256": "45b99abae6398f0d73a73d2d2c48ef48cf31d3252d3d762212614f34905716c3",
       "scaleFactor": 1.12,
       "frames": [
         {
@@ -2773,11 +2845,13 @@
           "scale": 0.37962547,
           "scaleFactor": 1.12
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "3e1acf85bbed3b2cbde439ba7f05265aa22d2f6b589f41334c747832aed8c74c",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "walk-backward": {
       "sourceSha256": "496952b5051ff37b10065fe129ef5d86709e8cd3dd99d5c9ce0e3d5103e6f3aa",
-      "outputSha256": "400229e0ee9ad8bdf5febb4856c820f52d23eb96fbd5c041b933e32bd48dcdf1",
+      "outputSha256": "6eca27fbb52791f1575f3820a51ac3bf82e18f631c52e710935db53a3a9da776",
       "scaleFactor": 1.16,
       "frames": [
         {
@@ -2844,11 +2918,13 @@
           "scale": 0.39318352,
           "scaleFactor": 1.16
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "400229e0ee9ad8bdf5febb4856c820f52d23eb96fbd5c041b933e32bd48dcdf1",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "jump-neutral": {
       "sourceSha256": "87b1f93753f76456650d92497a7fcb0cee35f5fcae00f3d9dbfb05933c044e3b",
-      "outputSha256": "f40cb8307470716c1432b9fc939c0630cfbedf9b2004c0377cd2c12966181d6c",
+      "outputSha256": "ef62d55909559dd6cbcda40456a2b12859796b50cc2b8e0bdda3e260a6b6fd52",
       "scaleFactor": 1.1,
       "frames": [
         {
@@ -2915,11 +2991,13 @@
           "scale": 0.37284644,
           "scaleFactor": 1.1
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "f40cb8307470716c1432b9fc939c0630cfbedf9b2004c0377cd2c12966181d6c",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "jump-forward": {
       "sourceSha256": "3f7cef6aa04aab3417fc57b2f171d49740b019faaee4e9254e9e201c822d4cc2",
-      "outputSha256": "091a73d6e1255fd73369a0610d2d98ca06654d4117b8e1025479536a0626c728",
+      "outputSha256": "037d519e8839df2297c0a6d286ddf76f9d708dfef55e0997f6f57babb73b3ca8",
       "scaleFactor": 1.07,
       "frames": [
         {
@@ -2986,11 +3064,13 @@
           "scale": 0.3626779,
           "scaleFactor": 1.07
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "091a73d6e1255fd73369a0610d2d98ca06654d4117b8e1025479536a0626c728",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "jump-backward": {
       "sourceSha256": "66b3eac600d96ed67f8e5871c4a9e5a71c0ca832a485fec16a87a50cd9bd7175",
-      "outputSha256": "3a2480251bc9835648d3a049f43e416ebb5b8e3b0d202bfbafd780d504f7342d",
+      "outputSha256": "fd14c027546ed4af288cf82b5170ae44e001c592c93ef7590dbfaa507bd20f23",
       "scaleFactor": 1.07,
       "frames": [
         {
@@ -3057,11 +3137,13 @@
           "scale": 0.3626779,
           "scaleFactor": 1.07
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "3a2480251bc9835648d3a049f43e416ebb5b8e3b0d202bfbafd780d504f7342d",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "fall": {
       "sourceSha256": "3dfde7f8089bcb2b84686e17eb3fa8a6f65a4a1c4b5b1a18f5c4f6dc0c6e7e09",
-      "outputSha256": "bad579deb207cfa9532e1764f3378bcce183dceed71c5c99b51c8926bf898c74",
+      "outputSha256": "518cb92b2e54c63ab13bd1b74bf30270a85b6de2b6935305b626240e32d8bb7c",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -3128,11 +3210,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "bad579deb207cfa9532e1764f3378bcce183dceed71c5c99b51c8926bf898c74",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "landing": {
       "sourceSha256": "0bcd0a8715828a773a5df2e1b821fa0787a3bd24eaf605dd3b3749b56c5f022c",
-      "outputSha256": "502d81fcaad0f3f086be1c11370eb392900fc08a1acc81708fd43a85d1bb7f02",
+      "outputSha256": "d03988306166d950cb611f75e675d986e76576ed972da66b5dfaaa7577ec745a",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -3199,11 +3283,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "502d81fcaad0f3f086be1c11370eb392900fc08a1acc81708fd43a85d1bb7f02",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "crouch": {
       "sourceSha256": "d36bf63b56295453f89fda2dfcf0ac4844fc7d7ee97289ccee06f0b682a36424",
-      "outputSha256": "5a45f87e4674627bdd4aa7e8f30bbc0350c77329e9a5e2dac974ce49caea2cac",
+      "outputSha256": "58671b64caa892b6d67e12809c3ba68c53f64c88faa3ef9c322ce61f06065f6c",
       "scaleFactor": 0.9,
       "frames": [
         {
@@ -3270,11 +3356,13 @@
           "scale": 0.30505618,
           "scaleFactor": 0.9
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "5a45f87e4674627bdd4aa7e8f30bbc0350c77329e9a5e2dac974ce49caea2cac",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "standing-light": {
       "sourceSha256": "3e0cf64802d237af90961227bed6d88fb5fbf9b584bf17d719f13d28fc5c5e42",
-      "outputSha256": "dad457283aaeaa37df98ca2c763c991524094cf5954f4dd1147cd3366e660ce3",
+      "outputSha256": "77ca34d523ac6845c3fb9402f0060a81c0712cca9669dd612781f54a746133c2",
       "scaleFactor": 1.12,
       "frames": [
         {
@@ -3341,11 +3429,13 @@
           "scale": 0.37962547,
           "scaleFactor": 1.12
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "dad457283aaeaa37df98ca2c763c991524094cf5954f4dd1147cd3366e660ce3",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "standing-heavy": {
       "sourceSha256": "c4e719bba41aba87e794cfabc1bca0ac24a9c58c8665032edd3b5c987f6c6287",
-      "outputSha256": "7bac77ac9be3ff69e0626b0b1391884898a99311d9f71209d88843b959b029c0",
+      "outputSha256": "ed920211c51e60b57b537c6ba59c58aa609346e40ab5a27b7440bcebd95ecfa8",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -3412,11 +3502,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "7bac77ac9be3ff69e0626b0b1391884898a99311d9f71209d88843b959b029c0",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "forward-light": {
       "sourceSha256": "ecae935ecf9a8c79d4fc61257699b9ac45d7d91d5dc93ab3d5003ef4bdfbbc3e",
-      "outputSha256": "bd3565fe2af859b72ef9cd3a9f6314a951c2dcf7cd11601e4f328673bd030a9b",
+      "outputSha256": "7c6008af6307729430fb83036569dd0703df1ea1e56836b1dda43bdaa98dd70a",
       "scaleFactor": 1.12,
       "frames": [
         {
@@ -3483,11 +3575,13 @@
           "scale": 0.37962547,
           "scaleFactor": 1.12
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "bd3565fe2af859b72ef9cd3a9f6314a951c2dcf7cd11601e4f328673bd030a9b",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "forward-heavy": {
       "sourceSha256": "98549cadfac3ab634e049e8bd65d7928e33af35bf71748b3a5ae6879b7f2be4c",
-      "outputSha256": "cc491f6d765b03a6125da105cead2572c482594f7a1ac63858c9070a2699977e",
+      "outputSha256": "9faf823e12019d65a7ca45c05c8417f5cf8f82376735a852a20d4fc71c0a5fae",
       "scaleFactor": 1.2,
       "frames": [
         {
@@ -3554,11 +3648,13 @@
           "scale": 0.40674157,
           "scaleFactor": 1.2
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "cc491f6d765b03a6125da105cead2572c482594f7a1ac63858c9070a2699977e",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "crouch-light": {
       "sourceSha256": "a70d49df469e861905078466bdb5f0cadd7f31586fe13605fc17533eab10fc22",
-      "outputSha256": "19980d1333f01f1ce79836ed4263e3c40365f77ccfd668ad3f9ca285c87334c0",
+      "outputSha256": "850196870952cfd5adbb40b9ec9948c45619fef1b2ff0acdc2b17da6e7bcd770",
       "scaleFactor": 1.08,
       "frames": [
         {
@@ -3625,11 +3721,13 @@
           "scale": 0.36606742,
           "scaleFactor": 1.08
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "19980d1333f01f1ce79836ed4263e3c40365f77ccfd668ad3f9ca285c87334c0",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "crouch-heavy": {
       "sourceSha256": "2407a2845e38c92fafeefff9ed56c675609034f5c618ba49f57ebc5146a30ef9",
-      "outputSha256": "23621c97f633489aec275ede9581351fc17a68e0a6184d494a5cba72d35eb756",
+      "outputSha256": "aa2406d6911fb3a71300ab6ec3786ea4683a135f56b4918db9af55af88879da1",
       "scaleFactor": 1.05,
       "frames": [
         {
@@ -3696,11 +3794,13 @@
           "scale": 0.35589888,
           "scaleFactor": 1.05
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "23621c97f633489aec275ede9581351fc17a68e0a6184d494a5cba72d35eb756",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-light-neutral": {
       "sourceSha256": "bbf3f722b6018f82f4c6b6a6a04374b1fe80751d23181571d17e212ed3a33dbc",
-      "outputSha256": "d7b5b0cd5a231663ba2a4273eed412e94946e6efe4971f98283de3dfaf01e176",
+      "outputSha256": "ab75347dab632f647778f018324fa340b4386b4f086bb6dc0dfbbe517f05f95d",
       "scaleFactor": 1.12,
       "frames": [
         {
@@ -3767,11 +3867,13 @@
           "scale": 0.37962547,
           "scaleFactor": 1.12
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "d7b5b0cd5a231663ba2a4273eed412e94946e6efe4971f98283de3dfaf01e176",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-heavy-neutral": {
       "sourceSha256": "f3cc1e0549271dfa414aa9ac22cbe7033f6d8b285b8b61855b50b2b56a2f7b1f",
-      "outputSha256": "0967e5ca51e011dafc50f968f75cc62d57d347fb5e8163ce4586228a18602823",
+      "outputSha256": "08a3779fe6306a80e670e13116fbe2228d03e2a9fa1f2b4e75d803992afea368",
       "scaleFactor": 1.1,
       "frames": [
         {
@@ -3838,11 +3940,13 @@
           "scale": 0.37284644,
           "scaleFactor": 1.1
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "0967e5ca51e011dafc50f968f75cc62d57d347fb5e8163ce4586228a18602823",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-light-forward": {
       "sourceSha256": "09b88c00faa37bf2faa3b9e76e3cd6a4e5a8f1c7867ff2ca8ffc3a25f3b43c96",
-      "outputSha256": "6fd35a9384362e90bf02292da944c5864f5723c82c356a3eb337cb36b3f3a3ab",
+      "outputSha256": "a4ddb810dc2d8083bee4ebb958ae2b15d296c43231ddadbdc17228f774a1c172",
       "scaleFactor": 1.08,
       "frames": [
         {
@@ -3909,11 +4013,13 @@
           "scale": 0.36606742,
           "scaleFactor": 1.08
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "6fd35a9384362e90bf02292da944c5864f5723c82c356a3eb337cb36b3f3a3ab",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-heavy-forward": {
       "sourceSha256": "e6cb833d357e2dcda637b13d9cb41e946cb8edc237fff3851814c84f185c739a",
-      "outputSha256": "d7a137dc2f19549fddeb0a56e4ca1644ad88a913bc73d8c3611620cd894b2410",
+      "outputSha256": "3febe5f1bdcf7bfee532a062aee359e1939b1e4900d9cd1872b1290b8b3684e9",
       "scaleFactor": 1.05,
       "frames": [
         {
@@ -3980,11 +4086,13 @@
           "scale": 0.35589888,
           "scaleFactor": 1.05
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "d7a137dc2f19549fddeb0a56e4ca1644ad88a913bc73d8c3611620cd894b2410",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-light-backward": {
       "sourceSha256": "2c36c7c4c64e0e0d01d8843a8d36310c0a7c981d062f2db3964167840ac3c26c",
-      "outputSha256": "b34feee63a2a6498ee6b9301198a0b5bb52608bbb43ad2c2543cb0b0e50b5dab",
+      "outputSha256": "9bc0406de3be405e54f9096db720f3565b88081c47f78990e1cc34fa1fc714d2",
       "scaleFactor": 1.05,
       "frames": [
         {
@@ -4051,11 +4159,13 @@
           "scale": 0.35589888,
           "scaleFactor": 1.05
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "b34feee63a2a6498ee6b9301198a0b5bb52608bbb43ad2c2543cb0b0e50b5dab",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "air-heavy-backward": {
       "sourceSha256": "e96557758b80036d5743c5206403ad44c0b8411dc46ba49fd39c676e39385592",
-      "outputSha256": "28521145f100c9651837357c5f6baa32e116cae7abea8fab8cdf664fd31c5b9d",
+      "outputSha256": "26528efc7d81741510f992247a26b01bb1d17405c79d70008bad5ec2090c2c67",
       "scaleFactor": 1.08,
       "frames": [
         {
@@ -4122,11 +4232,13 @@
           "scale": 0.36606742,
           "scaleFactor": 1.08
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "28521145f100c9651837357c5f6baa32e116cae7abea8fab8cdf664fd31c5b9d",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "block-standing": {
       "sourceSha256": "52d96c4bfa3d6aa074fffd8b1ffa51de158095341c224669a32146c9a804ae50",
-      "outputSha256": "7dc43e21a117c2462a0b1ce36a39ba53d25687ce6e031f4aa310040e3c7ed6d3",
+      "outputSha256": "f351c4914eb02d3280e462feb02294d26af2e2727688390f04823ab25cab6cf6",
       "scaleFactor": 1.08,
       "frames": [
         {
@@ -4193,11 +4305,13 @@
           "scale": 0.36606742,
           "scaleFactor": 1.08
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "7dc43e21a117c2462a0b1ce36a39ba53d25687ce6e031f4aa310040e3c7ed6d3",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "block-crouching": {
       "sourceSha256": "0d8c1e8ba56e791a03e4418600e0258d1a676f6de7fe9c8bf3c27a60256d900b",
-      "outputSha256": "13ebd71c69d82fcb8aaf556cb628cf7f023c4e8513c061af02a9dbbe5bee70f5",
+      "outputSha256": "d08bd56eab58e5fa4f2ecfd1398600283e7b3c2f0fd7bc634680101e41bc2f42",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -4264,11 +4378,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "13ebd71c69d82fcb8aaf556cb628cf7f023c4e8513c061af02a9dbbe5bee70f5",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "hit": {
       "sourceSha256": "b3ce065df006d79ab836d73f87ebec2ea54f122aa32eeff3ba51674d637758ab",
-      "outputSha256": "f7dc0d545b01261dd9a60fd7f3fcc80967c5ca707f1a465732a64be31001114a",
+      "outputSha256": "4a6843b755112347f803ba01816bc104f500a8f91d0ef2f44ff44b9c01775059",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -4335,11 +4451,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "f7dc0d545b01261dd9a60fd7f3fcc80967c5ca707f1a465732a64be31001114a",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "knockdown": {
       "sourceSha256": "a9a4216ced87df9ae76f699a0f1c381d350d343ed4e2e4c8850053a98d88154d",
-      "outputSha256": "fa821ca69a2e0e4898906e2fbbf5787412e0308b0022367779eae46245976099",
+      "outputSha256": "37f80058b26e70d8950fb8b527bfc7ab4d6c16cf9ad6e3473b3d9a147beb6b3b",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -4406,11 +4524,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "fa821ca69a2e0e4898906e2fbbf5787412e0308b0022367779eae46245976099",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "wake-up": {
       "sourceSha256": "682f523a3c4ef9fae25818e96a0951fe2cdd23628772d7a865b12c8726e10fc0",
-      "outputSha256": "a466346317f133063958c810c4c343288979d26adf0bd6c26d7adefc639dbabf",
+      "outputSha256": "d058d34b2e59d3a34e3f24728bc6154aafe5d52048ede9f887de27a863ca4ccb",
       "scaleFactor": 1.08,
       "frames": [
         {
@@ -4477,11 +4597,13 @@
           "scale": 0.36606742,
           "scaleFactor": 1.08
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "a466346317f133063958c810c4c343288979d26adf0bd6c26d7adefc639dbabf",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "grabbed-front": {
       "sourceSha256": "0afa53dc3cedbe7febb1bf0969f0903365b35e9ecaf990a5557a9a22b8fddf60",
-      "outputSha256": "5deaba8422aa0d187be9d5f19e9e43c838eed001f6fb067b4ee566ba3568bd98",
+      "outputSha256": "4d93db27e20ff1e05745182dc52d2c0bdb78b812d2c8d1f4e124418152ec950a",
       "scaleFactor": 1.36,
       "frames": [
         {
@@ -4612,11 +4734,13 @@
           "scale": 0.46097378,
           "scaleFactor": 1.36
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "5deaba8422aa0d187be9d5f19e9e43c838eed001f6fb067b4ee566ba3568bd98",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "grabbed-lifted": {
       "sourceSha256": "c765e26ab177b7bd94e6b6fae6b315baa9b4aca74125ee39bfde3da59a5b9ed8",
-      "outputSha256": "52242b3695378ea202e890a26dbdb0cf2dd0096ed49f4363c29243a6b1b107dc",
+      "outputSha256": "70e4de3e52310908f391c200dbae50bd851b7a159222bd953953f4959d4d58f6",
       "scaleFactor": 1.64,
       "frames": [
         {
@@ -4747,11 +4871,13 @@
           "scale": 0.55588015,
           "scaleFactor": 1.64
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "52242b3695378ea202e890a26dbdb0cf2dd0096ed49f4363c29243a6b1b107dc",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "thrown": {
       "sourceSha256": "bfa023b2cc54e75a9835815557aa1fd484588d877c784565dd124015e00925ce",
-      "outputSha256": "0707a8145f4286f31d4b7e99ddd7ca8fb77b256970ea62f5d0c13a41b2fcf4a9",
+      "outputSha256": "8121b26067b985a6cfcbca4788befaa8061b5292d009c5d9d3a958b941f91bdc",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -4818,11 +4944,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "0707a8145f4286f31d4b7e99ddd7ca8fb77b256970ea62f5d0c13a41b2fcf4a9",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "frozen": {
       "sourceSha256": "fdfe783ecb89de42103a43f55eb652667601c67c303537a4c1a012a269e2c121",
-      "outputSha256": "8fbafe79226f6288a95fb44a96b5087d82634029efb0f968e61ed2db0cc23671",
+      "outputSha256": "e0e68979fd6132feebc0882e765a7ba7024a66f1ece331f718dec68d1ed798da",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -4895,11 +5023,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "8fbafe79226f6288a95fb44a96b5087d82634029efb0f968e61ed2db0cc23671",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "knockout": {
       "sourceSha256": "86a4d5878ad6fdd8289a933a32b73a61d3ab1d13671dae69b26d20a3ed6e48cb",
-      "outputSha256": "068a1ab5b33677ceca775b19d3df153c9cc312bbbab37dc88d36a183c8ae4ea0",
+      "outputSha256": "9572a6c992874fca671577d28f9d834b9d0680804e735fc9879ab0eebd4ae328",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -4966,11 +5096,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "068a1ab5b33677ceca775b19d3df153c9cc312bbbab37dc88d36a183c8ae4ea0",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "victory": {
       "sourceSha256": "ec8fcebd2b444071b5204c8c2b30116856983fd962523946e6663c154f0bba1f",
-      "outputSha256": "02e622a12b69ff037c65cc1976020205cbff9f3aa6834ab88900e3d3f9277424",
+      "outputSha256": "030f41719e7471ec289b7e0ff8673cae482ee6861e2081363abf06e00ac5cdf9",
       "scaleFactor": 1.0,
       "frames": [
         {
@@ -5037,11 +5169,13 @@
           "scale": 0.33895131,
           "scaleFactor": 1.0
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "02e622a12b69ff037c65cc1976020205cbff9f3aa6834ab88900e3d3f9277424",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "reflexo-negro": {
       "sourceSha256": "f6b3bf620884d1aff3efde10930bd64e810c0a817ca8aa1bb103582af2db7f0d",
-      "outputSha256": "2732992878705bbb9fed258bb562e650658d50c393e8da186c188fece350d409",
+      "outputSha256": "08222635963cb9aaa767c76f67b9ada52bfdd13bd07f2debcab7d51f62084f29",
       "scaleFactor": 1.07,
       "frames": [
         {
@@ -5108,11 +5242,13 @@
           "scale": 0.3626779,
           "scaleFactor": 1.07
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "2732992878705bbb9fed258bb562e650658d50c393e8da186c188fece350d409",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "quebra-luz": {
       "sourceSha256": "c3049fc8fa4f2870e27c26ee6cb2cb2b0ce0cec6b19edbe9b910d2274a426add",
-      "outputSha256": "c7d0f8963ffe519b500d578d3fce051d661de742f37dba83b77f19ece01e19e8",
+      "outputSha256": "e614c36b64cba82d5580a923e1448bb5dd6ddafe9ed7ef6466fbbaf19fb74239",
       "scaleFactor": 1.12,
       "frames": [
         {
@@ -5179,11 +5315,13 @@
           "scale": 0.37962547,
           "scaleFactor": 1.12
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "c7d0f8963ffe519b500d578d3fce051d661de742f37dba83b77f19ece01e19e8",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     },
     "impacto-solar": {
       "sourceSha256": "01be5e1923bf4a8bd3376b0ba27922516ca737fcd9db9860531f2545a3826c82",
-      "outputSha256": "1bd7a4f1b2414c797eb7a87d55cde63c13d335a5c91b0dd5c658690495ec1b6b",
+      "outputSha256": "d0457420bbeed574de0a7f81dff4737e8188b9995d8abce93ba9bfd35f46227c",
       "scaleFactor": 1.07,
       "frames": [
         {
@@ -5250,7 +5388,9 @@
           "scale": 0.3626779,
           "scaleFactor": 1.07
         }
-      ]
+      ],
+      "preFaceRestyleOutputSha256": "1bd7a4f1b2414c797eb7a87d55cde63c13d335a5c91b0dd5c658690495ec1b6b",
+      "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
     }
   }
 }

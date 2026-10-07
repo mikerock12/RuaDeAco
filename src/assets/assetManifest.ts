@@ -7,55 +7,58 @@ import type {
   SpriteSheetAsset,
 } from '../types/assets';
 
-const concept = (
+const portrait = (
   fighterId: FighterId,
   key: string,
-  file: string,
   crops: Readonly<Record<PortraitUse, AssetCrop>>,
 ): PortraitAsset => ({
   fighterId,
   key,
-  path: `assets/references/${file}`,
+  path: `assets/portraits/${fighterId}.png`,
   crops,
 });
 
+/**
+ * Retratos de menu, seleção, HUD, versus e resultado (512 × 512), montados com
+ * o próprio sprite em pixel art por scripts/faces/portraits.py. As antigas
+ * fichas conceituais quase fotográficas foram aposentadas em 07/10/2026.
+ * O Guto mantém o retrato aprovado, com contorno frio e flocos de gelo.
+ */
 export const CONCEPT_ASSETS: Readonly<Record<FighterId, PortraitAsset>> = {
-  'rafa-mare': concept('rafa-mare', 'rafaMareConcept', 'rafa-mare-concept.png', {
-    hud: { x: 730, y: 35, width: 320, height: 360 },
-    card: { x: 680, y: 40, width: 380, height: 290 },
-    profile: { x: 700, y: 25, width: 330, height: 440 },
-    hero: { x: 660, y: 20, width: 400, height: 500 },
+  'rafa-mare': portrait('rafa-mare', 'rafaMareConcept', {
+    hud: { x: 227, y: 128, width: 96, height: 108 },
+    card: { x: 177, y: 118, width: 196, height: 150 },
+    profile: { x: 167, y: 108, width: 216, height: 288 },
+    hero: { x: 125, y: 96, width: 320, height: 400 },
   }),
-  'noir-reflexo': concept('noir-reflexo', 'noirReflexoConcept', 'noir-reflexo-concept.png', {
-    hud: { x: 720, y: 35, width: 330, height: 370 },
-    card: { x: 675, y: 45, width: 390, height: 290 },
-    profile: { x: 700, y: 25, width: 340, height: 450 },
-    hero: { x: 655, y: 20, width: 410, height: 500 },
+  'noir-reflexo': portrait('noir-reflexo', 'noirReflexoConcept', {
+    hud: { x: 225, y: 115, width: 96, height: 108 },
+    card: { x: 175, y: 105, width: 196, height: 150 },
+    profile: { x: 165, y: 95, width: 216, height: 288 },
+    hero: { x: 123, y: 83, width: 320, height: 400 },
   }),
-  'astro-riso': concept('astro-riso', 'astroRisoConcept', 'astro-riso-concept.png', {
-    hud: { x: 705, y: 30, width: 300, height: 380 },
-    card: { x: 690, y: 100, width: 340, height: 240 },
-    profile: { x: 705, y: 20, width: 300, height: 400 },
-    hero: { x: 690, y: 15, width: 340, height: 410 },
+  'astro-riso': portrait('astro-riso', 'astroRisoConcept', {
+    hud: { x: 235, y: 144, width: 96, height: 108 },
+    card: { x: 185, y: 134, width: 196, height: 150 },
+    profile: { x: 175, y: 124, width: 216, height: 288 },
+    hero: { x: 133, y: 112, width: 320, height: 400 },
   }),
-  'dante-sinal': concept('dante-sinal', 'danteSinalConcept', 'dante-sinal-concept.png', {
-    hud: { x: 715, y: 35, width: 335, height: 375 },
-    card: { x: 670, y: 45, width: 395, height: 290 },
-    profile: { x: 695, y: 25, width: 345, height: 455 },
-    hero: { x: 650, y: 20, width: 420, height: 505 },
+  'dante-sinal': portrait('dante-sinal', 'danteSinalConcept', {
+    hud: { x: 235, y: 129, width: 96, height: 108 },
+    card: { x: 185, y: 119, width: 196, height: 150 },
+    profile: { x: 175, y: 109, width: 216, height: 288 },
+    hero: { x: 133, y: 97, width: 320, height: 400 },
   }),
-  'leo-violeta': concept('leo-violeta', 'leoVioletaConcept', 'leo-violeta-concept.png', {
-    hud: { x: 715, y: 35, width: 330, height: 370 },
-    card: { x: 690, y: 145, width: 360, height: 250 },
-    profile: { x: 695, y: 25, width: 345, height: 455 },
-    hero: { x: 650, y: 20, width: 420, height: 505 },
+  'leo-violeta': portrait('leo-violeta', 'leoVioletaConcept', {
+    hud: { x: 238, y: 121, width: 96, height: 108 },
+    card: { x: 188, y: 111, width: 196, height: 150 },
+    profile: { x: 178, y: 101, width: 216, height: 288 },
+    hero: { x: 136, y: 89, width: 320, height: 400 },
   }),
-  // Retrato oficial aprovado manualmente (1254x1254, moldura e letreiro embutidos);
-  // a ficha conceitual guto-barba-concept.png segue em public/assets/references como referencia.
   'guto-barba': {
     fighterId: 'guto-barba',
     key: 'gutoBarbaPortrait',
-    path: 'assets/references/guto-barba-portrait-final.png',
+    path: 'assets/portraits/guto-barba.png',
     crops: {
       hud: { x: 300, y: 110, width: 650, height: 730 },
       card: { x: 260, y: 220, width: 760, height: 530 },
