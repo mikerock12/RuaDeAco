@@ -7,8 +7,8 @@ android {
         applicationId "com.mikerock12.ruadeaco"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "0.2.0-beta.2"
+        versionCode 3
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,11 +16,34 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Assinatura de upload (Play App Signing). Nunca versionar a chave:
+    // o build lê caminho e senhas de variáveis de ambiente. Sem elas, o release
+    // sai sem assinatura e é assinado depois (ver docs/PLAY_STORE.md).
+    def uploadStore = System.getenv('RUA_UPLOAD_STORE_FILE')
+    signingConfigs {
+        if (uploadStore) {
+            upload {
+                storeFile file(uploadStore)
+                storePassword System.getenv('RUA_UPLOAD_STORE_PASSWORD')
+                keyAlias System.getenv('RUA_UPLOAD_KEY_ALIAS') ?: 'rua-de-aco-upload'
+                keyPassword System.getenv('RUA_UPLOAD_KEY_PASSWORD') ?: System.getenv('RUA_UPLOAD_STORE_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // R8 encolhe o código nativo do invólucro; o jogo em si é o pacote web já minificado pelo Vite.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (uploadStore) signingConfig signingConfigs.upload
         }
+    }
+    bundle {
+        // A Play entrega a cada aparelho só a densidade e o idioma dele.
+        density { enableSplit = true }
+        language { enableSplit = true }
+        abi { enableSplit = true }
     }
 }
 

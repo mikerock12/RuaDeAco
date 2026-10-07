@@ -3,7 +3,7 @@
     "source": "art-source/fighters/universal-grab-v2/rafa-mare-keyed.png",
     "file": "public/assets/fighters/rafa-mare/universal-grab-v2.png",
     "sourceSha256": "4e407f4f42cf793a9758add279e94a76b37b4c56e6ae2a050ea502ac27ed46f1",
-    "outputSha256": "7b9b20c747053a8d4bd13e4f15be95f6ca63b4ad5a2ab60c4e153d01a5c4009c",
+    "outputSha256": "f96cddd3f9068230818c20b0e4334eb81d484084e4b6986a4f8ff8eb630182f2",
     "sourceWidth": 1448,
     "sourceHeight": 1086,
     "frameWidth": 256,
@@ -154,7 +154,9 @@
         "scale": 0.6285714285714286,
         "rootOffset": 0
       }
-    ]
+    ],
+    "preFaceRestyleOutputSha256": "7b9b20c747053a8d4bd13e4f15be95f6ca63b4ad5a2ab60c4e153d01a5c4009c",
+    "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
   },
   "guto-barba": {
     "source": "art-source/fighters/universal-grab-v2/guto-barba.png",
@@ -317,7 +319,7 @@
     "source": "art-source/fighters/universal-grab-v2/noir-reflexo.png",
     "file": "public/assets/fighters/noir-reflexo/universal-grab-v2.png",
     "sourceSha256": "8052e91820c8965cb0418d6865390b70eb1d41a28a543719f098b892ed94177d",
-    "outputSha256": "ce292f9f3e118cd4d806686f336d3a47f6bec7df9b1314c8ea45e8579bb14057",
+    "outputSha256": "03b2cc9f66058de8f901c381818fe896c4ddb70dff70f25a9042315f20ed7028",
     "sourceWidth": 1448,
     "sourceHeight": 1086,
     "frameWidth": 256,
@@ -468,13 +470,15 @@
         "scale": 0.6901960784313725,
         "rootOffset": 0
       }
-    ]
+    ],
+    "preFaceRestyleOutputSha256": "ce292f9f3e118cd4d806686f336d3a47f6bec7df9b1314c8ea45e8579bb14057",
+    "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
   },
   "astro-riso": {
     "source": "art-source/fighters/universal-grab-v2/astro-riso.png",
     "file": "public/assets/fighters/astro-riso/universal-grab-v2.png",
     "sourceSha256": "bf4ec4d26b0e7c5592cc5c45b32594c7621ced9e8d78df6817809d5ff869b542",
-    "outputSha256": "1118b377d18d89fe3d8dd0b4c7c869391b952e029ddbdd652d100e164311a07c",
+    "outputSha256": "3c1593ae9f7c82237cd1c7b4ecb113a783fad2a10f4cff19e8b4253e8483944b",
     "sourceWidth": 1448,
     "sourceHeight": 1086,
     "frameWidth": 256,
@@ -625,13 +629,15 @@
         "scale": 0.5932835820895522,
         "rootOffset": 1
       }
-    ]
+    ],
+    "preFaceRestyleOutputSha256": "1118b377d18d89fe3d8dd0b4c7c869391b952e029ddbdd652d100e164311a07c",
+    "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
   },
   "dante-sinal": {
     "source": "art-source/fighters/universal-grab-v2/dante-sinal.png",
     "file": "public/assets/fighters/dante-sinal/universal-grab-v2.png",
     "sourceSha256": "a74a3a0c82fe0e0bf2cc1b3d95e412fa72c78d79edeafe868efa062e4562cfc7",
-    "outputSha256": "973749fa215105d167a64c624a9125a614ed17d2b780a68abaf47ada3bf283ef",
+    "outputSha256": "f58596838741230792551c0f677350bd3c0ea54583c4704396475e4a6a36c57b",
     "sourceWidth": 1448,
     "sourceHeight": 1086,
     "frameWidth": 256,
@@ -782,13 +788,15 @@
         "scale": 0.6494464944649446,
         "rootOffset": 0
       }
-    ]
+    ],
+    "preFaceRestyleOutputSha256": "973749fa215105d167a64c624a9125a614ed17d2b780a68abaf47ada3bf283ef",
+    "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
   },
   "leo-violeta": {
     "source": "art-source/fighters/universal-grab-v2/leo-violeta.png",
     "file": "public/assets/fighters/leo-violeta/universal-grab-v2.png",
     "sourceSha256": "cac45fe2405f1ab860602b7d08a22cf9f060807bed6a1d3a76409b4ea463252b",
-    "outputSha256": "f7f939a4a95f5762102289b17c24fbf37233ef2771c7c49efa74167e0d9ca04c",
+    "outputSha256": "ffdcc736b29dc30f537ab73cdc44dd14838293a9e6b062dc7fbaa0c1b74399f9",
     "sourceWidth": 1448,
     "sourceHeight": 1086,
     "frameWidth": 256,
@@ -939,7 +947,9 @@
         "scale": 0.6567164179104478,
         "rootOffset": 0
       }
-    ]
+    ],
+    "preFaceRestyleOutputSha256": "f7f939a4a95f5762102289b17c24fbf37233ef2771c7c49efa74167e0d9ca04c",
+    "postProcess": "scripts/faces/restyle.py (faces-v3, 07/10/2026)"
   },
   "monster": {
     "source": "art-source/stages/cais-finisher-v2/monster.png",

@@ -1,0 +1,37 @@
+{
+ "universal-grab-v2.png": {
+  "5": {
+   "cx": 131,
+   "cy": 91,
+   "angle": 0,
+   "scale": 1.0,
+   "mirror": false
+  },
+  "7": {
+   "mode": "hair",
+   "cx": 88,
+   "cy": 86,
+   "r": 9,
+   "dark": 70
+  },
+  "6": {
+   "mode": "hair",
+   "cx": 130,
+   "cy": 72,
+   "r": 7,
+   "dark": 70,
+   "eyes": {
+    "cx": 131,
+    "cy": 82,
+    "rx": 9,
+    "ry": 3
+   },
+   "beard": {
+    "cx": 130,
+    "cy": 93,
+    "r": 9,
+    "maxY": 100
+   }
+  }
+ }
+}
