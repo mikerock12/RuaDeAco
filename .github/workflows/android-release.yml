@@ -1,12 +1,17 @@
 name: Android release
 
 # Gera o AAB (Play Store) e o APK (instalação direta) otimizados.
-# Disparo: tag android-v* ou manualmente. Se os segredos de assinatura
+# Disparo: push no master (código do jogo ou do Android), tag android-v* ou manualmente. Se os segredos de assinatura
 # existirem, os arquivos já saem assinados; senão saem sem assinatura e
 # são assinados depois com a chave de upload (docs/PLAY_STORE.md).
 on:
   push:
+    branches: [master]
+    paths: ['android/**', 'src/**', 'public/**', 'package.json', '.github/workflows/android-release.yml']
     tags: ['android-v*']
+  pull_request:
+    branches: [master]
+    paths: ['android/**', 'package.json', '.github/workflows/android-release.yml']
   workflow_dispatch:
 
 permissions:
@@ -61,11 +66,19 @@ jobs:
           path: out/
           retention-days: 14
       - name: Publica na página de releases (pré-lançamento)
-        if: startsWith(github.ref, 'refs/tags/')
+        if: ${{ github.event_name != 'pull_request' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" out/* --prerelease \
-            --title "Android ${GITHUB_REF_NAME#android-v} (build)" \
-            --notes "Build automático do Android. Se os segredos de assinatura não estiverem configurados, os arquivos estão sem assinatura e precisam ser assinados com a chave de upload antes de enviar à Play." \
-            || gh release upload "${GITHUB_REF_NAME}" out/* --clobber
+          VERSION=$(sed -n 's/.*versionName "\(.*\)".*/\1/p' android/app/build.gradle)
+          TAG="android-v${VERSION}"
+          echo "Versão ${VERSION} -> ${TAG}"
+          cp out/rua-de-aco-release.aab "out/rua-de-aco-${VERSION}-unsigned.aab"
+          cp out/rua-de-aco-release.apk "out/rua-de-aco-${VERSION}-unsigned.apk"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" out/rua-de-aco-${VERSION}-unsigned.* --clobber
+          else
+            gh release create "$TAG" out/rua-de-aco-${VERSION}-unsigned.* --prerelease --target "$GITHUB_SHA" \
+              --title "Android ${VERSION} (build sem assinatura)" \
+              --notes "Build automático do Android ${VERSION} (commit ${GITHUB_SHA}). Os arquivos estão sem assinatura: assine com a chave de upload antes de enviar à Play (docs/PLAY_STORE.md)."
+          fi

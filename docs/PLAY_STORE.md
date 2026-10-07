@@ -19,10 +19,10 @@ Política de privacidade (URL pública):
 
 ### Como os arquivos são gerados
 
-O SDK do Android é compilado no GitHub Actions (`.github/workflows/android-release.yml`),
-disparado por uma tag `android-vX.Y.Z` ou manualmente. Sem segredos configurados, o
-workflow publica o AAB e o APK **sem assinatura** como pré-lançamento; eles são assinados
-depois com a chave de upload:
+O Android é compilado no GitHub Actions (`.github/workflows/android-release.yml`): em PR
+só compila; em push no `master` (ou manualmente) também cria a tag `android-v<versionName>`
+e um pré-lançamento na página de Releases. Sem segredos configurados, o AAB e o APK saem
+**sem assinatura** e são assinados depois com a chave de upload:
 
 ```bash
 # AAB
