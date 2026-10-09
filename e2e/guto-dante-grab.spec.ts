@@ -1,3 +1,4 @@
+import { observeCombatFrames, observedCombatFrames } from './helpers/frameObservation';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -103,6 +104,8 @@ async function openGutoVsDante(page: Page, testInfo: TestInfo): Promise<void> {
   expect(snap.fighters[1].id).toBe('dante-sinal');
 }
 
+const observedCursor = new WeakMap<Page, number>();
+
 async function prepare(
   page: Page,
   opponentX: number,
@@ -134,6 +137,8 @@ async function prepare(
     }
     world.mode = 'versus';
   }, { opponentX, meter, gutoFacing, bomba });
+  await observeCombatFrames(page);
+  observedCursor.set(page, -1);
   await page.waitForTimeout(50);
 }
 
@@ -188,8 +193,10 @@ async function pollUntil(
 ): Promise<WorldSnapshot> {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
-    const snap = await snapshot(page);
-    if (predicate(snap)) return snap;
+    const frames = await observedCombatFrames<WorldSnapshot>(page);
+    const cursor = observedCursor.get(page) ?? -1;
+    const snap = frames.find(s => s.frame > cursor && predicate(s));
+    if (snap) { observedCursor.set(page, snap.frame); return snap; }
     await page.waitForTimeout(16);
   }
   throw new Error(`Timeout aguardando: ${label}`);
@@ -215,8 +222,8 @@ test('Guto agarra Dante: Gancho e Abraço sem pageerror além do frame 12', asyn
   const frameBefore = (await snapshot(page)).frame;
   await pressGrabCommand(page, 'right', mobile);
 
-  await expect.poll(async () => (await snapshot(page)).activeGrab?.moveId).toBe('ganchoUrso');
-  await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('grabbedFront');
+  await pollUntil(page, s => s.activeGrab?.moveId === 'ganchoUrso', 'Gancho capturou');
+  await pollUntil(page, s => s.fighters[1].state === 'grabbedFront', 'captura frontal');
 
   // Chega além do frame 12 (pose 4) que travava com 4 frames
   const pastFreeze = await pollUntil(
@@ -233,7 +240,7 @@ test('Guto agarra Dante: Gancho e Abraço sem pageerror além do frame 12', asyn
   expect(pastFreeze.fighters[1].victimPoseFrame).toBeGreaterThanOrEqual(4);
   await saveEvidence(page, `gancho-pose4-${testInfo.project.name}`);
 
-  await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('grabbedLifted');
+  await pollUntil(page, s => s.fighters[1].state === 'grabbedLifted', 'levantamento');
   const liftedHigh = await pollUntil(
     page,
     (snap) => (snap.fighters[1].victimPoseFrame ?? -1) >= 7
@@ -243,7 +250,7 @@ test('Guto agarra Dante: Gancho e Abraço sem pageerror além do frame 12', asyn
   expect(liftedHigh.fighters[1].victimPoseFrame).toBe(7);
   await saveEvidence(page, `gancho-pose7-${testInfo.project.name}`);
 
-  await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('thrown');
+  await pollUntil(page, s => s.fighters[1].state === 'thrown', 'arremesso');
   await pollUntil(
     page,
     (snap) => snap.activeGrab === null && snap.fighters[1].grabbedBy === null,
@@ -268,15 +275,15 @@ test('Guto agarra Dante: Gancho e Abraço sem pageerror além do frame 12', asyn
   // --- Abraço Glacial ---
   await prepare(page, 350, { meter: 100, gutoFacing: 1 });
   await pressGrabCommand(page, 'down', mobile);
-  await expect.poll(async () => (await snapshot(page)).activeGrab?.moveId).toBe('abracoGlacial');
-  await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('grabbedFront');
+  await pollUntil(page, s => s.activeGrab?.moveId === 'abracoGlacial', 'Abraço capturou');
+  await pollUntil(page, s => s.fighters[1].state === 'grabbedFront', 'captura frontal');
   await pollUntil(
     page,
     (snap) => (snap.fighters[1].victimPoseFrame ?? -1) >= 7
       && snap.fighters[1].state === 'grabbedFront',
     'Abraço pose 7 front',
   );
-  await expect.poll(async () => (await snapshot(page)).fighters[1].state).toBe('frozen');
+  await pollUntil(page, s => s.fighters[1].state === 'frozen', 'congelamento');
   await saveEvidence(page, `abraco-frozen-${testInfo.project.name}`);
   await pollUntil(
     page,
@@ -322,7 +329,7 @@ test('Guto agarra Dante: Gancho e Abraço sem pageerror além do frame 12', asyn
   await prepare(page, 350, { gutoFacing: 1, bomba: true });
   const bombaHealth = (await snapshot(page)).fighters[1].health;
   await pressGrabCommand(page, 'right', mobile);
-  await expect.poll(async () => (await snapshot(page)).activeGrab?.moveId).toBe('ganchoUrso');
+  await pollUntil(page, s => s.activeGrab?.moveId === 'ganchoUrso', 'Gancho capturou');
   await pollUntil(
     page,
     (snap) => snap.activeGrab === null && snap.fighters[1].grabbedBy === null,

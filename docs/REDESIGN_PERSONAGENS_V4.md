@@ -78,3 +78,8 @@ em vez de destruir e recriar toda a interface sob o ponteiro. O texto e as barra
 latência são atualizados em objetos reutilizados. Mudanças reais de seleção, arena,
 pronto e conexão continuam atualizando a apresentação. O E2E espera a confirmação da
 seleção recebida pelos dois jogadores e verifica um ping real sem reconstrução do lobby.
+
+A suíte completa é distribuída em quatro shards no CI, com um navegador por runner.
+Os testes legados de Gancho/Abraço e hazards do Dante observam cada tick real,
+para que poses de dois frames não se percam entre consultas do processo de teste.
+Dano, estados, liberação do agarrão e ausência de erros continuam verificados.

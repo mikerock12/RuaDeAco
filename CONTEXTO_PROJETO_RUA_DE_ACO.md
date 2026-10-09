@@ -21,7 +21,7 @@
 > Cais, Cozinha e Sítio receberam efeitos, áudio e coreografia mais elaborados;
 > corrigido o fundo ampliado do portão ao reentrar no Sítio usando `__BASE`.
 > O lobby online preserva controles durante pings e confirmações repetidas.
-> Motor `lockstep-v6-prototype-bodies`. CI audita sprites/hitboxes e toda a suíte de navegador.
+> Motor `lockstep-v6-prototype-bodies`. CI audita sprites/hitboxes e toda a suíte de navegador em quatro shards.
 > Detalhes em [docs/REDESIGN_PERSONAGENS_V4.md](docs/REDESIGN_PERSONAGENS_V4.md).
 >
 > **Rostos novos e Play Store, 07/10/2026:** os rostos de Rafa, Noir, Astro, Dante e
