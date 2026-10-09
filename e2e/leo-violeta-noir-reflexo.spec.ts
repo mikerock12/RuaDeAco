@@ -436,7 +436,7 @@ test.describe('Léo Violeta + Noir Reflexo', () => {
     expect(consoleErrors.filter((message) => /texture|__BASE|404|missing/iu.test(message))).toEqual([]);
 
     if (testInfo.project.name === 'chrome-mobile-landscape') {
-      await tapInternal(page, 320, 55);
+      await tapInternal(page, 608, 58);
       await expect.poll(() => pauseDebug(page)).toEqual({
         paused: true,
         selectedAction: 'continue',

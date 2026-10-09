@@ -113,3 +113,20 @@ para o atacante, vítima nas mandíbulas, panelão, tridente, recuo do vencedor
 no Sítio, espelho, hashes iguais entre dois clientes e CPU. O Playwright
 percorre as três finalizações no desktop e no celular emulado
 (`universal-grab-finisher.spec.ts`, na suíte `test:e2e:ci`).
+
+## Revisão do elenco e acabamento — 09/10/2026
+
+As folhas v4 substituem os corpos de Rafa, Noir, Astro, Dante e Léo em todas as poses,
+incluindo o agarrão. Guto preserva suas folhas e o rosto. Para reprodução atual, usar
+`npm run assets:characters`; `assets:grab` legado está bloqueado para evitar sobrescrita.
+Mãos, pontos de pega e oito inclinações foram medidos novamente. A última pose mantém a
+orientação do levantamento sem inverter a vítima. Motor `lockstep-v6-prototype-bodies`.
+
+Cais ganhou rastro, impacto, mastigação sutil e graves em camadas; Cozinha ganhou vapor,
+caldo quente e reação das pernas; Sítio ganhou peso no avanço/recuo do mascarado, poeira
+e fechamento reforçado. Vinheta, partículas, tremor e flashes curtos respeitam movimento
+reduzido. Sons sintetizados têm reflexos curtos e respeitam mudo/volume.
+
+A revanche no Sítio escolhe `__BASE` para o fundo: os recortes das portas não podem mais
+virar o cenário ampliado na segunda entrada. Detalhes e fontes em
+[REDESIGN_PERSONAGENS_V4.md](REDESIGN_PERSONAGENS_V4.md).

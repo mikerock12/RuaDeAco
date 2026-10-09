@@ -118,7 +118,7 @@ export class KitchenStageView {
         const t = age / 26;
         const dx = Math.cos(drop * 2.4) * (10 + (drop % 5) * 8) * t;
         const dy = -Math.abs(Math.sin(drop * 1.7)) * 34 * t + 60 * t * t;
-        splash.fillStyle(drop % 2 ? 0x8fb24a : 0x5b7d2a, 1 - t)
+        splash.fillStyle(drop % 2 ? 0xc99658 : 0x79502c, 1 - t)
           .fillRect(Math.round(KITCHEN_POT_X + dx), Math.round(KITCHEN_POT_Y - 8 + dy), 2, 3);
       }
     }

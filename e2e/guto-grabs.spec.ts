@@ -308,7 +308,7 @@ test('Guto executa Chute Pesado, Gancho e Abraço com sprites separados', async 
   expect(consoleProblems.filter((message) => /texture|404|guto-barba/iu.test(message))).toEqual([]);
 
   if (testInfo.project.name === 'chrome-mobile-landscape') {
-    await tapInternal(page, 320, 55);
+    await tapInternal(page, 608, 58);
     await expect.poll(() => pauseDebug(page)).toEqual({ paused: true, selectedAction: 'continue' });
     await tapInternal(page, 320, 295);
   } else {

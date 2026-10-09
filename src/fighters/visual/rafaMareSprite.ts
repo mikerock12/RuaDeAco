@@ -1,3 +1,4 @@
+import { redesignPoseOffset } from './redesignPoseRegistration';
 import { universalGrabSprite } from './universalGrabSprite';
 import type {
   FighterAnimationAsset,
@@ -55,6 +56,7 @@ function animation(
 ): FighterAnimationAsset {
   return {
     id,
+    visualOffset: redesignPoseOffset('rafa-mare', id),
     key: `rafa-mare-${id}`,
     path: `assets/fighters/rafa-mare/${files[id]}`,
     frameWidth: FRAME_SIZE,

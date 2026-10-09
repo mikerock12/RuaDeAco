@@ -48,6 +48,7 @@ export interface FighterView {
 class SpriteFighterView implements FighterView {
   private readonly definition: FighterDefinition;
   private readonly sprite: Phaser.GameObjects.Sprite;
+  private readonly rimLight: readonly Phaser.GameObjects.Sprite[];
   private readonly moveEffect: Phaser.GameObjects.Sprite | null;
   private readonly statusEffectSprites: ReadonlyArray<{
     readonly effect: FighterEffectAsset;
@@ -70,6 +71,10 @@ class SpriteFighterView implements FighterView {
       .setOrigin(asset.origin.x, asset.origin.y)
       .setScale(asset.scale)
       .setDepth(20);
+    // Acabamento em pixels inteiros; mantém todas as cores e o rosto do sprite original.
+    this.rimLight = [-1, 1].map(() => scene.add.sprite(0, 0, idle.key, 0)
+      .setOrigin(asset.origin.x, asset.origin.y).setTint(0x75bad0).setTintMode(Phaser.TintModes.FILL)
+      .setAlpha(definition.id === 'guto-barba' ? 0.32 : 0.16).setName(`${definition.id}-pixel-rim`));
     this.groundShadow = this.createGroundShadow(scene, definition);
     this.statusPresentation = this.createStatusPresentation(scene, definition.id);
     const firstAttachedEffect = asset.effects.find((effect) => effect.usage === 'attached');
@@ -124,6 +129,11 @@ class SpriteFighterView implements FighterView {
     const resolved = resolveFighterAnimation(poseSnapshot, activeMove, this.asset, this.definition);
     this.currentAnimation = resolved.id;
     const animation = this.asset.animations[this.currentAnimation];
+    const poseOffset = animation?.visualOffset;
+    if (poseOffset) this.sprite.setPosition(
+      roundPixel(x + poseOffset.x * snapshot.facing * this.asset.scale),
+      roundPixel(y + poseOffset.y * this.asset.scale),
+    );
 
     if (!animation) {
       console.error(`[Rua de Aço] Animação ausente: key=${this.currentAnimation} fighter=${this.definition.id} state=${snapshot.poseState} move=${snapshot.poseMoveId}`);
@@ -144,6 +154,11 @@ class SpriteFighterView implements FighterView {
 
     keepFighterBodyColorsNeutral(this.sprite, snapshot);
     this.applyCut(presentation?.cutBelowY ?? null);
+    this.rimLight.forEach((rim, index) => rim
+      .setTexture(this.sprite.texture.key, this.sprite.frame.name)
+      .setPosition(this.sprite.x + (index === 0 ? -1 : 1), this.sprite.y)
+      .setScale(this.sprite.scaleX, this.sprite.scaleY).setRotation(this.sprite.rotation)
+      .setDepth(this.sprite.depth - 0.1).setVisible(this.viewVisible && !this.sprite.isCropped));
     this.groundShadow.sync(snapshot, roundPixel(worldToScreen(worldX)));
     this.groundShadow.setVisible(this.viewVisible && (presentation?.shadow ?? true));
     this.statusPresentation.sync(snapshot, roundPixel(x), roundPixel(y), 18);
@@ -211,6 +226,7 @@ class SpriteFighterView implements FighterView {
     if (this.destroyed) return;
     this.viewVisible = visible;
     this.sprite.setVisible(visible);
+    for (const rim of this.rimLight) rim.setVisible(visible && !this.sprite.isCropped);
     this.moveEffect?.setVisible(visible && this.moveEffectActive);
     if (!visible) {
       for (const entry of this.statusEffectSprites) entry.sprite.setVisible(false);
@@ -224,6 +240,7 @@ class SpriteFighterView implements FighterView {
     if (this.destroyed) return;
     this.destroyed = true;
     this.sprite.destroy();
+    for (const rim of this.rimLight) rim.destroy();
     this.moveEffect?.destroy();
     for (const entry of this.statusEffectSprites) entry.sprite.destroy();
     this.groundShadow.destroy();

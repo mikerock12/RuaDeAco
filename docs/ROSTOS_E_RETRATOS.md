@@ -1,51 +1,31 @@
-# Rostos e retratos (07/10/2026)
+# Rostos e retratos — revisão 09/10/2026
 
-Os rostos de Rafa, Noir, Astro, Dante e Léo pareciam pessoas reais. Foram trocados em
-todas as 864 células de animação por visuais novos, em pixel art, combinando com o estilo
-de luta de cada um. O Guto ficou igual (é baseado no autor); o retrato dele ganhou só
-acabamento: contorno de luz fria e flocos de gelo.
+O elenco atual usa corpos completos inspirados no protótipo `RuaDeAco-spritesheets-v2-RASCUNHO/`.
+Os rostos de Rafa, Noir, Astro, Dante e Léo são fictícios. Guto Barba é baseado no autor:
+seu rosto, retrato e folhas de luta foram preservados. O acabamento discreto de luz fria
+acontece na apresentação e não modifica os pixels originais.
 
-| Lutador | Arquétipo | Rosto novo |
-| --- | --- | --- |
-| Rafa Maré | Agile / Rushdown | moicano turquesa em onda, pintura de guerra azul na bochecha, sem barba |
-| Noir Reflexo | Counter / Zoner | cabelo platinado para trás, óculos espelhados ciano, sem barba |
-| Astro Riso | Speed / Mix-up | cabelo espetado magenta, estrela dourada no olho, sorriso |
-| Dante Sinal | Technical / Zoner | cabelo cinza-chumbo, visor de LED vermelho, barba ruiva |
-| Léo Violeta | Pressure / Brawler | franja violeta caída sobre o olho, cicatriz no rosto, sem barba |
+| Lutador | Visual atual |
+| --- | --- |
+| Rafa Maré | cabelo castanho espetado, regata turquesa, bermuda azul-marinho, tatuagem de onda e tênis cinza/branco |
+| Noir Reflexo | fedora preto, sobretudo carvão, camisa branca, gravata vermelha e sapatos pretos |
+| Astro Riso | capuz de bobo roxo com estrelas douradas, jaqueta turquesa, calça roxa e botas douradas |
+| Dante Sinal | capuz preto, visor verde, roupa escura e tênis com detalhes verdes; sem barba |
+| Léo Violeta | cabelo preto, faixa e luvas roxas, regata preta, bermuda roxa e botas brancas/roxas |
 
-Expressões por animação: neutra, esforço (golpes fortes e especiais) e dor (impacto, queda,
-agarrado). Corpo, roupas, golpes, alpha e linha de chão não mudaram, e as caixas de colisão
-continuam as mesmas.
+Retratos de menu, seleção, HUD, versus e resultado são `PortraitAsset`. Eles são exportados
+separadamente a partir do novo quadro idle, com recortes próprios em `assetManifest.ts`.
+Nunca se usam retratos como corpos de luta ou vice-versa.
 
-## Pipeline
+## Pipeline atual
 
-Em `scripts/faces/` (Python 3 com Pillow, NumPy, OpenCV e SciPy):
+`npm run assets:characters` exporta as fontes v4 com alpha binário, escala uniforme por
+atlas e nearest-neighbor, atualiza o registro de poses aéreas, mede os pontos do agarrão
+e suas inclinações e exporta os cinco retratos. Usa Python com Pillow/NumPy e Node.
+Fontes, prompts e manifestos estão em `art-source/fighters/redesign-v4/`.
 
-1. `detect.py` localiza a cabeça em cada quadro por correspondência de molde (posição,
-   rotação, escala e espelho). Resultado em `art-source/fighters/faces-v3/heads-*.json`.
-2. `restyle.py` leva cada pixel perto da cabeça ao espaço do molde e redesenha cabelo,
-   barba, olhos/óculos e traços do rosto. Exceções por quadro ficam em
-   `art-source/fighters/faces-v3/overrides-*.json` (pular, posição manual ou só recolorir
-   o cabelo quando a cabeça está escondida entre os braços).
-3. `refresh-locked-hashes.py` atualiza os SHA-256 de saída que a auditoria trava
-   (agarrão e Léo/Noir), registrando o hash anterior.
-4. `portraits.py` monta os retratos 512 × 512 de menu, seleção, HUD, versus e resultado a
-   partir do sprite, e o acabamento do retrato do Guto. Ficam em `public/assets/portraits/`.
+`scripts/faces/` e `art-source/fighters/faces-v3/` são históricos da revisão de 07/10.
+Não executar o restyle antigo nos novos corpos. `npm run assets:grab` rejeita a exportação
+legada quando existe o manifesto v4, impedindo que corpos antigos substituam os atuais.
 
-Reprodução a partir das folhas originais (commit `becdd61`):
-
-```bash
-git archive becdd61 public/assets/fighters | tar -x -C /tmp/orig
-for f in rafa-mare noir-reflexo astro-riso dante-sinal leo-violeta; do
-  FACES_SRC=/tmp/orig/public/assets/fighters python3 scripts/faces/restyle.py $f all
-done
-python3 scripts/faces/refresh-locked-hashes.py
-python3 scripts/faces/portraits.py
-```
-
-Atenção: `npm run assets:grab` regenera as folhas do agarrão a partir das fontes antigas;
-depois dele é preciso rodar de novo o passo 2 para essas folhas.
-
-As fichas conceituais quase fotográficas (`public/assets/references/*-concept.png`,
-`character-guides/`) foram removidas do jogo. As notas de design de `public/assets/remaster`
-foram para `art-source/remaster-notes` e deixaram de ir para o site e o app.
+Confira [REDESIGN_PERSONAGENS_V4.md](REDESIGN_PERSONAGENS_V4.md) para reprodução e validação.

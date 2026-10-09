@@ -1,0 +1,1579 @@
+{
+  "rafa-mare": {
+    "height": 176,
+    "groups": {
+      "motion": {
+        "rows": 4,
+        "selections": {
+          "idle": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "corrida": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "walk-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "crouch": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "jump": {
+        "rows": 4,
+        "selections": {
+          "jump-neutral": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "jump-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "jump-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fall": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "defence": {
+        "rows": 4,
+        "selections": {
+          "landing": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "block-standing": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "block-crouching": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "hit": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "standing": {
+        "rows": 4,
+        "selections": {
+          "standing-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "standing-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "forward-light": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "forward-heavy": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "crouchAir": {
+        "rows": 4,
+        "selections": {
+          "crouch-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "crouch-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-neutral": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-neutral": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "airDirections": {
+        "rows": 4,
+        "selections": {
+          "air-light-forward": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "air-heavy-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-backward": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "ground": {
+        "rows": 4,
+        "selections": {
+          "knockdown": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "wake-up": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "thrown": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "frozen": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "specials": {
+        "rows": 4,
+        "selections": {
+          "mao-da-mare": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "chute-da-ressaca": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "eco-tatuado": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "victory": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "reactions": {
+        "rows": 5,
+        "selections": {
+          "knockout": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "grabbed-front": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "grabbed-lifted": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ]
+        },
+        "mirrorCells": [
+          19
+        ]
+      },
+      "grab": {
+        "rows": 3,
+        "selections": {
+          "universal-grab-v2": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      "contact": {
+        "rows": 2,
+        "heightCalibration": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "selections": {
+          "standing-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "crouch-light": [
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      },
+      "contactFinal": {
+        "rows": 1,
+        "heightCalibration": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "selections": {
+          "crouch-light": [
+            0,
+            1,
+            2,
+            3
+          ]
+        }
+      }
+    }
+  },
+  "noir-reflexo": {
+    "height": 180,
+    "groups": {
+      "motion": {
+        "rows": 4,
+        "selections": {
+          "idle": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "corrida": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "walk-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "crouch": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "jump": {
+        "rows": 4,
+        "selections": {
+          "jump-neutral": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "jump-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "jump-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fall": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "defence": {
+        "rows": 4,
+        "selections": {
+          "landing": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "block-standing": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "block-crouching": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "hit": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "standing": {
+        "rows": 4,
+        "selections": {
+          "standing-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "standing-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "forward-light": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "forward-heavy": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "crouchAir": {
+        "rows": 4,
+        "selections": {
+          "crouch-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "crouch-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-neutral": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-neutral": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "airDirections": {
+        "rows": 4,
+        "selections": {
+          "air-light-forward": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "air-heavy-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-backward": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "ground": {
+        "rows": 4,
+        "selections": {
+          "knockdown": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "wake-up": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "thrown": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "frozen": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "specials": {
+        "rows": 4,
+        "selections": {
+          "reflexo-negro": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "quebra-luz": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "impacto-solar": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "victory": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "reactions": {
+        "rows": 5,
+        "selections": {
+          "knockout": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "grabbed-front": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "grabbed-lifted": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ]
+        },
+        "mirrorCells": [
+          19
+        ]
+      },
+      "grab": {
+        "rows": 3,
+        "selections": {
+          "universal-grab-v2": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      "contact": {
+        "rows": 3,
+        "heightCalibration": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "selections": {
+          "standing-heavy": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "crouch-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "forward-heavy": [
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      "contactFinal": {
+        "rows": 1,
+        "heightCalibration": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "selections": {
+          "forward-heavy": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "scaleAdjustment": 0.95
+      }
+    }
+  },
+  "astro-riso": {
+    "height": 176,
+    "groups": {
+      "motion": {
+        "rows": 4,
+        "selections": {
+          "idle": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "corrida": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "walk-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "crouch": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "jump": {
+        "rows": 4,
+        "selections": {
+          "jump-neutral": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "jump-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "jump-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fall": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "defence": {
+        "rows": 4,
+        "selections": {
+          "landing": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "block-standing": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "block-crouching": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "hit": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "standing": {
+        "rows": 4,
+        "selections": {
+          "standing-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "standing-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "forward-light": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "forward-heavy": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "crouchAir": {
+        "rows": 4,
+        "selections": {
+          "crouch-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "crouch-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-neutral": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-neutral": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "airDirections": {
+        "rows": 4,
+        "selections": {
+          "air-light-forward": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "air-heavy-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-backward": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "ground": {
+        "rows": 4,
+        "selections": {
+          "knockdown": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "wake-up": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "thrown": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "frozen": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "specials": {
+        "rows": 4,
+        "selections": {
+          "sorriso-relampago": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "rajada-neon": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "astro-giro": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "victory": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "reactions": {
+        "rows": 5,
+        "selections": {
+          "knockout": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "grabbed-front": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "grabbed-lifted": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ]
+        },
+        "mirrorCells": [
+          19
+        ]
+      },
+      "grab": {
+        "rows": 3,
+        "selections": {
+          "universal-grab-v2": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      "contact": {
+        "rows": 2,
+        "heightCalibration": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "selections": {
+          "forward-heavy": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "rajada-neon": [
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      },
+      "contactFinal": {
+        "rows": 1,
+        "heightCalibration": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "selections": {
+          "rajada-neon": [
+            0,
+            1,
+            2,
+            3
+          ]
+        }
+      }
+    }
+  },
+  "dante-sinal": {
+    "height": 180,
+    "groups": {
+      "motion": {
+        "rows": 4,
+        "selections": {
+          "idle": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "corrida": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "walk-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "crouch": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "jump": {
+        "rows": 4,
+        "selections": {
+          "jump-neutral": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "jump-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "jump-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fall": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "defence": {
+        "rows": 4,
+        "selections": {
+          "landing": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "block-standing": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "block-crouching": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "hit": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "standing": {
+        "rows": 4,
+        "selections": {
+          "standing-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "standing-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "forward-light": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "forward-heavy": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "crouchAir": {
+        "rows": 4,
+        "selections": {
+          "crouch-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "crouch-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-neutral": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-neutral": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "airDirections": {
+        "rows": 4,
+        "selections": {
+          "air-light-forward": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "air-heavy-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-backward": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "ground": {
+        "rows": 4,
+        "selections": {
+          "knockdown": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "wake-up": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "thrown": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "frozen": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "specials": {
+        "rows": 4,
+        "selections": {
+          "chave-binaria": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "bomba-fumaca": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "ponto-final": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "victory": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "reactions": {
+        "rows": 5,
+        "selections": {
+          "knockout": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "grabbed-front": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "grabbed-lifted": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ]
+        },
+        "mirrorCells": [
+          19
+        ]
+      },
+      "grab": {
+        "rows": 3,
+        "selections": {
+          "universal-grab-v2": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      }
+    }
+  },
+  "leo-violeta": {
+    "height": 178,
+    "groups": {
+      "motion": {
+        "rows": 4,
+        "selections": {
+          "idle": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "corrida": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "walk-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "crouch": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "jump": {
+        "rows": 4,
+        "selections": {
+          "jump-neutral": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "jump-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "jump-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "fall": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "defence": {
+        "rows": 4,
+        "selections": {
+          "landing": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "block-standing": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "block-crouching": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "hit": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "standing": {
+        "rows": 4,
+        "selections": {
+          "standing-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "standing-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "forward-light": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "forward-heavy": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "crouchAir": {
+        "rows": 4,
+        "selections": {
+          "crouch-light": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "crouch-heavy": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-neutral": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-neutral": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "airDirections": {
+        "rows": 4,
+        "selections": {
+          "air-light-forward": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "air-heavy-forward": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "air-light-backward": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "air-heavy-backward": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "ground": {
+        "rows": 4,
+        "selections": {
+          "knockdown": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "wake-up": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "thrown": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "frozen": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "specials": {
+        "rows": 4,
+        "selections": {
+          "olhar-frio": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "impacto-sombrio": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "pressao-violeta": [
+            8,
+            9,
+            10,
+            11
+          ],
+          "victory": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "reactions": {
+        "rows": 5,
+        "selections": {
+          "knockout": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "grabbed-front": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "grabbed-lifted": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ]
+        },
+        "mirrorCells": [
+          19
+        ]
+      },
+      "grab": {
+        "rows": 3,
+        "selections": {
+          "universal-grab-v2": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      }
+    }
+  }
+}

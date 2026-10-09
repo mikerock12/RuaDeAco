@@ -1,3 +1,4 @@
+import { redesignPoseOffset } from './redesignPoseRegistration';
 import { universalGrabSprite } from './universalGrabSprite';
 import type {
   FighterAnimationAsset,
@@ -55,6 +56,7 @@ function animation(
 ): FighterAnimationAsset {
   return {
     id,
+    visualOffset: redesignPoseOffset('leo-violeta', id),
     key: `leo-violeta-${id}`,
     path: `assets/fighters/leo-violeta/${files[id]}`,
     frameWidth: FRAME_SIZE,

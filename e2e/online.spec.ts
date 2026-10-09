@@ -563,6 +563,8 @@ test(`P1 escolhe ${arena.name} para os dois jogadores e sincroniza a luta`, asyn
     await clickInternal(pair.host, 86, 140, touch);
     await expect.poll(async () => (await lobbyDebug(pair.host))?.players[0]?.fighterId).toBe('rafa-mare');
     await clickInternal(pair.guest, 554, 224, touch);
+    await expect.poll(async () => (await lobbyDebug(pair.guest))?.players[1]?.fighterId).toBe('guto-barba');
+    await expect.poll(async () => (await lobbyDebug(pair.host))?.players[1]?.fighterId).toBe('guto-barba');
     await expect.poll(() => arenas(pair.guest)).toEqual(['cais-da-cidade', 'cais-da-cidade']);
     await clickInternal(pair.guest, 320, 334, touch);
     await expect.poll(async () => (await lobbyDebug(pair.host))?.players[1]?.ready).toBe(true);
@@ -578,6 +580,12 @@ test(`P1 escolhe ${arena.name} para os dois jogadores e sincroniza a luta`, asyn
       await expect.poll(() => arenaLabel(page)).toBe(arena.name);
       await expect.poll(async () => (await lobbyDebug(page))?.players.map(player => player.ready)).toEqual([false, false]);
     }
+    const lobbyVisual = () => pair.host.evaluate(() => (window as typeof window & {
+      __RUA_ONLINE_VISUAL_DEBUG__: () => { lobbyRenderGeneration: number; lobbyPingRefreshes: number };
+    }).__RUA_ONLINE_VISUAL_DEBUG__());
+    const beforePing = await lobbyVisual();
+    await expect.poll(async () => (await lobbyVisual()).lobbyPingRefreshes).toBeGreaterThan(beforePing.lobbyPingRefreshes);
+    expect((await lobbyVisual()).lobbyRenderGeneration).toBe(beforePing.lobbyRenderGeneration);
     // O rival só vê a escolha compartilhada; tocar a posição da seta não muda a fase.
     await clickInternal(pair.guest, 488, 286, touch);
     expect(await arenas(pair.guest)).toEqual([arena.id, arena.id]);
@@ -585,6 +593,7 @@ test(`P1 escolhe ${arena.name} para os dois jogadores e sincroniza a luta`, asyn
     await pair.guest.screenshot({ path: resolve(auditRoot, `${testInfo.project.name}-${arena.id}-lobby-guest.png`) });
     await clickInternal(pair.host, 320, 334, touch);
     await expect.poll(async () => (await lobbyDebug(pair.host))?.players[0]?.ready).toBe(true);
+    await expect.poll(async () => (await lobbyDebug(pair.guest))?.players[0]?.ready).toBe(true);
     await clickInternal(pair.guest, 320, 334, touch);
     for (const page of [pair.host, pair.guest]) {
       await waitScene(page, 'FightScene');

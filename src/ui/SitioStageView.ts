@@ -16,6 +16,7 @@ const DEPTH = {
 } as const;
 
 export class SitioStageView {
+  private readonly background: Phaser.GameObjects.Image;
   private readonly ambience = new SitioAmbience();
   private readonly animals: Phaser.GameObjects.Sprite[];
   private readonly eggs: Phaser.GameObjects.Graphics[];
@@ -32,7 +33,7 @@ export class SitioStageView {
 
   constructor(scene: Phaser.Scene) {
     const assets = ASSET_MANIFEST.sitio;
-    scene.add.image(320, 180, assets.background.key)
+    this.background = scene.add.image(320, 180, assets.background.key, '__BASE')
       .setDisplaySize(640, 360).setDepth(-40).setName('sitio-background');
     // As duas folhas da porta são recortes da própria parede do galpão no fundo:
     // abrem para dentro (encolhem para a dobradiça e escurecem) e revelam o interior.
@@ -155,6 +156,8 @@ export class SitioStageView {
     const frame = this.finisherFrame;
     const stage = frame === null ? null : sitioFinisherStage(frame, this.finisherContext.originX);
     return {
+      backgroundFrame: this.background.frame.name,
+      backgroundSourceSize: [this.background.frame.width, this.background.frame.height],
       elapsed: this.ambience.elapsed,
       eggsLaid: this.ambience.eggsLaid,
       eggsEaten: { ...this.ambience.eggsEaten },

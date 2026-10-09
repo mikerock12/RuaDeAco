@@ -1,3 +1,4 @@
+import { redesignPoseOffset } from './redesignPoseRegistration';
 import { universalGrabSprite } from './universalGrabSprite';
 import type {
   FighterAnimationAsset,
@@ -55,6 +56,7 @@ function animation(
 ): FighterAnimationAsset {
   return {
     id,
+    visualOffset: redesignPoseOffset('dante-sinal', id),
     key: `dante-sinal-${id}`,
     path: `assets/fighters/dante-sinal/${files[id]}`,
     frameWidth: FRAME_SIZE,

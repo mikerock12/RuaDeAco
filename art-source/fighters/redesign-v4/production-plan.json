@@ -1,0 +1,172 @@
+{
+  "characters": {
+    "rafa-mare": {
+      "name": "Rafa Maré",
+      "subject": "Fictitious adult athletic lean man, short spiky brown hair, turquoise sleeveless athletic top, navy blue shorts, gray white sneakers, small turquoise wave tattoo on shoulder. Determined handsome stylized face. Agile street fighter.",
+      "target": 176
+    },
+    "noir-reflexo": {
+      "name": "Noir Reflexo",
+      "subject": "Fictitious adult mysterious slim detective, black fedora, long charcoal-black trenchcoat, white shirt and dark red tie, tailored black trousers and polished black shoes. Sharp angular original face, no beard, no celebrity likeness. Guarded stylish fighting stance. Coat tails follow motion.",
+      "target": 180
+    },
+    "astro-riso": {
+      "name": "Astro Riso",
+      "subject": "Fictitious ADULT agile trickster court jester, cheerful mischievous original cartoon face, purple floppy jester hood with golden star tips, turquoise jacket with purple cuffs and gold trim and stars, purple trousers and gold shoes. Exaggerated expressive ADULT proportions like prototype, no baby or toddler.",
+      "target": 176
+    },
+    "dante-sinal": {
+      "name": "Dante Sinal",
+      "subject": "Fictitious adult compact athletic tactical hacker, black hooded sweatshirt hood UP, vivid luminous green wraparound cyber visor across eyes, dark pants, black fingerless gloves, black sneakers with neon green sole accents, short dark hair under hood. Original angular stylized face, NO beard.",
+      "target": 180
+    },
+    "leo-violeta": {
+      "name": "Léo Violeta",
+      "subject": "Fictitious adult muscular boxer, short spiky black hair, purple headband with two trailing ends, purple boxing gloves, black sleeveless tank top, purple boxing shorts with pale trim, tall white socks, white and purple boxing shoes. Sharp original determined cartoon face, no beard, no real-person resemblance.",
+      "target": 178
+    }
+  },
+  "groups": {
+    "jump": {
+      "files": [
+        "jump-neutral",
+        "jump-forward",
+        "jump-backward",
+        "fall"
+      ],
+      "rows": [
+        "Neutral jump: crouched takeoff with bent knees, rising tucked legs, apex with knees bent, descending legs extending. Fists in guard.",
+        "Forward jump facing right: forward takeoff, knees tucked with torso angled forward, apex extending front knee, descending ready to land.",
+        "Backward jump while facing right: back takeoff, torso tilted backward, knees tucked while retreating, descend extending back foot.",
+        "Falling: bent knees near apex, downward legs unfolding, extended legs preparing contact, slight knee bend near landing. Fists guard."
+      ]
+    },
+    "defence": {
+      "files": [
+        "landing",
+        "block-standing",
+        "block-crouching",
+        "hit"
+      ],
+      "rows": [
+        "Landing: toe contact bent knees, deep compressed landing squat, halfway recovering upright, almost standing fighting guard.",
+        "Standing block: forearms shielding face, braced impact shoulders twist, absorb with tightened guard, reset shield.",
+        "Crouching block: deep low squat forearms shielding, low defensive recoil, brace low guard, reset still crouching.",
+        "Hit reaction: chest struck recoil, head and shoulders snap backward, torso hunched wincing, recover toward guard."
+      ]
+    },
+    "standing": {
+      "files": [
+        "standing-light",
+        "standing-heavy",
+        "forward-light",
+        "forward-heavy"
+      ],
+      "rows": [
+        "Quick jab: fist chambered guard, arm extending punch forward, fully extended sharp straight jab, elbow retracting to guard.",
+        "Heavy cross punch: weight coil and fist back, hip rotating powerful extension, maximum full punch reach, retract with shoulders recovering.",
+        "Forward advancing palm strike: forward step with open palm chambered, torso drives palm forward, full extended palm at face height, retract while planted.",
+        "Forward heavy rising roundhouse kick: knee chambered, leg sweeps upward forward, full leg extension at chest height, leg retracts. Both legs and arms anatomically correct."
+      ]
+    },
+    "crouchAir": {
+      "files": [
+        "crouch-light",
+        "crouch-heavy",
+        "air-light-neutral",
+        "air-heavy-neutral"
+      ],
+      "rows": [
+        "Low crouching kick: low knee chambered, leg sliding outward, low kick fully extended near ankle height, leg retracts into low guard.",
+        "Low sweep: deeply squat weight on back leg, sweeping front leg, long low straight leg sweeping at floor level, recover crouched.",
+        "Neutral airborne punch: knees tucked fist back, punch extending while floating, full airborne jab forward, retract preparing landing.",
+        "Neutral airborne heavy kick: tucked knees, lead leg opening, full straight forward air kick, lead leg retracted."
+      ]
+    },
+    "airDirections": {
+      "files": [
+        "air-light-forward",
+        "air-heavy-forward",
+        "air-light-backward",
+        "air-heavy-backward"
+      ],
+      "rows": [
+        "Forward airborne punch: torso leaning forward knees trailing fist chamber, extending jab, fully stretched jump punch, retract toward landing.",
+        "Forward airborne heavy kick: knees tucked forward leap, lead leg extending, fully extended diagonal flying kick, retract lead leg.",
+        "Backward airborne punch facing RIGHT: backward torso lean with knees tucked, punch arm extending toward right, full jab while torso drifts backward, retract.",
+        "Backward airborne kick facing RIGHT: defensive tucked knees backward lean, rightward kick opening, full rightward kick while retreating, retract."
+      ]
+    },
+    "ground": {
+      "files": [
+        "knockdown",
+        "wake-up",
+        "thrown",
+        "frozen"
+      ],
+      "rows": [
+        "Knockdown: body falling onto back, lying curled on back, lying fully on back with knees bent, settled horizontal body on ground. Head to right feet left.",
+        "Wake up: lying on back, sitting propped on arm, one knee under torso rising, standing low fighting guard.",
+        "Thrown: limp body upright suspended, body tilts backward 25 degrees, tilts farther 50 degrees, horizontal airborne body HEAD RIGHT feet LEFT. No attacker drawn.",
+        "Frozen immobilized reaction: rigid standing posture tense arms, shivering braced posture, rigid recoil slightly crouched, rigid standing reset. NO ice graphics baked into body."
+      ]
+    },
+    "specials": {
+      "files": [
+        "special1",
+        "special2",
+        "special3",
+        "victory"
+      ],
+      "rows": []
+    },
+    "reactions": {
+      "files": [
+        "knockout",
+        "grabbed-front",
+        "grabbed-lifted"
+      ],
+      "rows": []
+    },
+    "grab": {
+      "files": [
+        "universal-grab-v2"
+      ],
+      "rows": []
+    }
+  },
+  "specials": {
+    "rafa-mare": [
+      "Mão da Maré: chamber both palms at hip, palms thrust right, extended wave-casting open hands, recoil arms. NO painted water effects.",
+      "Chute da Ressaca: leg chamber turning hips, rising roundhouse kick, full high kick extension, leg recovery.",
+      "Eco Tatuado: shoulders lowered tattoo-side fist clenched, tattoo arm raised gathering power, chest proud arm extended to activate aura, settle fists. NO painted effects.",
+      "Victory: relaxed guard, fist lifts, fist triumphantly raised above shoulder, confident grin and second fist chest high."
+    ],
+    "noir-reflexo": [
+      "Reflexo Negro parry: palm and forearm guard, deflect outward precisely, open defensive parry stance, tight guard recovery.",
+      "Quebra-Luz: hand chamber at chest, precise straight palm forward, fully extended projectile casting hand, retract hand. NO projectile drawn.",
+      "Impacto Solar: windup raised fist, powerful upward forearm strike, high rising uppercut, settle into guard. NO effects.",
+      "Victory: calm upright stance, straighten tie, touch fedora brim, tilted fedora proud stance. Never remove hat."
+    ],
+    "astro-riso": [
+      "Sorriso Relâmpago: coiled agile crouch grin, burst forward open punch, full lunging jab, retract with jester hood trailing.",
+      "Rajada Neon: hands at chest, star-tipped jester sleeve casting gesture right, fingers extended projecting power, recover grinning. NO projectile painted.",
+      "Astro Giro: crouched coil, torso twist with leg extended, spinning kick long reach, land low guard. No double limbs.",
+      "Victory: grin fists chest high, both arms spread theatrical, one fist raised and other hand on hip, playful bowed salute."
+    ],
+    "dante-sinal": [
+      "Chave Binária: poised palm ready, arm drives technical punch forward, long precise strike fully extended, retract tight guard. NO effects.",
+      "Bomba de Fumaça: reach small pouch at waist, concealed hand flick forward, arm gestures releasing smoke trigger, close guard. NO smoke painted.",
+      "Ponto Final: index finger touches visor, aim right with hand, precise pointing gesture marking rival, settle confident hood guard. NO target or rival.",
+      "Victory: neutral guard, tap glowing visor, two fingers salute at hood, arms crossed confident. Hood and green visor always remain."
+    ],
+    "leo-violeta": [
+      "Olhar Frio: gloves cheek height focus, torso leans powerful intent, glove hand extends intimidating guard, firm stance recovery. NO effects.",
+      "Impacto Sombrio: shoulders coil, low powerful shoulder rush torso thrust right, forward shoulder impact with gloves tucked, brace and recover.",
+      "Pressão Violeta: wide boxing stance chamber fist, heavy right hook with torso twist, opposite hand uppercut, reset gloves guarding.",
+      "Victory: guard relaxed, glove raised, both gloved fists triumphantly above shoulders, proud smiling boxer."
+    ]
+  },
+  "motionPrompt": "Use case: style-transfer. Asset type: production pixel-art fighting-game animation atlas.\nPrimary request: redraw and animate Rafa Maré using the attached prototype as the identity reference. Fictitious young adult man, short spiky brown hair, athletic lean build, turquoise sleeveless athletic top, dark blue shorts, gray white sneakers, small blue wave tattoo on shoulder. Keep his proportions stylized, handsome original cartoon face, never a recognizable real person. Clean polished detailed 16-bit arcade sprite, sharp hard pixel clusters and restricted colors, no smooth painterly rendering. Side view facing RIGHT, 3/4 visible face.\nOutput EXACTLY 16 full-body frames, equally spaced in a 4-column by 4-row grid, square 2048x2048 atlas. All frames same head and torso size. Each cell 512x512; soles at local y=476, feet centered local x=256. Adult standing height 330 pixels. Padding 30 px around everything. Transparent background, NO checkerboard, no floor, no ground shadows, NO captions, no white residue or grid lines.\nRow1: four DISTINCT idle fighting stance frames, fists guarding, soft knee and shoulder breathing, steady feet.\nRow2: four DISTINCT forward-running cycle frames: right leg extended forward left back, knees crossing, left leg forward right back, other passing step; arms counter-swing. Lean forward, visible soles.\nRow3: four DISTINCT backward retreat cycle frames keeping guard forward, alternating weight and steps.\nRow4: four DISTINCT deep crouch frames, dropping into crouch, low guard, slight weight shift, rise halfway. No duplicate drawings.\nOne character per cell, never other characters, no weapons, no effects. Full body never cropped. Preserve clothes, hair, face and muscles exactly across all frames. The noisy white lines in the reference are export defects: omit them entirely.",
+  "template": "(id,group)=>{\nconst c=load(\"redesign_characters\")[id],g=groups[group];\nreturn `Use case: style-transfer. Asset type: production animation atlas for a 16-bit pixel-art fighting game.\nRedraw and animate ${c.name} to match the identity and body proportions of the attached NEW motion atlas exactly. ${c.subject}\nCrisp hard pixel clusters, detailed SNK-era hand-drawn pixel sprite. NO blur, NO antialias, no gradients, no painterly skin. Each body has adult proportions, two arms and two legs. Every frame faces RIGHT, 3/4 face. Preserve identity in every reaction. No rival or props.\nOutput EXACTLY 16 full-body frames in EXACT 4 columns × 4 rows. Square high-resolution sheet. Each row is one animation in four distinct successive frames. Use equal cell dimensions. Constant head/torso size; standing height 85% of cell height, feet centered and at 95% height. All hands, feet and clothing fully inside cells with margin. Transparent background, NO checkerboard, no grid, no text, no white residue, no shadows. NO effects baked into the sprite. Four real different poses per row, never duplicates.\n${(group==='specials'?specials[id]:g.rows).map((r,i)=>'Row '+(i+1)+': '+r).join('\\n')}\nKeep the same anatomical scale even crouched or horizontal; do not enlarge compact poses to fill the cell. Long kicks and horizontal fallen bodies fit fully in cell. No cropping.`;\n}"
+}

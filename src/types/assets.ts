@@ -83,6 +83,8 @@ export type FighterAnimationId = SharedFighterAnimationId
 
 export interface FighterAnimationAsset extends AnimatedSpriteSheetAsset {
   readonly id: FighterAnimationId;
+  /** Registro visual da pose compacta; não altera a raiz nem as caixas do combate. */
+  readonly visualOffset?: Readonly<{ x: number; y: number }>;
 }
 
 export type FighterStatusEffectField =

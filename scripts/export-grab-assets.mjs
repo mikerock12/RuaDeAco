@@ -1,9 +1,13 @@
 // Technical atlas export: chroma-key, connected-component slicing, nearest sampling.
 // No anatomy is painted or invented here; source art is generated and reviewed separately.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { deflateSync } from 'node:zlib';
 import { decodePng } from './fighterRasterAnalysis.mjs';
+if (existsSync('art-source/fighters/redesign-v4/export-manifest.json')) {
+  console.error('As fontes antigas foram aposentadas. Use npm run assets:characters para preservar os corpos v4.');
+  process.exit(1);
+}
 const table = Uint32Array.from({ length: 256 }, (_, n) => {
   let value = n;
   for (let bit = 0; bit < 8; bit++) value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;

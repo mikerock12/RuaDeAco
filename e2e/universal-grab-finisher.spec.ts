@@ -277,6 +277,18 @@ test('finalização do Sítio: portas do galpão, mascarado com tridente e corpo
     while (w.__ruaWorld.phase !== 'matchOver') w.__RUA_CAPTURE_DEBUG__.step();
   });
   await expect.poll(scenes).toContain('ResultScene');
+  // A mesma textura já tem os recortes das portas. Reentrar precisa usar __BASE.
+  await tap(466, 188);
+  await expect.poll(scenes).toContain('FightScene');
+  await expect.poll(phase).toBe('active');
+  const background = await page.evaluate(() => (window as unknown as W & {
+    __RUA_STAGE_DEBUG__: () => { ambience: { backgroundFrame: string; backgroundSourceSize: number[]; finisherFrame: number | null; doorsOpen: number } };
+  }).__RUA_STAGE_DEBUG__().ambience);
+  expect(background.backgroundFrame).toBe('__BASE');
+  expect(background.backgroundSourceSize).toEqual([640, 360]);
+  expect(background.finisherFrame).toBeNull();
+  expect(background.doorsOpen).toBe(0);
+  await page.screenshot({ path: info.outputPath('sitio-reentrada-sem-zoom.png') });
   expect(errors).toEqual([]);
 });
 

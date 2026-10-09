@@ -8,7 +8,21 @@
 > [`AGENTS.md`](AGENTS.md) resume as regras obrigatórias para assistentes e
 > aponta para este arquivo; mantenha os dois coerentes.
 >
-> Última revisão: **07/10/2026**.
+> Última revisão: **09/10/2026**.
+>
+> **Elenco v4 e finalizações, 09/10/2026:** Rafa, Noir, Astro, Dante e Léo foram
+> reconstruídos de corpo inteiro a partir de `RuaDeAco-spritesheets-v2-RASCUNHO/`,
+> com roupas, paletas, reações, agarrões e retratos coerentes. Nomes, golpes, danos,
+> tempos e caixas de colisão permanecem iguais. Guto conserva rosto e PNGs, com
+> acabamento discreto de luz em pixels na apresentação. Fontes, prompts, recortes,
+> escalas e SHA-256 em `art-source/fighters/redesign-v4/`; reprodução com
+> `npm run assets:characters`. **Não executar os scripts antigos de faces-v3**
+> sobre os novos corpos; `assets:grab` está protegido contra sobrescrita.
+> Cais, Cozinha e Sítio receberam efeitos, áudio e coreografia mais elaborados;
+> corrigido o fundo ampliado do portão ao reentrar no Sítio usando `__BASE`.
+> O lobby online preserva controles durante pings e confirmações repetidas.
+> Motor `lockstep-v6-prototype-bodies`. CI audita sprites/hitboxes e toda a suíte de navegador em quatro shards.
+> Detalhes em [docs/REDESIGN_PERSONAGENS_V4.md](docs/REDESIGN_PERSONAGENS_V4.md).
 >
 > **Rostos novos e Play Store, 07/10/2026:** os rostos de Rafa, Noir, Astro, Dante e
 > Léo pareciam pessoas reais e foram trocados nas 864 células por visuais novos em
@@ -410,6 +424,7 @@ grandes alterações, lembrar que o backup pode ser atualizado.
 
 | Data | Marco |
 | --- | --- |
+| 09/10/2026 | Elenco v4 inspirado no rascunho; acabamento do Guto sem alterar o rosto; registro de poses aéreas; finalizações com novos efeitos e sons; correção da reentrada no Sítio; motor v6 e auditorias no CI |
 | 15/07/2026 | Contexto inicial do projeto registrado |
 | 16–17/07/2026 | Controles remapeáveis, gamepad, touch e menu de pausa |
 | 18/07/2026 | Primeira tentativa de Dante reprovada em auditoria; APK beta 0.2.0 |

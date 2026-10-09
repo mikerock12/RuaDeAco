@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { lobbyPresentationKey } from '../online/lobbyPresentationKey';
 import { audioManager } from '../audio/AudioManager';
 import { MUSIC_TRACK_BY_SCENE } from '../audio/musicCatalog';
 import { ARENAS } from '../config/gameConfig';
@@ -44,6 +45,11 @@ export class OnlineScene extends Phaser.Scene {
   private lastBackdropTick = -1;
   private reducedMotion = false;
   private liveRegion: HTMLDivElement | null = null;
+  private renderedLobbyKey: string | null = null;
+  private lobbyPing: Phaser.GameObjects.BitmapText | null = null;
+  private lobbySignal: Phaser.GameObjects.Graphics | null = null;
+  private lobbyRenderGeneration = 0;
+  private lobbyPingRefreshes = 0;
 
   constructor() {
     super('OnlineScene');
@@ -58,6 +64,9 @@ export class OnlineScene extends Phaser.Scene {
     this.joinCode = '';
     this.busy = false;
     this.transitioning = false;
+    this.renderedLobbyKey = null;
+    this.lobbyRenderGeneration = 0;
+    this.lobbyPingRefreshes = 0;
     this.lastBackdropTick = -1;
     this.reducedMotion = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     inputManager.clear();
@@ -73,7 +82,9 @@ export class OnlineScene extends Phaser.Scene {
         this.view = 'lobby';
         inputManager.clear();
       }
-      this.render();
+      if (this.view === 'lobby' && this.lobbyPing?.active
+        && this.renderedLobbyKey === lobbyPresentationKey(snapshot)) this.refreshLobbyPing();
+      else this.render();
       if (snapshot.start && !this.transitioning) this.beginFight(snapshot);
     });
 
@@ -120,6 +131,8 @@ export class OnlineScene extends Phaser.Scene {
           roadWidths: readonly number[];
           binaryPoolSize: number;
           dynamicObjects: number;
+          lobbyRenderGeneration: number;
+          lobbyPingRefreshes: number;
         };
       }).__RUA_ONLINE_VISUAL_DEBUG__ = () => ({
         scene: 'OnlineScene',
@@ -127,6 +140,8 @@ export class OnlineScene extends Phaser.Scene {
         roadWidths: [22, 86, 176, 286, 460],
         binaryPoolSize: this.binaryRows.length,
         dynamicObjects: this.dynamic.length,
+        lobbyRenderGeneration: this.lobbyRenderGeneration,
+        lobbyPingRefreshes: this.lobbyPingRefreshes,
       });
     }
 
@@ -286,10 +301,17 @@ export class OnlineScene extends Phaser.Scene {
 
   private render(): void {
     if (!this.dynamic) return;
+    this.lobbyPing = null;
+    this.lobbySignal = null;
+    this.renderedLobbyKey = null;
     this.dynamic.removeAll(true);
     if (this.view === 'home') this.renderHome();
     else if (this.view === 'join') this.renderJoin();
-    else this.renderLobby();
+    else {
+      this.renderLobby();
+      this.renderedLobbyKey = lobbyPresentationKey(this.latest);
+      this.lobbyRenderGeneration += 1;
+    }
   }
 
   private renderHome(): void {
@@ -508,15 +530,24 @@ export class OnlineScene extends Phaser.Scene {
       color: '#8796ae',
       align: 'right',
     }).setOrigin(1, 0.5);
+    this.lobbyPing = ping;
+    this.lobbySignal = this.add.graphics();
+    this.dynamic.add([this.lobbySignal, ping]);
+    this.refreshLobbyPing();
+  }
+
+  private refreshLobbyPing(): void {
+    if (!this.lobbyPing || !this.lobbySignal) return;
+    this.lobbyPingRefreshes += 1;
     const latency = this.latest.latencyMs;
     const quality = latency === null ? 0 : latency < 100 ? 3 : latency < 200 ? 2 : 1;
-    const signal = this.add.graphics();
+    this.lobbySignal.clear();
     for (let bar = 0; bar < 3; bar += 1) {
-      signal.fillStyle(bar < quality ? quality === 1 ? UI_THEME.danger : quality === 2 ? UI_THEME.gold : UI_THEME.cyan : UI_THEME.border);
-      signal.fillRect(463 + bar * 5, 23 - (bar + 1) * 3, 3, (bar + 1) * 3);
+      this.lobbySignal.fillStyle(bar < quality ? quality === 1 ? UI_THEME.danger : quality === 2 ? UI_THEME.gold : UI_THEME.cyan : UI_THEME.border);
+      this.lobbySignal.fillRect(463 + bar * 5, 23 - (bar + 1) * 3, 3, (bar + 1) * 3);
     }
-    ping.setTint(quality === 1 ? UI_THEME.danger : quality === 2 ? UI_THEME.gold : UI_THEME.muted);
-    this.dynamic.add([signal, ping]);
+    this.lobbyPing.setText(`PING ${latency ?? '--'} MS • ${this.latest.slot?.toUpperCase() ?? '--'}`)
+      .setTint(quality === 1 ? UI_THEME.danger : quality === 2 ? UI_THEME.gold : UI_THEME.muted);
   }
 
   private createButton(

@@ -282,7 +282,7 @@ async function gamepadLight(page: Page, pressed: boolean): Promise<void> {
 
 test('contact sheet offline carrega todos os overlays finais', async ({ page }, testInfo) => {
   await page.goto('/tmp/hitbox-audit/after-contact-sheet.html');
-  await expect(page.locator('figure')).toHaveCount(92);
+  await expect(page.locator('figure')).toHaveCount(98);
   await expect.poll(() => page.locator('img').evaluateAll((images) =>
     images.every((image) => (image as HTMLImageElement).complete
       && (image as HTMLImageElement).naturalWidth > 0))).toBe(true);

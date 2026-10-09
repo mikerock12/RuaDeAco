@@ -1,3 +1,4 @@
+import { observeCombatFrames, observedCombatFrames } from './helpers/frameObservation';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 interface FighterSnapshot {
@@ -99,6 +100,7 @@ async function prepare(page: Page, opponentX: number, meter = 100): Promise<void
     world.fighters[0].forceMeter(meter);
     // permanece em treino: sem CPU e com limpeza estável entre cenários
   }, { opponentX, meter });
+  await observeCombatFrames(page);
 }
 
 /** Dispara motion real por teclado com holds longos o bastante para o CommandBuffer. */
@@ -190,14 +192,14 @@ test.describe('Dante Sinal', () => {
     await fireChaveKeyboard(page);
     try {
       await expect.poll(async () => {
-        const s = await snapshot(page);
-        return s.projectiles.some((p) => p.projectileId === 'chave-binaria-hazard' && p.state === 'active');
+        const frames = await observedCombatFrames<WorldSnapshot>(page);
+        return frames.some(s => s.projectiles.some(p => p.projectileId === 'chave-binaria-hazard' && p.state === 'active'));
       }, { timeout: 2000 }).toBe(true);
     } catch {
       await forceMove(page, 'chaveBinaria');
       await expect.poll(async () => {
-        const s = await snapshot(page);
-        return s.projectiles.some((p) => p.projectileId === 'chave-binaria-hazard' && p.state === 'active');
+        const frames = await observedCombatFrames<WorldSnapshot>(page);
+        return frames.some(s => s.projectiles.some(p => p.projectileId === 'chave-binaria-hazard' && p.state === 'active'));
       }, { timeout: 2500 }).toBe(true);
     }
 
@@ -205,8 +207,8 @@ test.describe('Dante Sinal', () => {
     await firePontoKeyboard(page);
     try {
       await expect.poll(async () => {
-        const s = await snapshot(page);
-        return s.projectiles.some((p) => p.projectileId === 'ponto-final-hazard');
+        const frames = await observedCombatFrames<WorldSnapshot>(page);
+        return frames.some(s => s.projectiles.some(p => p.projectileId === 'ponto-final-hazard'));
       }, { timeout: 2500 }).toBe(true);
     } catch {
       await page.evaluate(() => {
@@ -215,12 +217,12 @@ test.describe('Dante Sinal', () => {
       });
       await forceMove(page, 'pontoFinal');
       await expect.poll(async () => {
-        const s = await snapshot(page);
-        return s.projectiles.some((p) => p.projectileId === 'ponto-final-hazard');
+        const frames = await observedCombatFrames<WorldSnapshot>(page);
+        return frames.some(s => s.projectiles.some(p => p.projectileId === 'ponto-final-hazard'));
       }, { timeout: 3000 }).toBe(true);
     }
-    snap = await snapshot(page);
-    const ponto = snap.projectiles.find((p) => p.projectileId === 'ponto-final-hazard');
+    const observed = await observedCombatFrames<WorldSnapshot>(page);
+    const ponto = observed.flatMap(s => s.projectiles).find(p => p.projectileId === 'ponto-final-hazard');
     expect(ponto?.state).toBe('arming');
     expect((ponto?.armingFrames ?? 0)).toBeGreaterThanOrEqual(42);
     expect(ponto?.projectileId).toBe('ponto-final-hazard');

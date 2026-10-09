@@ -3,7 +3,7 @@
 // peito (40% do topo da silhueta). Coordenadas relativas à raiz nos pés
 // (x positivo = frente do sprite, y negativo = para cima). Escreve
 // src/fighters/grabVictimLandmarks.ts. Nenhuma arte é alterada.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { decodePng } from './fighterRasterAnalysis.mjs';
 const ids = ['rafa-mare', 'guto-barba', 'noir-reflexo', 'astro-riso', 'dante-sinal', 'leo-violeta'];
 const PADDING = 6; // FIGHTER_OPAQUE_BOTTOM_PADDING: a sola fica 6 px acima da borda do frame
@@ -31,7 +31,7 @@ for (const id of ids) {
   }
 }
 const body = JSON.stringify(result, null, 2).replace(/\[\n\s+(-?\d+),\n\s+(-?\d+),\n\s+(-?\d+),\n\s+(-?\d+),\n\s+(-?\d+)\n\s+\]/g, '[$1, $2, $3, $4, $5]');
-writeFileSync('src/fighters/grabVictimLandmarks.ts', `import type { FighterId } from '../types/combat';
+await saveLandmarks('src/fighters/grabVictimLandmarks.ts', `import type { FighterId } from '../types/combat';
 
 /**
  * Gerado por scripts/measure-grab-victim-landmarks.mjs a partir das folhas
@@ -44,3 +44,12 @@ export type VictimLandmark = readonly [number, number, number, number, number];
 export const GRAB_VICTIM_LANDMARKS: Readonly<Record<FighterId, { readonly front: readonly VictimLandmark[]; readonly lifted: readonly VictimLandmark[] }>> = ${body};
 `);
 console.log(JSON.stringify(result));
+
+async function saveLandmarks(path, text) {
+  const temporary = path + '.exporting';
+  writeFileSync(temporary, text);
+  for (let attempt = 0; attempt < 15; attempt++) {
+    try { renameSync(temporary, path); return; }
+    catch (error) { if (attempt === 14) throw error; await new Promise(resolve => setTimeout(resolve, 200)); }
+  }
+}
