@@ -102,7 +102,7 @@ export default defineConfig({
   },
   server: {
     host: true,
-    watch: { ignored: ['**/art-source/**', '**/RuaDeAco-spritesheets-v2-RASCUNHO/**'] },
+    watch: { ignored: ['**/art-source/**', '**/RuaDeAco-spritesheets-v2-RASCUNHO/**', '**/playwright-report*/**', '**/test-results*/**', '**/tmp/**'] },
   },
   test: {
     environment: 'node',

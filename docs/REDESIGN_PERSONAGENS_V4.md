@@ -70,3 +70,11 @@ foram abertas para revisão visual; emulação de celular não equivale a teste 
 
 Os testes antigos de Astro, Guto e Léo/Noir passaram a tocar a posição atual do botão
 de pausa (608, 58). A folha de auditoria inclui também os seis agarrões: 98 figuras.
+
+## Estabilidade do lobby online
+
+Atualizações de ping e confirmações repetidas com o mesmo conteúdo preservam os botões,
+em vez de destruir e recriar toda a interface sob o ponteiro. O texto e as barras de
+latência são atualizados em objetos reutilizados. Mudanças reais de seleção, arena,
+pronto e conexão continuam atualizando a apresentação. O E2E espera a confirmação da
+seleção recebida pelos dois jogadores e verifica um ping real sem reconstrução do lobby.
