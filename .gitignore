@@ -80,3 +80,9 @@ __pycache__/
 *.keystore
 upload-password.txt
 pw.local.config.ts
+
+# Relatórios intermediários do redesign e cache dos exportadores
+/tmp/redesign-*
+/art-source/fighters/redesign-v4/__pycache__/
+/scripts/__pycache__/
+/scripts/faces/__pycache__/

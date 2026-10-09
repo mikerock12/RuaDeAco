@@ -37,6 +37,7 @@ interface RasterAuditEntry {
   readonly medianOpaquePixels?: number;
   readonly medianOpaqueHeight?: number;
   readonly visualMassRatio?: number;
+  readonly designScaleContract?: { readonly medianHeight: number; readonly medianMass: number };
   readonly unexpectedGreenPixels?: number;
   readonly issues: readonly string[];
 }
@@ -119,7 +120,10 @@ describe('fighter sprite raster audit', () => {
       expect(sheet.expectedBaselineY, sheet.file).toBe(sheet.frameHeight! - 7);
       expect(sheet.frameAudits, sheet.file).toHaveLength(sheet.frames);
       expect(sheet.medianOpaquePixels, sheet.file).toBeGreaterThan(0);
-      if (!(sheet.fighterId in GEOMETRIC_SCALE_CONTRACTS)) {
+      if (sheet.designScaleContract) {
+        expect(sheet.medianOpaqueHeight, sheet.file).toBe(sheet.designScaleContract.medianHeight);
+        expect(sheet.medianOpaquePixels, sheet.file).toBe(sheet.designScaleContract.medianMass);
+      } else if (!(sheet.fighterId in GEOMETRIC_SCALE_CONTRACTS)) {
         expect(sheet.visualMassRatio, sheet.file).toBeGreaterThanOrEqual(0.88);
         expect(sheet.visualMassRatio, sheet.file).toBeLessThanOrEqual(1.12);
       }

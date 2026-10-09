@@ -40,6 +40,9 @@ export class CombatFeedback {
     }
     if (event.type === 'special' && event.isSuper) this.impact(90, 0.002, 80);
     if (event.type === 'knockout') this.impact(110, 0.003, 100);
+    if (['finishSplash', 'potDrop', 'tridentStab', 'shedSlam', 'monsterBite'].includes(event.type)) {
+      this.impact(event.type === 'monsterBite' ? 85 : 120, 0.0028, 65);
+    }
   }
 
   private impact(duration: number, intensity: number, flash: number): void {

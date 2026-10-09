@@ -1,0 +1,40 @@
+{
+  "rafa-mare": {
+    "airLightBackward": {
+      "x": 8,
+      "y": -25
+    },
+    "airHeavyBackward": {
+      "x": 0,
+      "y": -43
+    }
+  },
+  "noir-reflexo": {
+    "airHeavyForward": {
+      "x": 0,
+      "y": 12
+    }
+  },
+  "astro-riso": {
+    "airLightBackward": {
+      "x": 0,
+      "y": -15
+    }
+  },
+  "dante-sinal": {
+    "airLightNeutral": {
+      "x": 0,
+      "y": -16
+    },
+    "airLightBackward": {
+      "x": 0,
+      "y": -10
+    }
+  },
+  "leo-violeta": {
+    "airLightNeutral": {
+      "x": 0,
+      "y": -11
+    }
+  }
+}

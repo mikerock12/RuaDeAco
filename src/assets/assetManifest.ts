@@ -20,41 +20,141 @@ const portrait = (
 
 /**
  * Retratos de menu, seleção, HUD, versus e resultado (512 × 512), montados com
- * o próprio sprite em pixel art por scripts/faces/portraits.py. As antigas
+ * o próprio sprite em pixel art por scripts/export-redesign-portraits.py (v4). As antigas
  * fichas conceituais quase fotográficas foram aposentadas em 07/10/2026.
  * O Guto mantém o retrato aprovado, com contorno frio e flocos de gelo.
  */
 export const CONCEPT_ASSETS: Readonly<Record<FighterId, PortraitAsset>> = {
   'rafa-mare': portrait('rafa-mare', 'rafaMareConcept', {
-    hud: { x: 227, y: 128, width: 96, height: 108 },
-    card: { x: 177, y: 118, width: 196, height: 150 },
-    profile: { x: 167, y: 108, width: 216, height: 288 },
-    hero: { x: 125, y: 96, width: 320, height: 400 },
-  }),
+  "hud": {
+    "x": 224,
+    "y": 136,
+    "width": 96,
+    "height": 108
+  },
+  "card": {
+    "x": 174,
+    "y": 126,
+    "width": 196,
+    "height": 150
+  },
+  "profile": {
+    "x": 164,
+    "y": 116,
+    "width": 216,
+    "height": 288
+  },
+  "hero": {
+    "x": 122,
+    "y": 104,
+    "width": 320,
+    "height": 400
+  }
+}),
   'noir-reflexo': portrait('noir-reflexo', 'noirReflexoConcept', {
-    hud: { x: 225, y: 115, width: 96, height: 108 },
-    card: { x: 175, y: 105, width: 196, height: 150 },
-    profile: { x: 165, y: 95, width: 216, height: 288 },
-    hero: { x: 123, y: 83, width: 320, height: 400 },
-  }),
+  "hud": {
+    "x": 212,
+    "y": 132,
+    "width": 96,
+    "height": 108
+  },
+  "card": {
+    "x": 162,
+    "y": 122,
+    "width": 196,
+    "height": 150
+  },
+  "profile": {
+    "x": 152,
+    "y": 112,
+    "width": 216,
+    "height": 288
+  },
+  "hero": {
+    "x": 110,
+    "y": 100,
+    "width": 320,
+    "height": 400
+  }
+}),
   'astro-riso': portrait('astro-riso', 'astroRisoConcept', {
-    hud: { x: 235, y: 144, width: 96, height: 108 },
-    card: { x: 185, y: 134, width: 196, height: 150 },
-    profile: { x: 175, y: 124, width: 216, height: 288 },
-    hero: { x: 133, y: 112, width: 320, height: 400 },
-  }),
+  "hud": {
+    "x": 272,
+    "y": 218,
+    "width": 96,
+    "height": 108
+  },
+  "card": {
+    "x": 222,
+    "y": 208,
+    "width": 196,
+    "height": 150
+  },
+  "profile": {
+    "x": 212,
+    "y": 198,
+    "width": 216,
+    "height": 288
+  },
+  "hero": {
+    "x": 170,
+    "y": 112,
+    "width": 320,
+    "height": 400
+  }
+}),
   'dante-sinal': portrait('dante-sinal', 'danteSinalConcept', {
-    hud: { x: 235, y: 129, width: 96, height: 108 },
-    card: { x: 185, y: 119, width: 196, height: 150 },
-    profile: { x: 175, y: 109, width: 216, height: 288 },
-    hero: { x: 133, y: 97, width: 320, height: 400 },
-  }),
+  "hud": {
+    "x": 230,
+    "y": 134,
+    "width": 96,
+    "height": 108
+  },
+  "card": {
+    "x": 180,
+    "y": 124,
+    "width": 196,
+    "height": 150
+  },
+  "profile": {
+    "x": 170,
+    "y": 114,
+    "width": 216,
+    "height": 288
+  },
+  "hero": {
+    "x": 128,
+    "y": 102,
+    "width": 320,
+    "height": 400
+  }
+}),
   'leo-violeta': portrait('leo-violeta', 'leoVioletaConcept', {
-    hud: { x: 238, y: 121, width: 96, height: 108 },
-    card: { x: 188, y: 111, width: 196, height: 150 },
-    profile: { x: 178, y: 101, width: 216, height: 288 },
-    hero: { x: 136, y: 89, width: 320, height: 400 },
-  }),
+  "hud": {
+    "x": 260,
+    "y": 138,
+    "width": 96,
+    "height": 108
+  },
+  "card": {
+    "x": 210,
+    "y": 128,
+    "width": 196,
+    "height": 150
+  },
+  "profile": {
+    "x": 200,
+    "y": 118,
+    "width": 216,
+    "height": 288
+  },
+  "hero": {
+    "x": 158,
+    "y": 106,
+    "width": 320,
+    "height": 400
+  }
+}),
   'guto-barba': {
     fighterId: 'guto-barba',
     key: 'gutoBarbaPortrait',

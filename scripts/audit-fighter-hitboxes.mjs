@@ -198,7 +198,7 @@ for (const fighter of FIGHTERS) {
       const { image, data } = await raster(visual.sheet);
       const transform = {
         origin: asset.origin,
-        offset: asset.visualOffset,
+        offset: { x: asset.visualOffset.x + (visual.sheet.visualOffset?.x ?? 0), y: asset.visualOffset.y + (visual.sheet.visualOffset?.y ?? 0) },
         scale: asset.scale,
         frameWidth: visual.sheet.frameWidth,
         frameHeight: visual.sheet.frameHeight,

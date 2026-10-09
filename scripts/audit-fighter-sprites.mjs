@@ -39,6 +39,10 @@ const FIGHTER_RASTER_CONTRACTS = {
   },
 };
 const BODY_MASS_RATIO_TOLERANCE = 0.12;
+// v4 troca corpos completos: hash e geometria gerados pelo exportador.
+const redesignPath=join(ROOT,'art-source/fighters/redesign-v4/export-manifest.json');
+const REDESIGN=existsSync(redesignPath)?JSON.parse(await readFile(redesignPath,'utf8')):{};
+const redesigned=e=>e.rasterKind==='body'?REDESIGN[e.fighterId]?.[e.file?.replace(/\.png$/,'')]:undefined;
 const ANATOMICAL_SCALE_CONTRACTS = {
   'leo-violeta': {
     'corrida.png': { height: [155, 163], massRatio: [0.91, 1.00] },
@@ -508,6 +512,13 @@ for (const fighter of FIGHTERS) {
   for (const entry of bodies) {
     entry.visualMassRatio = entry.medianOpaquePixels / referenceMass;
 
+    const design=redesigned(entry);
+    if(design?.rasterContract) {
+      entry.designScaleContract=design.rasterContract;
+      const c=design.rasterContract;
+      if(Math.abs(entry.medianOpaqueHeight-c.medianHeight)>1 || Math.abs(entry.medianOpaquePixels-c.medianMass)>1) entry.issues.push('GEOMETRIA V4 DIVERGE DA EXPORTAÇÃO TRAVADA');
+      continue;
+    }
     const anatomicalContract = ANATOMICAL_SCALE_CONTRACTS[fighter.id]?.[entry.file];
     if (anatomicalContract) {
       const [minimumHeight, maximumHeight] = anatomicalContract.height;
@@ -575,7 +586,7 @@ for (const fighterId of ['leo-violeta', 'noir-reflexo']) {
     (candidate) => candidate.fighterId === fighterId
       && candidate.rasterKind === 'body'
       && candidate.file?.endsWith('.png')
-      && candidate.file !== 'universal-grab-v2.png',
+      && candidate.file !== 'universal-grab-v2.png' && !redesigned(candidate),
   );
   const keyedSourceCount = bodyEntries.filter((entry) => existsSync(
     join(ROOT, 'tmp', 'imagegen', fighterId, 'keyed', entry.file),
@@ -634,7 +645,7 @@ for (const fighterId of ['leo-violeta', 'noir-reflexo']) {
 
 // The new 12-pose atlases use versioned magenta sources and component slicing,
 // independently of the older four-frame Leo/Noir keyed-source cleanup pipeline.
-for (const entry of results.filter(e => e.file === 'universal-grab-v2.png')) {
+for (const entry of results.filter(e => e.file === 'universal-grab-v2.png' && !redesigned(e))) {
   try {
     const manifest = JSON.parse(await readFile(join(ROOT, 'art-source/fighters/universal-grab-v2/export-manifest.json'), 'utf8'));
     const report = manifest[entry.fighterId];
@@ -654,6 +665,26 @@ for (const entry of results.filter(e => e.file === 'universal-grab-v2.png')) {
   }
 }
 
+// Fontes preservadas e escala única, com margens e hash de cada saída.
+for(const entry of results.filter(e=>redesigned(e))) {
+  try {
+    const r=redesigned(entry);
+    if(r.frames!==entry.frames || r.transforms.length!==entry.frames) throw Error('contagem de poses');
+    for(const [path,hash] of [[r.source,r.sourceSha256],[r.file,r.outputSha256]]) if(createHash('sha256').update(await readFile(join(ROOT,path))).digest('hex')!==hash) throw Error('SHA divergente: '+path);
+    if(!Number.isFinite(r.scale)||r.scale<=0) throw Error('escala inválida');
+    for(const t of r.transforms) {
+      if(t.scale!==r.scale) throw Error('escala mudou entre poses');
+      if(t.outputLeft<6||t.outputTop<6||t.outputLeft+t.outputWidth>250||t.outputTop+t.outputHeight!==250) throw Error('margem ou baseline');
+      const b=t.sourceBounds,c=t.sourceCell;
+      if(b[0]<2||b[1]<2||b[2]>c[2]-c[0]-2||b[3]>c[3]-c[1]-2) throw Error('corpo toca célula fonte');
+    }
+  }catch(error){entry.issues.push('AUDITORIA V4: '+error.message);}
+}
+const preservedPath=join(ROOT,'art-source/fighters/redesign-v4/guto-preserved.json');
+if(existsSync(preservedPath)){
+  const anchor=results.find(e=>e.fighterId==='guto-barba'&&e.file==='idle.png');
+  for(const [path,hash] of Object.entries(JSON.parse(await readFile(preservedPath,'utf8')))) if(createHash('sha256').update(await readFile(join(ROOT,path))).digest('hex')!==hash) anchor?.issues.push('GUTO PROTEGIDO ALTERADO: '+path);
+}
 const failures = results.filter(({ issues }) => issues.length > 0).length;
 
 if (process.argv.includes('--json')) {

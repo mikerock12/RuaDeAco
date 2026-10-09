@@ -142,7 +142,7 @@ test('Astro está desbloqueado, luta com sprites válidos e retorna à seleção
   });
 
   if (testInfo.project.name === 'chrome-mobile-landscape') {
-    await tapInternal(page, 320, 55);
+    await tapInternal(page, 608, 58);
     await expect.poll(() => pauseState(page)).toEqual({ paused: true, selectedAction: 'continue' });
     await tapInternal(page, 320, 295);
   } else {

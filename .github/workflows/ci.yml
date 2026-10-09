@@ -29,6 +29,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run validate:sprites
+      - run: npm run audit:hitboxes
       - run: npm run build
 
   server:
@@ -52,7 +54,7 @@ jobs:
   browser:
     name: Navegador - desktop e celular
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

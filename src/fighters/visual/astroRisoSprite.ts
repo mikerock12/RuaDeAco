@@ -1,3 +1,4 @@
+import { redesignPoseOffset } from './redesignPoseRegistration';
 import { universalGrabSprite } from './universalGrabSprite';
 import type {
   FighterAnimationAsset,
@@ -55,6 +56,7 @@ function animation(
 ): FighterAnimationAsset {
   return {
     id,
+    visualOffset: redesignPoseOffset('astro-riso', id),
     key: `astro-riso-${id}`,
     path: `assets/fighters/astro-riso/${files[id]}`,
     frameWidth: FRAME_SIZE,

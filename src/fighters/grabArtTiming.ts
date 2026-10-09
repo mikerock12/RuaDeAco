@@ -1,22 +1,9 @@
 import type { FighterId } from '../types/combat';
 import { GRAB_VICTIM_LANDMARKS, type VictimLandmark } from './grabVictimLandmarks';
 
-/** Contact landmarks for the newly drawn art, in foot-root coordinates. */
+/** Mãos medidas nas fontes v4 e convertidas à raiz dos pés; Guto preservado. */
 export const GRAB_HANDS: Readonly<Record<FighterId, readonly (readonly [number, number])[]>> = {
-  "rafa-mare": [
-    [42, -111],
-    [74, -129],
-    [46, -118],
-    [40, -68],
-    [26, -141],
-    [30, -156],
-    [7, -216],
-    [-43, -193],
-    [68, -184],
-    [58, -73],
-    [57, -62],
-    [42, -104]
-  ],
+  "rafa-mare": [[74, -115], [84, -118], [64, -94], [49, -19], [27, -129], [33, -161], [2, -189], [1, -188], [-32, -176], [52, -64], [54, -13], [69, -119]],
   "guto-barba": [
     [60, -139],
     [91, -146],
@@ -31,62 +18,10 @@ export const GRAB_HANDS: Readonly<Record<FighterId, readonly (readonly [number, 
     [40, -20],
     [59, -115]
   ],
-  "noir-reflexo": [
-    [46, -120],
-    [76, -139],
-    [58, -118],
-    [16, -51],
-    [32, -153],
-    [37, -167],
-    [-2, -228],
-    [-4, -228],
-    [-36, -180],
-    [51, -91],
-    [48, -70],
-    [54, -107]
-  ],
-  "astro-riso": [
-    [40, -110],
-    [66, -116],
-    [48, -109],
-    [34, -77],
-    [26, -131],
-    [24, -159],
-    [1, -204],
-    [-28, -203],
-    [-33, -105],
-    [42, -74],
-    [22, -39],
-    [44, -106]
-  ],
-  "dante-sinal": [
-    [52, -126],
-    [82, -143],
-    [64, -120],
-    [28, -45],
-    [38, -136],
-    [32, -163],
-    [1, -207],
-    [-4, -207],
-    [-22, -85],
-    [44, -73],
-    [32, -63],
-    [36, -109]
-  ],
-  "leo-violeta": [
-    [42, -122],
-    [83, -123],
-    [58, -116],
-    [43, -83],
-    [20, -146],
-    [22, -150],
-    [14, -217],
-    [-40, -192],
-    [-11, -106],
-    [59, -75],
-    [43, -12],
-    [40, -99]
-  ]
+  "noir-reflexo": [[47, -116], [84, -122], [70, -101], [35, -34], [22, -136], [31, -165], [4, -202], [-2, -182], [-26, -181], [39, -65], [41, -15], [45, -117]],
+  "astro-riso": [[78, -104], [81, -106], [51, -91], [38, -26], [79, -116], [22, -155], [3, -180], [-10, -170], [-55, -176], [62, -42], [35, -19], [57, -110]],
+  "dante-sinal": [[72, -104], [89, -105], [63, -92], [44, -20], [38, -123], [25, -151], [12, -199], [-3, -188], [-19, -173], [64, -54], [53, -11], [71, -121]],
+  "leo-violeta": [[41, -110], [73, -111], [67, -97], [47, -24], [34, -133], [48, -166], [5, -183], [-9, -175], [-18, -160], [43, -62], [48, -22], [58, -117]],
 };
 export const GRAB_POSE_STARTS = [0, 3, 6, 10, 14, 18, 23, 29, 35, 40, 46, 58] as const;
 export function grabPoseIndex(frame: number, connected = true): number {
@@ -106,19 +41,17 @@ export const GRAB_SLAM_END = 46;
 export const GRAB_HOLD_ANGLE = Math.PI / 2;
 
 /**
- * As folhas grabbed-lifted não são iguais entre os lutadores: Rafa, Guto e Astro
- * já deitam o corpo na própria arte; Noir e Léo inclinam parcialmente; a folha
- * de Dante só tem poses em pé. Cada lutador declara quais quadros usar, em
- * ordem, e quanto o último quadro já inclina o tronco. O código completa a
- * rotação até GRAB_HOLD_ANGLE, girando ao redor do ponto de pega, nunca dos pés.
+ * Corpos v4: inclinações por pose medidas pelo eixo da silhueta, após padronizar
+ * a direção do último quadro deitado. O Guto conserva a folha e os dados aprovados.
+ * A rotação completa o ângulo do tronco em torno do ponto de pega, nunca dos pés.
  */
-export const GRAB_LIFT_ART: Readonly<Record<FighterId, { readonly frames: readonly number[]; readonly tilt: number }>> = {
-  'rafa-mare': { frames: [0, 1, 2, 3, 4, 5, 6, 7], tilt: 1.42 },
+export const GRAB_LIFT_ART: Readonly<Record<FighterId, { readonly frames: readonly number[]; readonly tilt: number; readonly tilts?: readonly number[] }>> = {
+  'rafa-mare': { frames: [0, 1, 2, 3, 4, 5, 6, 7], tilt: Math.PI / 2, tilts: [0.1144, 0.5249, 0.7819, 0.8432, 0.9552, 1.1024, 1.363, 1.5708] },
   'guto-barba': { frames: [0, 1, 2, 3, 4, 5, 6, 7], tilt: 1.4 },
-  'astro-riso': { frames: [0, 1, 2, 3, 4, 5, 6, 7], tilt: 1.45 },
-  'noir-reflexo': { frames: [0, 1, 2, 3, 4, 5], tilt: 0.72 },
-  'dante-sinal': { frames: [0, 1, 2, 3, 4], tilt: 0.08 },
-  'leo-violeta': { frames: [1, 3, 4, 5], tilt: 0.58 },
+  'astro-riso': { frames: [0, 1, 2, 3, 4, 5, 6, 7], tilt: Math.PI / 2, tilts: [0.1866, 0.7081, 0.7907, 0.9608, 1.0389, 1.1395, 1.3911, 1.5708] },
+  'noir-reflexo': { frames: [0, 1, 2, 3, 4, 5, 6, 7], tilt: Math.PI / 2, tilts: [0.0999, 0.409, 0.5854, 0.7105, 0.8822, 0.9441, 1.1691, 1.5708] },
+  'dante-sinal': { frames: [0, 1, 2, 3, 4, 5, 6, 7], tilt: Math.PI / 2, tilts: [0.2039, 0.3075, 0.7708, 0.9126, 1.045, 1.0927, 1.1411, 1.5708] },
+  'leo-violeta': { frames: [0, 1, 2, 3, 4, 5, 6, 7], tilt: Math.PI / 2, tilts: [0.1754, 0.4458, 0.8086, 1.1382, 1.1329, 1.2394, 1.3579, 1.5708] },
 };
 
 const smooth = (t: number): number => { const c = Math.max(0, Math.min(1, t)); return c * c * (3 - 2 * c); };
@@ -167,7 +100,7 @@ export function grabLiftArt(victim: FighterId, progress: number): { poseFrame: n
   const art = GRAB_LIFT_ART[victim];
   const last = art.frames.length - 1;
   const step = Math.min(last, Math.floor(progress * art.frames.length));
-  return { poseFrame: art.frames[step]!, tilt: art.tilt * (last ? step / last : 1) };
+  return { poseFrame: art.frames[step]!, tilt: art.tilts?.[step] ?? art.tilt * (last ? step / last : 1) };
 }
 
 /**

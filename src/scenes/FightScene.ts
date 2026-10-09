@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { FINISH_THROW, FINISH_END, KITCHEN_DROP, SITIO_IMPALE, SITIO_STEP_BACK_END, SITIO_STEP_BACK_START, finisherAttackerFrame, finisherVictimPose, sitioAttackerShift } from '../combat/stageFinisher';
+import { StageFinisherPresentation } from '../ui/StageFinisherPresentation';
 import { CpuController } from '../ai/CpuController';
 import { audioManager } from '../audio/AudioManager';
 import { MUSIC_TRACK_BY_ARENA } from '../audio/musicCatalog';
@@ -49,6 +50,7 @@ export class FightScene extends Phaser.Scene {
   private cpu: CpuController | null = null;
   private views: readonly [FighterView, FighterView] | null = null;
   private stageView!: StageView;
+  private finisherPresentation!: StageFinisherPresentation;
   private combatFeedback!: CombatFeedback;
   private projectileSprites: Phaser.GameObjects.Sprite[] = [];
   private debugGraphics!: Phaser.GameObjects.Graphics;
@@ -226,6 +228,7 @@ export class FightScene extends Phaser.Scene {
         };
       };
     }
+    this.finisherPresentation = new StageFinisherPresentation(this);
     this.stageView = createStageView(this, selection.arena);
     this.combatFeedback = new CombatFeedback(this);
     if (import.meta.env.DEV) {
@@ -286,6 +289,8 @@ export class FightScene extends Phaser.Scene {
     const finisherActor = snapshot.fighters[snapshot.finisherWinner ?? 0];
     this.stageView.setFinisherFrame?.(cinematic ? Math.min(FINISH_END, snapshot.phaseFrame) : snapshot.phase === 'finishReady' ? 0 : null,
       { originX: finisherActor.x, facing: finisherActor.facing });
+    this.finisherPresentation.sync(this.world.arena ?? 'cais-da-cidade', cinematic ? snapshot.phaseFrame : null,
+      finisherActor, snapshot.fighters[(snapshot.finisherWinner ?? 0) === 0 ? 1 : 0]);
     for (const i of [0, 1] as const) {
       const victim = cinematic && i !== snapshot.finisherWinner;
       const f = snapshot.phaseFrame;
@@ -434,7 +439,7 @@ export class FightScene extends Phaser.Scene {
     if (event.type === 'roundStart' || event.type === 'fight') audioManager.play('round');
     if (event.type === 'knockout') audioManager.play('ko');
     if (event.type === 'finishReady') audioManager.play('dread');
-    if (event.type === 'finishThrow') audioManager.play('dread');
+    if (event.type === 'finishThrow') { audioManager.play('dread'); audioManager.play('swing'); }
     if (event.type === 'monsterRoar') audioManager.play('monsterRoar');
     if (event.type === 'finishSplash') audioManager.play('waterCrash');
     if (event.type === 'monsterBite' || event.type === 'bonesLeft') audioManager.play('boneCrunch');

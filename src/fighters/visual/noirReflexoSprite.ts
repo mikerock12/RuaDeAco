@@ -1,3 +1,4 @@
+import { redesignPoseOffset } from './redesignPoseRegistration';
 import { universalGrabSprite } from './universalGrabSprite';
 import type {
   FighterAnimationAsset,
@@ -55,6 +56,7 @@ function animation(
 ): FighterAnimationAsset {
   return {
     id,
+    visualOffset: redesignPoseOffset('noir-reflexo', id),
     key: `noir-reflexo-${id}`,
     path: `assets/fighters/noir-reflexo/${files[id]}`,
     frameWidth: FRAME_SIZE,

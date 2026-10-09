@@ -89,7 +89,7 @@ export default defineConfig({
   define: {
     __FIGHTER_ASSET_REVISION__: JSON.stringify(fighterAssetRevision),
     __CLIENT_BUILD_ID__: JSON.stringify(clientBuildId),
-    __COMBAT_ENGINE_VERSION__: JSON.stringify('lockstep-v5-finisher-restage'),
+    __COMBAT_ENGINE_VERSION__: JSON.stringify('lockstep-v6-prototype-bodies'),
   },
   build: {
     target: 'es2022',
@@ -102,6 +102,7 @@ export default defineConfig({
   },
   server: {
     host: true,
+    watch: { ignored: ['**/art-source/**', '**/RuaDeAco-spritesheets-v2-RASCUNHO/**'] },
   },
   test: {
     environment: 'node',

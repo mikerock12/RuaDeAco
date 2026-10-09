@@ -57,8 +57,8 @@ interface Hold {
 }
 
 /** Quadro deitado e ponto de pega usados depois que o corpo sai das mãos. */
-function flightHold(victim: FighterId): Hold {
-  const art = grabLiftArt(victim, 1);
+function flightHold(victim: FighterId, reactionFrame = 0): Hold {
+  const art = grabLiftArt(victim, reactionFrame % 24 < 12 ? 1 : 0.86);
   return { poseFrame: art.poseFrame, tilt: art.tilt, landmark: GRAB_VICTIM_LANDMARKS[victim].lifted[art.poseFrame]! };
 }
 
@@ -157,7 +157,8 @@ export function finisherMonsterPose(frame: number, originX = 280, facing: 1 | -1
   const reveal = rise * (1 - sink);
   const lunge = ease((frame - 152) / 14) * (1 - ease((frame - 183) / 15));
   const base = caisMonsterX(originX, facing);
-  const x = base - facing * 14 * lunge;
+  const chew = frame >= FINISH_BITE && frame < 238 ? wobble(frame, 14) * 0.55 : 0;
+  const x = base - facing * (14 * lunge + chew);
   const waterY = FINISH_WATER_Y + (1 - reveal) * 160 * CAIS_MONSTER_SCALE;
   const [mx, my] = MOUTHS[pose]!;
   // A folha olha para a direita; espelhada, ela encara o atacante.
@@ -217,7 +218,7 @@ export function kitchenFinishCue(frame: number): 'potDrop' | 'witchStir' | 'bone
 
 function kitchenVictimPoseInner(frame: number, originX: number, facing: 1 | -1, attacker: FighterId, victim: FighterId): FinisherVictimPose {
   if (frame < FINISH_THROW) return heldPose(frame, originX, facing, attacker, victim);
-  const hold = flightHold(victim);
+  const hold = flightHold(victim, frame >= KITCHEN_DROP ? frame : 0);
   // O corpo gira até entrar de cabeça (π) na boca do panelão.
   if (frame < KITCHEN_DROP) {
     return flightPose({
@@ -284,14 +285,19 @@ export function sitioFinisherStage(frame: number, originX: number): SitioFinishe
   const farmerFrame = frame < SITIO_IMPALE ? (frame >= 96 ? 1 : 0) : frame < 150 ? 2 : 1;
   const hand = FARMER_HANDS[farmerFrame]!;
   const brace = frame >= SITIO_IMPALE && frame < 150 ? 4 : 0;
-  const tridentX = SHED_FARMER_X + farmerFacing * hand[0];
-  const gripY = SHED_FARMER_FEET_Y + hand[1] + brace;
+  const advance = ease((frame - SHED_FARMER_APPEAR) / 24);
+  const retreat = ease((frame - SITIO_RETREAT_START) / 36);
+  const recoil = frame >= SITIO_IMPALE && frame < SITIO_IMPALE + 16 ? wobble(frame - SITIO_IMPALE, 8) * 0.5 : 0;
+  const farmerX = SHED_FARMER_X + farmerFacing * (advance * 5 - retreat * 7 + recoil);
+  const farmerFeetY = SHED_FARMER_FEET_Y + retreat * 4;
+  const tridentX = farmerX + farmerFacing * hand[0];
+  const gripY = farmerFeetY + hand[1] + brace;
   return {
     doors,
     farmerVisible: frame >= SHED_FARMER_APPEAR && frame < SHED_DOORS_CLOSE_END,
     farmerFrame,
-    farmerX: SHED_FARMER_X,
-    farmerFeetY: SHED_FARMER_FEET_Y,
+    farmerX,
+    farmerFeetY,
     farmerFacing,
     tridentX,
     tridentBaseY: gripY + TRIDENT_GRIP_TO_BASE,

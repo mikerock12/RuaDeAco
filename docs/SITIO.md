@@ -41,3 +41,12 @@ Método: imagegen integrado, com a foto como referência. [Prompts completos](..
 ## Validação
 
 Unitários simulam dez minutos e verificam presença, postura, alimentação, encontro, briga e limites dos objetos. E2E de computador e celular observam as interações reais, trilha, pausa e saída sem resíduos. Online verifica as duas arenas novas, confirmação compartilhada e hashes iguais entre jogadores.
+
+## Correção de reentrada e acabamento — 09/10/2026
+
+Depois de registrar os recortes das portas, `Texture.firstFrame` do Phaser passa a apontar
+para a primeira porta. Criar novamente o fundo sem escolher o frame esticava esse recorte
+até 640 × 360. `SitioStageView` agora usa `__BASE` explicitamente ao criar o fundo.
+O teste de revanche após a finalização verifica fundo integral, portas fechadas e estado
+limpo. O mascarado também avança e recua suavemente e reage à estocada; a apresentação
+acrescenta poeira, impacto, vinheta e áudio com reflexos curtos.

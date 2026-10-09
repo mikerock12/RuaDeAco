@@ -217,8 +217,8 @@ export class AudioManager {
     if (context.state !== 'running') return;
     let buffer = this.horrorBuffers.get(effect);
     if (!buffer) {
-      const duration = effect === 'dread' ? 1.5 : effect === 'monsterRoar' ? 1.1 : effect === 'spoonStir' ? 0.28 : effect === 'potDrop' ? 0.32
-        : effect === 'woodCreak' ? 0.9 : effect === 'fleshStab' ? 0.3 : effect === 'doorSlam' ? 0.45 : 0.36;
+      const duration = effect === 'dread' ? 1.5 : effect === 'monsterRoar' ? 1.1 : effect === 'spoonStir' ? 0.28 : effect === 'potDrop' ? 0.65
+        : effect === 'woodCreak' ? 0.9 : effect === 'fleshStab' ? 0.3 : effect === 'doorSlam' ? 0.75 : effect === 'waterCrash' ? 0.7 : 0.48;
       buffer = context.createBuffer(1, Math.ceil(context.sampleRate * duration), context.sampleRate);
       const data = buffer.getChannelData(0);
       let seed = 317, low = 0;
@@ -230,9 +230,9 @@ export class AudioManager {
         const pulse = Math.max(0, Math.sin(t * (effect === 'boneCrunch' ? 89 : 43)));
         const sample = effect === 'dread'
           ? (Math.sin(t * 2 * Math.PI * 54) + Math.sin(t * 2 * Math.PI * 57.3)) * 0.15 + low * 0.25
-          : effect === 'monsterRoar' ? Math.tanh(Math.sin(t * 2 * Math.PI * (75 - 24 * p)) * 3) * 0.22 + low * pulse
+          : effect === 'monsterRoar' ? Math.tanh(Math.sin(t * 2 * Math.PI * (75 - 24 * p)) * 3) * 0.22 + low * pulse + Math.sin(t * 2 * Math.PI * 38) * 0.12
           : effect === 'boneCrunch' ? noise * Math.pow(pulse, 12) * 0.55 + low * 0.6 + Math.sin(t * 390) * 0.1
-          : effect === 'potDrop' ? Math.sin(t * 2 * Math.PI * (96 - 48 * p)) * 0.34 + noise * 0.06
+          : effect === 'potDrop' ? Math.sin(t * 2 * Math.PI * (96 - 48 * p)) * 0.28 + noise * 0.12 * (1 - p) + Math.sin(t * 2 * Math.PI * 430) * 0.08 * Math.exp(-t * 8)
           : effect === 'spoonStir' ? Math.sin(t * 2 * Math.PI * (210 + 36 * Math.sin(t * 28))) * 0.1 + noise * 0.04
           // Rangido de madeira: tom grave que oscila com estalos de atrito.
           : effect === 'woodCreak' ? Math.sin(t * 2 * Math.PI * (68 + 22 * Math.sin(t * 9))) * 0.16 * (0.6 + 0.4 * Math.sin(t * 61)) + noise * 0.05 * pulse
@@ -242,6 +242,12 @@ export class AudioManager {
           : effect === 'doorSlam' ? Math.sin(t * 2 * Math.PI * (58 - 20 * p)) * 0.4 * (1 - p) + low * 0.9 + noise * 0.12 * Math.pow(1 - p, 4)
           : low * 1.4 + noise * 0.09;
         data[i] = Math.max(-0.7, Math.min(0.7, sample * envelope));
+      }
+      // Reflexões curtas deixam volume e duração limitados; o buffer é reutilizado.
+      const dry = data.slice();
+      for (const [seconds, gain] of [[0.045, 0.18], [0.105, 0.1], [0.18, 0.06]]) {
+        const delay = Math.round(context.sampleRate * seconds!);
+        for (let i = delay; i < data.length; i++) data[i] = Math.max(-0.7, Math.min(0.7, data[i]! + dry[i - delay]! * gain!));
       }
       this.horrorBuffers.set(effect, buffer);
     }
