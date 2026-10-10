@@ -47,6 +47,8 @@ export class MainMenuScene extends Phaser.Scene {
 
   create(): void {
     void audioManager.playMusic(MUSIC_TRACK_BY_SCENE.MainMenuScene);
+    // Bem antes da primeira luta, para o "Round 1" já sair gravado.
+    void audioManager.preloadEffects();
     this.cameras.main.setBackgroundColor(PALETTE.ink);
     this.rows = [];
     this.selectedIndex = 0;
