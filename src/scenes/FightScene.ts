@@ -91,6 +91,8 @@ export class FightScene extends Phaser.Scene {
     this.runner.reset();
     const selection = gameSession.selection;
     void audioManager.playMusic(MUSIC_TRACK_BY_ARENA[selection.arena]);
+    // Idempotente: o menu já carregou; isto cobre quem entra direto pelo online.
+    void audioManager.preloadEffects();
     const playerOne = getFighterDefinition(selection.playerOne);
     const playerTwo = getFighterDefinition(selection.playerTwo);
     this.world = new CombatWorld(playerOne, playerTwo, selection.mode, selection.arena);
@@ -435,10 +437,14 @@ export class FightScene extends Phaser.Scene {
   private handleCombatEvent(event: CombatEvent): void {
     this.game.events.emit('combat:event', event);
     this.combatFeedback.event(event, this.world.fighters);
-    if (event.type === 'special' || event.type === 'passive') audioManager.play('special');
-    if (event.type === 'roundStart' || event.type === 'fight') audioManager.play('round');
-    if (event.type === 'knockout') audioManager.play('ko');
-    if (event.type === 'finishReady') audioManager.play('dread');
+    if (event.type === 'special') audioManager.playSpecial(event.attacker, event.moveId);
+    if (event.type === 'passive') audioManager.play('special');
+    if (event.type === 'roundStart') audioManager.announceRound(Number(event.text?.match(/\d+/)?.[0] ?? 1));
+    if (event.type === 'fight') audioManager.announce('fight');
+    // O "K.O." entra depois do estrondo do impacto, para os dois não embolarem.
+    if (event.type === 'knockout') { audioManager.play('ko'); audioManager.announce('ko', 0.45); }
+    if (event.type === 'roundEnd') audioManager.announce(event.text === 'EMPATE' ? 'empate' : 'tempo');
+    if (event.type === 'finishReady') { audioManager.play('dread'); audioManager.announce('finalize', 0.2); }
     if (event.type === 'finishThrow') { audioManager.play('dread'); audioManager.play('swing'); }
     if (event.type === 'monsterRoar') audioManager.play('monsterRoar');
     if (event.type === 'finishSplash') audioManager.play('waterCrash');

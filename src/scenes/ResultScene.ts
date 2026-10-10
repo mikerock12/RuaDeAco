@@ -46,6 +46,7 @@ export class ResultScene extends Phaser.Scene {
     const winner = getFighterDefinition(winnerId);
     const loser = getFighterDefinition(loserId);
     const title = result ? (result.playerWon ? 'VITORIA!' : 'DERROTA') : 'FIM DA LUTA';
+    if (title === 'VITORIA!') audioManager.announce('vitoria', 0.15);
     const titleTint = result?.playerWon === false ? PALETTE.danger : PALETTE.gold;
 
     createConceptPortrait(this, 130, 202, winnerId, 200, 252, {

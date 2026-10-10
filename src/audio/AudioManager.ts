@@ -4,6 +4,17 @@ import {
   musicAssetUrl,
   type MusicTrack,
 } from './musicCatalog';
+import {
+  ANNOUNCER_LINES,
+  ANNOUNCER_ROUNDS,
+  SAMPLE_IDS,
+  SAMPLES,
+  SPECIAL_SOUNDS,
+  sampleSources,
+  type AnnouncerLine,
+  type SampleId,
+} from './sfxCatalog';
+import type { FighterId } from '../types/combat';
 
 export type SoundEffect = 'confirm' | 'hitHeavy' | 'swing' | 'hit' | 'block' | 'special' | 'ko' | 'round' | 'dread' | 'monsterRoar' | 'waterCrash' | 'boneCrunch' | 'potDrop' | 'spoonStir' | 'woodCreak' | 'fleshStab' | 'doorSlam';
 /** Efeitos sintetizados por buffer (terror e cenário), fora da tabela de tons. */
@@ -53,6 +64,23 @@ const TONES: Readonly<Record<Exclude<SoundEffect, HorrorEffect>, Tone>> = {
 
 const MUSIC_FADE_SECONDS = 0.3;
 
+/**
+ * Efeitos que ganharam amostra própria. `spread` sorteia uma variação de tom a
+ * cada toque, para socos seguidos não soarem como a mesma gravação repetida;
+ * é apresentação, nunca entra na simulação.
+ */
+const SAMPLE_FOR_EFFECT: Partial<Record<SoundEffect, { readonly id: SampleId; readonly spread?: number }>> = {
+  hit: { id: 'combate/soco-leve', spread: 0.06 },
+  hitHeavy: { id: 'combate/soco-forte', spread: 0.05 },
+  swing: { id: 'combate/golpe-ar', spread: 0.08 },
+  block: { id: 'combate/bloqueio', spread: 0.06 },
+  ko: { id: 'combate/ko-impacto' },
+  monsterRoar: { id: 'finalizacao/monstro-rugido' },
+};
+
+/** Dois toques da mesma amostra dentro desta janela viram um só. */
+const SAMPLE_DEDUPE_SECONDS = 0.03;
+
 function browserDependencies(): AudioManagerDependencies {
   return {
     createContext: () => {
@@ -84,6 +112,9 @@ export class AudioManager {
   private autoplayWarningLogged = false;
   private destroyed = false;
   private readonly horrorBuffers = new Map<string, AudioBuffer>();
+  private readonly samples = new Map<SampleId, AudioBuffer>();
+  private readonly sampleLastStart = new Map<SampleId, number>();
+  private samplesLoading: Promise<number> | null = null;
 
   constructor(private readonly dependencies: AudioManagerDependencies = browserDependencies()) {}
 
@@ -206,10 +237,102 @@ export class AudioManager {
 
   play(effect: SoundEffect): void {
     if (!this.context || !this.effectsGain) return;
+    const sample = SAMPLE_FOR_EFFECT[effect];
+    if (sample && this.samples.has(sample.id)) {
+      const spread = sample.spread ?? 0;
+      this.playSample(sample.id, { rate: 1 + (Math.random() * 2 - 1) * spread });
+      return;
+    }
     if (HORROR_EFFECTS.includes(effect)) {
       this.playHorror(effect as HorrorEffect); return;
     }
     this.scheduleTone(TONES[effect as Exclude<SoundEffect, HorrorEffect>], this.effectsGain);
+  }
+
+  /**
+   * Carrega a sonoplastia gravada. É explícito, e não amarrado à criação do
+   * contexto, para o jogo escolher a hora (o menu, antes da primeira luta) e
+   * para a música continuar sendo o único fetch dos fluxos que só tocam música.
+   * Amostra que falha fica de fora: o efeito correspondente cai no sintetizado.
+   */
+  preloadEffects(): Promise<number> {
+    if (this.destroyed) return Promise.resolve(0);
+    if (!this.context) this.createGraph();
+    if (!this.context) return Promise.resolve(0);
+    this.samplesLoading ??= (async () => {
+      const results = await Promise.all(SAMPLE_IDS.map(id => this.loadSample(id)));
+      return results.filter(Boolean).length;
+    })();
+    return this.samplesLoading;
+  }
+
+  hasSample(id: SampleId): boolean {
+    return this.samples.has(id);
+  }
+
+  /** Grito do golpe e som do elemento do lutador; sem amostras, o tom antigo. */
+  playSpecial(fighter: FighterId | undefined, moveId: string | undefined): void {
+    if (!this.context || !this.effectsGain) return;
+    const sound = fighter && moveId ? SPECIAL_SOUNDS[fighter]?.[moveId] : undefined;
+    const voiced = sound ? this.playSample(sound.voice) : false;
+    const effected = sound ? this.playSample(sound.effect, { rate: sound.rate ?? 1 }) : false;
+    if (!voiced && !effected) this.scheduleTone(TONES.special, this.effectsGain);
+  }
+
+  /** "Round N": acima do quinto round (só em empates seguidos) volta o tom. */
+  announceRound(round: number): void {
+    if (!this.context || !this.effectsGain) return;
+    const id = ANNOUNCER_ROUNDS[round - 1];
+    if (!id || !this.playSample(id)) this.scheduleTone(TONES.round, this.effectsGain);
+  }
+
+  announce(line: AnnouncerLine, delaySeconds = 0): void {
+    if (!this.context || !this.effectsGain) return;
+    const played = this.playSample(ANNOUNCER_LINES[line], { delay: delaySeconds });
+    if (!played && line === 'fight') this.scheduleTone(TONES.round, this.effectsGain);
+  }
+
+  /**
+   * Toca uma amostra carregada. Devolve se ela existia, mesmo com o contexto
+   * ainda suspenso: nesse caso não há o que ouvir e o chamador não deve cair
+   * no sintetizado, que também ficaria mudo.
+   */
+  playSample(id: SampleId, options: { readonly rate?: number; readonly delay?: number } = {}): boolean {
+    const context = this.context;
+    const buffer = this.samples.get(id);
+    if (!context || !this.effectsGain || !buffer) return false;
+    if (context.state !== 'running') return true;
+    const start = context.currentTime + Math.max(0, options.delay ?? 0);
+    const last = this.sampleLastStart.get(id);
+    if (last !== undefined && Math.abs(start - last) < SAMPLE_DEDUPE_SECONDS) return true;
+    this.sampleLastStart.set(id, start);
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    source.buffer = buffer;
+    source.playbackRate.value = options.rate ?? 1;
+    gain.gain.value = SAMPLES[id].gain;
+    source.connect(gain);
+    gain.connect(this.effectsGain);
+    source.onended = () => { source.disconnect(); gain.disconnect(); };
+    source.start(start);
+    return true;
+  }
+
+  private async loadSample(id: SampleId): Promise<boolean> {
+    for (const source of sampleSources(id, this.dependencies.baseUrl)) {
+      const context = this.context;
+      if (!context || this.destroyed) return false;
+      try {
+        const response = await this.dependencies.fetch(source.url);
+        if (!response.ok) continue;
+        const buffer = await context.decodeAudioData(await response.arrayBuffer());
+        this.samples.set(id, buffer);
+        return true;
+      } catch {
+        // OGG pode não decodificar (Safari antigo): tenta o MP3 em seguida.
+      }
+    }
+    return false;
   }
 
   private playHorror(effect: HorrorEffect): void {

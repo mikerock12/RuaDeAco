@@ -50,6 +50,8 @@ class FakeGainNode {
 class FakeBufferSourceNode {
   buffer: AudioBuffer | null = null;
   loop = false;
+  readonly playbackRate = new FakeAudioParam();
+  onended: (() => void) | null = null;
   readonly starts: number[] = [];
   readonly stops: Array<number | undefined> = [];
   readonly connections: unknown[] = [];
@@ -508,6 +510,73 @@ describe('foley original da finalização', () => {
       expect(a.connections).toContain(context.gains[1]);
       manager.play(effect); expect(context.sources.at(-1)!.buffer).toBe(a.buffer);
     }
+    await manager.destroy();
+  });
+});
+
+describe('sonoplastia gravada', () => {
+  const urlsBuscadas = (fetchMock: typeof globalThis.fetch) =>
+    (fetchMock as unknown as ReturnType<typeof vi.fn>).mock.calls.map(call => String(call[0]));
+
+  it('carrega cada amostra em OGG uma única vez e troca o tom do soco pela gravação', async () => {
+    const { manager, context, fetchMock } = setup(undefined, { state: 'running' });
+    const total = await manager.preloadEffects();
+    await manager.preloadEffects();
+    const urls = urlsBuscadas(fetchMock);
+    expect(total).toBeGreaterThan(40);
+    expect(urls).toHaveLength(total);
+    expect(urls.every(url => url.startsWith('/RuaDeAco/assets/audio/sfx/') && url.endsWith('.ogg'))).toBe(true);
+
+    manager.play('hit');
+    expect(context.oscillators).toHaveLength(0);
+    const source = context.sources.at(-1)!;
+    expect(source.starts).toHaveLength(1);
+    expect(source.playbackRate.value).toBeGreaterThan(0.93);
+    expect(source.playbackRate.value).toBeLessThan(1.07);
+    await manager.destroy();
+  });
+
+  it('cai no MP3 quando o OGG não decodifica e no tom quando nenhum carrega', async () => {
+    const { manager, context, fetchMock } = setup(undefined, { state: 'running' });
+    context.decodeShouldFail = true;
+    expect(await manager.preloadEffects()).toBe(0);
+    const urls = urlsBuscadas(fetchMock);
+    expect(urls.filter(url => url.endsWith('.mp3'))).toHaveLength(urls.length / 2);
+    manager.play('hit');
+    manager.playSpecial('rafa-mare', 'maoDaMare');
+    expect(context.sources).toHaveLength(0);
+    expect(context.oscillators).toHaveLength(2);
+    await manager.destroy();
+  });
+
+  it('o especial grita o golpe e toca o elemento no tom próprio do segundo especial', async () => {
+    const { manager, context } = setup(undefined, { state: 'running' });
+    await manager.preloadEffects();
+    manager.playSpecial('guto-barba', 'ganchoUrso');
+    expect(context.sources).toHaveLength(2);
+    expect(context.sources.map(s => s.playbackRate.value)).toEqual([1, 0.78]);
+    manager.playSpecial('guto-barba', 'golpeInexistente');
+    expect(context.oscillators).toHaveLength(1);
+    await manager.destroy();
+  });
+
+  it('locutor fala os rounds gravados, atrasa o K.O. e volta ao tom depois do quinto round', async () => {
+    const { manager, context } = setup(undefined, { state: 'running' });
+    await manager.preloadEffects();
+    manager.announceRound(1);
+    manager.announce('ko', 0.45);
+    expect(context.sources.map(s => s.starts[0])).toEqual([10, 10.45]);
+    manager.announceRound(6);
+    expect(context.oscillators).toHaveLength(1);
+    await manager.destroy();
+  });
+
+  it('não empilha a mesma amostra disparada duas vezes no mesmo instante', async () => {
+    const { manager, context } = setup(undefined, { state: 'running' });
+    await manager.preloadEffects();
+    manager.play('block');
+    manager.play('block');
+    expect(context.sources).toHaveLength(1);
     await manager.destroy();
   });
 });

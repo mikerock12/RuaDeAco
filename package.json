@@ -39,6 +39,7 @@
     "assets:sitio": "node scripts/export-sitio-assets.mjs",
     "assets:cais": "node scripts/export-cais-assets.mjs",
     "assets:grab": "node scripts/export-grab-assets.mjs",
+    "assets:sfx": "python scripts/process-suno-sfx.py",
     "assets:finisher": "node scripts/export-finisher-props.mjs",
     "measure:grab-victims": "node scripts/measure-grab-victim-landmarks.mjs",
     "assets:characters": "python scripts/export-redesign-assets.py && python scripts/export-redesign-registration.py && python scripts/measure-redesign-grab-hands.py && node scripts/measure-grab-victim-landmarks.mjs && python scripts/measure-redesign-lift-angles.py && python scripts/export-redesign-portraits.py"
