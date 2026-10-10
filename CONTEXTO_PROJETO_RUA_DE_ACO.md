@@ -10,6 +10,15 @@
 >
 > Última revisão: **09/10/2026**.
 >
+> **Sonoplastia, 09/10/2026:** 47 amostras gravadas no Suno (plano Pro, uso
+> comercial) em `public/assets/audio/sfx/`: impactos, golpe no ar, bloqueio,
+> K.O., elemento de cada lutador, os seis supers, rugido do monstro do Cais,
+> locutor (Round 1–5, Fight, K.O., Tempo, Empate, Finalize, Vitória) e o grito
+> de cada um dos 18 especiais. Sem amostra, cada evento cai no tom sintetizado.
+> Falas separadas e conferidas por transcrição local. Regerar: `npm run
+> assets:sfx`. Volume ainda não conferido de ouvido. Detalhes em
+> [docs/SONOPLASTIA.md](docs/SONOPLASTIA.md).
+>
 > **Elenco v4 e finalizações, 09/10/2026:** Rafa, Noir, Astro, Dante e Léo foram
 > reconstruídos de corpo inteiro a partir de `RuaDeAco-spritesheets-v2-RASCUNHO/`,
 > com roupas, paletas, reações, agarrões e retratos coerentes. Nomes, golpes, danos,
@@ -437,6 +446,7 @@ grandes alterações, lembrar que o backup pode ser atualizado.
 | 24/09/2026 | Finalização da Cozinha Macabra no panelão |
 | 25/09/2026 | Agarrão e finalizações refeitos; finalização do Sítio (galpão e tridente); PR #4 |
 | 07/10/2026 | Rostos novos de cinco lutadores, retratos em pixel art, Android 1.0.0 e kit da Play Store; PR #5 |
+| 09/10/2026 | Sonoplastia gravada no Suno: locutor, gritos dos 18 especiais, impactos, supers e rugido do monstro |
 
 Registrar aqui também tentativas que falharam, para que ninguém repita uma
 solução já rejeitada.
