@@ -1,5 +1,24 @@
 # AGENTS.md — Rua de Aço
 
+## Localização real dos projetos — 02/11/2026
+
+Raiz de trabalho confirmada: `D:\PROJETOS\SoftwaresSmellsLikeTech`. Não procurar nem criar cópias em `D:\PROJETOS\RuaDeAco`, `D:\PROJETOS\RuaDeAcoUnreal` ou `D:\MikeAndDenyse`: referências a esses locais em registros antigos são históricas.
+
+| Pasta real | Papel |
+|---|---|
+| `D:\PROJETOS\SoftwaresSmellsLikeTech` | Portal existente e coordenação da publicação; preserva seus cinco submódulos de softwares. |
+| `D:\PROJETOS\SoftwaresSmellsLikeTech\RuaDeAco` | Jogo original TypeScript/Phaser atualizado; fonte canônica de regras, lutadores, golpes, apresentação, arte e áudio para o port C++. |
+| `D:\PROJETOS\SoftwaresSmellsLikeTech\RuaDeAcoUnreal` | Base C++ reaproveitada e atualizada conforme o original; sua implementação antiga não define o gameplay nem as capturas atuais. |
+| `D:\PROJETOS\SoftwaresSmellsLikeTech\MikeAndDenyse` | Repositório Nightfall; referência Unity preservada em `NightfallUnity/` e port C++ em `NightfallNative/`. |
+| `D:\PROJETOS\SoftwaresSmellsLikeTech\RuaDeAco_AndroidBuild` | Árvore auxiliar existente de build Android/Capacitor do Rua de Aço; não substitui a fonte canônica `RuaDeAco` nem o build nativo em `RuaDeAcoUnreal`. |
+| `D:\PROJETOS\SoftwaresSmellsLikeTech\RuaDeAco_AudioMasters` | Matrizes de áudio existentes (`music/`); preservar os originais. Não é uma fonte alternativa de gameplay. |
+
+Confirmar o Git de cada pasta antes de editar; estas pastas de jogos são projetos independentes dentro da raiz do portal, não novos submódulos nem assets estáticos a publicar. Capturas do site devem vir da versão indicada em execução e mostrar os lutadores atuais. Responsável: Codex.
+
+## Correção de paridade em andamento — 02/11/2026
+
+O exportador e o fixture de desenvolvimento usam schema 2, com entradas e checkpoints por passo e dados de apresentação/colisão. O runner C++ agora compara 33 replays / 16.170 passos, incluindo os seis lutadores e as finalizações nos três palcos, com tolerância numérica declarada (0,002 px), sem divergências nos campos exportados. Typecheck, 591 testes e auditoria de sprites passaram. Isso não comprova toda a apresentação nem a execução Android: validação visual/funcional, pacotes finais, releases e backups seguem em andamento. Sem aparelhos físicos disponíveis. Referências e limites em docs/parity/README.md e no projeto C++ Docs/PARITY_REPLAYS.md. Responsável: Codex.
+
 Instruções para qualquer assistente de código (Claude Code, Codex, Gemini e
 outros) que trabalhe neste repositório. A fonte completa e atualizada é
 [`CONTEXTO_PROJETO_RUA_DE_ACO.md`](CONTEXTO_PROJETO_RUA_DE_ACO.md): leia-o
@@ -15,7 +34,7 @@ com combate próprio determinístico a 60 Hz em `src/combat/` e online por
 lockstep em Cloudflare Workers (`server/`). Android via Capacitor 8.
 
 - Jogo no ar: https://mikerock12.github.io/RuaDeAco/
-- Pasta local do autor: `D:\PROJETOS\RuaDeAco`
+- Pasta local do autor: `D:\PROJETOS\SoftwaresSmellsLikeTech\RuaDeAco`
 
 ## Antes de mexer
 

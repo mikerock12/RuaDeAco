@@ -12,6 +12,13 @@ import {
   WAKE_UP_FRAMES,
 } from '../config/gameConfig';
 import { FIGHTERS, getFighterDefinition } from '../fighters';
+import { ASSET_MANIFEST, CONCEPT_ASSETS } from '../assets/assetManifest';
+import { FIGHTER_SPRITE_ASSETS } from '../fighters/visual';
+import { buildCalibratedMoveHitboxes, FIGHTER_COLLISION_PROFILES } from '../fighters/collision/collisionProfiles';
+import { MUSIC_CATALOG } from '../audio/musicCatalog';
+import { SAMPLES, SPECIAL_SOUNDS } from '../audio/sfxCatalog';
+import { NETWORK_ACTIONS, wireInputFrame } from '../online/inputCodec';
+import type { WireInputFrame } from '../online/protocol';
 import { combatStateHash } from '../online/stateHash';
 import type { ArenaDefinition, GameMode } from '../types/game';
 import type {
@@ -23,6 +30,8 @@ import type {
 } from '../types/combat';
 import { CombatWorld, type CombatPhase } from './CombatWorld';
 import { FINISH_END, FINISH_THROW, FINISH_WINDOW, FINISHER_ARENAS } from './stageFinisher';
+import { grabVictimArtPose, GRAB_HANDS, GRAB_LIFT_ART } from '../fighters/grabArtTiming';
+import { GRAB_VICTIM_LANDMARKS } from '../fighters/grabVictimLandmarks';
 
 export interface GoldenFighterCheckpoint {
   readonly id: FighterId;
@@ -35,11 +44,15 @@ export interface GoldenFighterCheckpoint {
   readonly stateFrame: number;
   readonly health: number;
   readonly meter: number;
+  readonly roundWins: number;
   readonly grounded: boolean;
   readonly moveId: string | null;
+  readonly mechanics: readonly number[];
 }
 
 export interface GoldenFrameCheckpoint {
+  /** Invocation index, distinct from world.frame during hitstop and transitions. */
+  readonly step: number;
   readonly frame: number;
   readonly phase: CombatPhase;
   readonly phaseFrame: number;
@@ -60,10 +73,11 @@ export interface GoldenReplayScenario {
   readonly initialStateHash: string;
   readonly finalStateHash: string;
   readonly checkpoints: readonly GoldenFrameCheckpoint[];
+  readonly inputs: readonly { readonly step: number; readonly p1: WireInputFrame; readonly p2: WireInputFrame }[];
 }
 
 export interface CppParityFixturesBundle {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly sourceRepository: 'mikerock12/RuaDeAco';
   readonly engineContract: {
     readonly fixedHz: 60;
@@ -85,6 +99,20 @@ export interface CppParityFixturesBundle {
   readonly arenas: readonly ArenaDefinition[];
   readonly fighters: readonly FighterDefinition[];
   readonly goldenScenarios: readonly GoldenReplayScenario[];
+  readonly inputActions: typeof NETWORK_ACTIONS;
+  readonly universalGrabPoses: Readonly<Record<string, ReturnType<typeof grabVictimArtPose>[]>>;
+  readonly collisionProfiles: typeof FIGHTER_COLLISION_PROFILES;
+  readonly effectiveHitboxes: Readonly<Record<string, Readonly<Record<string, ReturnType<typeof buildCalibratedMoveHitboxes>>>>>;
+  readonly presentation: {
+    readonly worldToScreen: 1;
+    readonly fighterSprites: typeof FIGHTER_SPRITE_ASSETS;
+    readonly portraits: typeof CONCEPT_ASSETS;
+    readonly assets: typeof ASSET_MANIFEST;
+    readonly music: typeof MUSIC_CATALOG;
+    readonly samples: typeof SAMPLES;
+    readonly specialSounds: typeof SPECIAL_SOUNDS;
+    readonly grabGeometry: { readonly hands: typeof GRAB_HANDS; readonly liftArt: typeof GRAB_LIFT_ART; readonly landmarks: typeof GRAB_VICTIM_LANDMARKS };
+  };
 }
 
 function makeInputFrame(
@@ -106,10 +134,11 @@ function makeInputFrame(
   };
 }
 
-function captureCheckpoint(world: CombatWorld): GoldenFrameCheckpoint {
+function captureCheckpoint(world: CombatWorld, step: number): GoldenFrameCheckpoint {
   const snap = world.snapshot();
   const [f1, f2] = world.fighters;
   return {
+    step,
     frame: snap.frame,
     phase: snap.phase,
     phaseFrame: snap.phaseFrame,
@@ -117,36 +146,48 @@ function captureCheckpoint(world: CombatWorld): GoldenFrameCheckpoint {
     fighters: [
       {
         id: f1.id,
-        x: Math.round(f1.x * 1000) / 1000,
-        y: Math.round(f1.y * 1000) / 1000,
-        velocityX: Math.round(f1.velocityX * 1000) / 1000,
-        velocityY: Math.round(f1.velocityY * 1000) / 1000,
+        x: f1.x,
+        y: f1.y,
+        velocityX: f1.velocityX,
+        velocityY: f1.velocityY,
         facing: f1.facing,
         state: f1.state,
         stateFrame: f1.stateFrame,
         health: f1.health,
         meter: f1.meter,
+        roundWins: f1.roundWins,
         grounded: f1.grounded,
         moveId: f1.currentMove?.id ?? null,
+        mechanics: captureMechanics(f1),
       },
       {
         id: f2.id,
-        x: Math.round(f2.x * 1000) / 1000,
-        y: Math.round(f2.y * 1000) / 1000,
-        velocityX: Math.round(f2.velocityX * 1000) / 1000,
-        velocityY: Math.round(f2.velocityY * 1000) / 1000,
+        x: f2.x,
+        y: f2.y,
+        velocityX: f2.velocityX,
+        velocityY: f2.velocityY,
         facing: f2.facing,
         state: f2.state,
         stateFrame: f2.stateFrame,
         health: f2.health,
         meter: f2.meter,
+        roundWins: f2.roundWins,
         grounded: f2.grounded,
         moveId: f2.currentMove?.id ?? null,
+        mechanics: captureMechanics(f2),
       },
     ],
     activeProjectiles: snap.projectiles.length,
     activeGrabMoveId: snap.activeGrab?.moveId ?? null,
   };
+}
+
+/** Ordem estável consumida pelo runner C++; não arredondar os dados da origem. */
+function captureMechanics(fighter: CombatWorld['fighters'][0]): readonly number[] {
+  return [fighter.armorHits, fighter.passiveFrames, fighter.invulnerableFrames,
+    fighter.damageReductionFrames, fighter.damageReductionMultiplier, fighter.damageReductionCooldownFrames,
+    fighter.parryFrames, fighter.parryRiposteDamage, fighter.offensiveDebuffFrames, fighter.offensiveDebuffMultiplier,
+    fighter.freezeEffectFrames, fighter.victimRotation, fighter.victimPoseFrame ?? -1];
 }
 
 function runScenario(
@@ -158,7 +199,7 @@ function runScenario(
   mode: Extract<GameMode, 'versus' | 'training'>,
   totalSteps: number,
   resolver: (stepIndex: number) => { p1?: readonly InputAction[]; p2?: readonly InputAction[] },
-  checkpointEvery = 15,
+  initial?: { readonly p1?: Partial<Pick<CombatWorld['fighters'][0], 'x' | 'health' | 'roundWins'>>; readonly p2?: Partial<Pick<CombatWorld['fighters'][0], 'x' | 'health' | 'roundWins'>> },
 ): GoldenReplayScenario {
   const world = new CombatWorld(
     getFighterDefinition(playerOne),
@@ -166,8 +207,13 @@ function runScenario(
     mode,
     arena,
   );
+  if (initial?.p1) Object.assign(world.fighters[0], initial.p1);
+  if (initial?.p2) Object.assign(world.fighters[1], initial.p2);
   const initialStateHash = combatStateHash(world);
-  const checkpoints: GoldenFrameCheckpoint[] = [captureCheckpoint(world)];
+  const checkpoints: GoldenFrameCheckpoint[] = [captureCheckpoint(world, 0)];
+  const inputs: Array<{ step: number; p1: WireInputFrame; p2: WireInputFrame }> = [];
+  let previousP1Mask = 0;
+  let previousP2Mask = 0;
   let prevP1 = new Set<InputAction>();
   let prevP2 = new Set<InputAction>();
 
@@ -175,14 +221,17 @@ function runScenario(
     const actions = resolver(step);
     const curP1 = new Set<InputAction>(actions.p1 ?? []);
     const curP2 = new Set<InputAction>(actions.p2 ?? []);
-    world.step(makeInputFrame(curP1, prevP1), makeInputFrame(curP2, prevP2));
+    const input1 = makeInputFrame(curP1, prevP1);
+    const input2 = makeInputFrame(curP2, prevP2);
+    const p1 = wireInputFrame(step, input1, previousP1Mask);
+    const p2 = wireInputFrame(step, input2, previousP2Mask);
+    inputs.push({ step, p1, p2 });
+    previousP1Mask = p1.heldMask;
+    previousP2Mask = p2.heldMask;
+    world.step(input1, input2);
     prevP1 = curP1;
     prevP2 = curP2;
-    if (step % checkpointEvery === 0 || step === totalSteps || world.phase === 'stageFinish') {
-      if (checkpoints[checkpoints.length - 1]?.frame !== world.frame) {
-        checkpoints.push(captureCheckpoint(world));
-      }
-    }
+    checkpoints.push(captureCheckpoint(world, step));
   }
 
   return {
@@ -196,6 +245,7 @@ function runScenario(
     initialStateHash,
     finalStateHash: combatStateHash(world),
     checkpoints,
+    inputs,
   };
 }
 
@@ -218,7 +268,6 @@ export function buildCppParityFixtures(): CppParityFixturesBundle {
         if (step === 205) return { p2: ['heavy'] };
         return {};
       },
-      15,
     ),
     runScenario(
       'noir-vs-astro-specials-and-projectiles',
@@ -239,7 +288,6 @@ export function buildCppParityFixtures(): CppParityFixturesBundle {
         if (step === 152) return { p2: ['left', 'special'] };
         return {};
       },
-      15,
     ),
     runScenario(
       'dante-vs-leo-universal-grab',
@@ -255,12 +303,72 @@ export function buildCppParityFixtures(): CppParityFixturesBundle {
         if (step === 152) return { p1: ['light', 'heavy'] };
         return {};
       },
-      10,
     ),
   ];
 
+  // Cada especial é acionado pelo mesmo CommandBuffer do jogo original.
+  // Os cenários não usam atalhos artificiais de botões do port nativo.
+  for (const fighter of FIGHTERS) {
+    for (const move of Object.values(fighter.moves).filter(candidate => candidate.state === 'specialAttack')) {
+      const directions = move.command.directions ?? [];
+      scenarios.push(runScenario(
+        `${fighter.id}-${move.id}-canonical-command`,
+        `Comando canônico, eventos e recuperação de ${move.label}`,
+        'cais-da-cidade', fighter.id, fighter.id === 'guto-barba' ? 'rafa-mare' : 'guto-barba',
+        'training', 360,
+        step => {
+          const index = step - 110;
+          if (index < 0 || index > directions.length) return {};
+          const token = directions[Math.min(index, directions.length - 1)];
+          const actions: InputAction[] = [];
+          if (token === 'down' || token === 'downForward' || token === 'downBack') actions.push('down');
+          if (token === 'forward' || token === 'downForward') actions.push('right');
+          if (token === 'back' || token === 'downBack') actions.push('left');
+          if (token === 'up') actions.push('up');
+          if (index === directions.length) actions.push(...move.command.buttons);
+          return { p1: actions };
+        },
+        { p1: { x: 240 }, p2: { x: 370 } },
+      ));
+    }
+    scenarios.push(runScenario(
+      `${fighter.id}-normals-air-defense-and-grab`,
+      'Fraco/forte em pé, agachado, avanço, ataques aéreos, defesa e agarrão universal',
+      'cozinha-macabra',fighter.id,fighter.id === 'guto-barba' ? 'rafa-mare' : 'guto-barba','training',900,
+      step => {
+        if (step===110) return {p1:['light']};
+        if (step===180) return {p1:['heavy']};
+        if (step===250) return {p1:['down','light']};
+        if (step===320) return {p1:['down','heavy']};
+        if (step===390) return {p1:['right','light']};
+        if (step===460) return {p1:['right','heavy']};
+        if (step===530) return {p1:['up','right']};
+        if (step===536) return {p1:['light']};
+        if (step===610) return {p1:['up','left']};
+        if (step===616) return {p1:['heavy']};
+        if (step>=700&&step<720) return {p1:['right'],p2:['left']};
+        if (step===722) return {p1:['light','heavy']};
+        if (step>=810&&step<825) return {p1:['block'],p2:step===812?['light']:[]};
+        return {};
+      },
+      {p1:{x:240},p2:{x:370}},
+    ));
+  }
+  for (const arena of ARENAS) {
+    for (const reverse of [false, true]) {
+      scenarios.push(runScenario(
+        `finisher-${arena.id}-${reverse ? 'left' : 'right'}`,
+        'KO no round decisivo, agarrão e coreografia integral da finalização de palco',
+        arena.id, reverse ? 'noir-reflexo' : 'guto-barba', reverse ? 'astro-riso' : 'rafa-mare',
+        'versus', 600,
+        step => step===110 ? {p1:['light']} : step===150 ? {p1:['light','heavy']} : {},
+        {p1:{x:reverse?390:250,roundWins:1},p2:{x:reverse?310:330,health:1}},
+      ));
+    }
+  }
+
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     sourceRepository: 'mikerock12/RuaDeAco',
     engineContract: {
       fixedHz: 60,
@@ -282,5 +390,36 @@ export function buildCppParityFixtures(): CppParityFixturesBundle {
     arenas: ARENAS,
     fighters: FIGHTERS,
     goldenScenarios: scenarios,
+    inputActions: NETWORK_ACTIONS,
+    universalGrabPoses: Object.fromEntries(FIGHTERS.flatMap(attacker => FIGHTERS.map(victim => [
+      `${attacker.id}:${victim.id}`,
+      Array.from({ length: 67 }, (_, frame) => grabVictimArtPose(attacker.id, victim.id, frame)),
+    ]))),
+    collisionProfiles: FIGHTER_COLLISION_PROFILES,
+    effectiveHitboxes: Object.fromEntries(FIGHTERS.map(fighter => [fighter.id,
+      Object.fromEntries(Object.values(fighter.moves).map(move => [move.id,
+        buildCalibratedMoveHitboxes(fighter.id, move)])),
+    ])),
+    presentation: {
+      worldToScreen: 1,
+      fighterSprites: FIGHTER_SPRITE_ASSETS,
+      portraits: CONCEPT_ASSETS,
+      assets: ASSET_MANIFEST,
+      music: MUSIC_CATALOG,
+      samples: SAMPLES,
+      specialSounds: SPECIAL_SOUNDS,
+      grabGeometry: { hands: GRAB_HANDS, liftArt: GRAB_LIFT_ART, landmarks: GRAB_VICTIM_LANDMARKS },
+    },
   };
+}
+
+/** Mantém cada passo em uma linha para revisar e versionar replays extensos. */
+export function serializeCppParityFixtures(bundle: CppParityFixturesBundle): string {
+  const { goldenScenarios, ...metadata } = bundle;
+  const prefix = JSON.stringify(metadata, null, 2).slice(0, -2);
+  const scenarios = goldenScenarios.map(scenario => {
+    const { checkpoints, inputs, ...description } = scenario;
+    return `${JSON.stringify(description, null, 2).slice(0, -2)},\n"checkpoints": [\n${checkpoints.map(cp => JSON.stringify(cp)).join(',\n')}\n],\n"inputs": [\n${inputs.map(input => JSON.stringify(input)).join(',\n')}\n]\n}`;
+  });
+  return `${prefix},\n"goldenScenarios": [\n${scenarios.join(',\n')}\n]\n}\n`;
 }
