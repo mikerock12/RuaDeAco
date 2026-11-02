@@ -459,3 +459,14 @@ solução já rejeitada.
 - Contato da vítima interpolado; finalização com arco ao lago, captura e submersão.
 - Motor lockstep-v3-grab-art: novas posições determinísticas requerem clientes da mesma versão.
 - Alterações locais, sem commit/push/publicação neste pedido. Consulte docs/AGARRAO_FINALIZACAO_CAIS.md.
+
+
+### Fase G0 — Inventário e Baseline de Paridade SLT Games (01/11/2026)
+- Criado `contexto.md` espelhado com este documento para padronização entre os projetos do ecossistema Smells Like Tech.
+- Baseline verificada no commit `e39c8fa87640698fb89dd23deb1c21b624dfb4e6` (`master` e `web-beta`): `typecheck` (0 erros), `vitest` (59 arquivos / 590 testes OK), `validate:sprites` (OK), `audit:hitboxes` (OK), `build` (OK) e `server test` (11 arquivos / 71 testes OK).
+- Próxima etapa: Fase G1 (exportador de fixtures e replays determinísticos `golden_fixtures.json` para paridade do runtime nativo C++20 em `RuaDeAcoUnreal`, sem alterar `__COMBAT_ENGINE_VERSION__`). Responsável: Coordenador SLT Games.
+
+
+### Fase G1 — Exportador de Fixtures e Replays Golden para o Runtime C++ (01/11/2026)
+- Adicionado `src/combat/parityExporter.ts` + `src/combat/__tests__/parityExporter.test.ts` e gerado `docs/parity/golden_fixtures.json` com os 6 lutadores, 3 arenas, constantes de simulação em 60 Hz e replays determinísticos com hashes FNV-1a de 64 bits, sem alterar o gameplay nem `__COMBAT_ENGINE_VERSION__`.
+- Bateria de testes: 60 arquivos / 591 testes de cliente e 11 arquivos / 71 testes de servidor aprovados. Responsável: Coordenador SLT Games.
