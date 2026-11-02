@@ -38,3 +38,15 @@
   - 3 cenários de replay determinístico com checkpoints e hashes FNV-1a de 64 bits (`guto-vs-rafa-walk-jump-strikes`, `noir-vs-astro-specials-and-projectiles`, `dante-vs-leo-universal-grab`).
 - Verificação: `typecheck` OK, `vitest` **60 arquivos / 591 testes aprovados**, `build` OK.
 - Responsável: Coordenador SLT Games.
+
+## Fases G2 e G3 — Paridade C++20 Verificada em `RuaDeAcoUnreal` (01/11/2026)
+
+- O repositório irmão `mikerock12/RuaDeAcoUnreal` passou a consumir `docs/parity/golden_fixtures.json` e os assets v4/Suno `.ogg` desta fonte canônica, validando 44/44 checks determinísticos em CTest (6 lutadores, 3 arenas, agarrão universal, projéteis, supers e stage finishers) com 10.000 ticks headless em `7,26 ms`. Responsável: Coordenador SLT Games.
+
+## Fase G4 — Empacotamento Windows x64 + Android ARM64 em `RuaDeAcoUnreal` (01/11/2026)
+
+- `RuaDeAcoUnreal` v0.2.0 empacotado para Windows (`.exe` Inno Setup `52.827.371 B` + `.zip` `50.990.468 B`) e Android ARM64 (`.apk` `38.670.466 B`, assinado v2/v3). Responsável: Coordenador SLT Games.
+
+## Fases G5 e G6 — `NightfallNative` C++20 + Empacotamento v1.0.0 em `MikeAndDenyse-Nightfall` (01/11/2026)
+
+- `MikeAndDenyse-Nightfall` concluiu `NightfallNative` (`77/77` checks + UDP LAN loopback) e os pacotes v1.0.0 Windows (`.exe` `93.543.731 B`, `.zip` `91.604.492 B`) e Android ARM64 (`.apk` `90.773.704 B`). Próxima etapa: Fase G7 (Releases GitHub). Responsável: Coordenador SLT Games.
