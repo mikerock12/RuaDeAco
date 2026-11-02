@@ -50,3 +50,9 @@
 ## Fases G5 e G6 — `NightfallNative` C++20 + Empacotamento v1.0.0 em `MikeAndDenyse-Nightfall` (01/11/2026)
 
 - `MikeAndDenyse-Nightfall` concluiu `NightfallNative` (`77/77` checks + UDP LAN loopback) e os pacotes v1.0.0 Windows (`.exe` `93.543.731 B`, `.zip` `91.604.492 B`) e Android ARM64 (`.apk` `90.773.704 B`). Próxima etapa: Fase G7 (Releases GitHub). Responsável: Coordenador SLT Games.
+
+### Atualização Fase G7 (01/11/2026) — Releases GitHub Estáveis Publicadas
+- Publicadas e verificadas as releases `v0.2.0` (`mikerock12/RuaDeAcoUnreal`) e `v1.0.0` (`mikerock12/MikeAndDenyse-Nightfall`) com todos os assets Windows e Android ARM64 e hashes SHA-256 validados. Próxima etapa: Fase G8 (Portal `/games/`). Responsável: Coordenador SLT Games.
+
+### Atualização Fase G8 (01/11/2026) — Portal `/games/` Publicado
+- Seção `/games/` e página `/games/rua-de-aco/` no ar em `https://softwares.smellsliketech.com.br/games/rua-de-aco/` (Worker `f24ab0eb-d181-435b-b8ce-5764468138c8`), apontando para a versão Web oficial (`https://mikerock12.github.io/RuaDeAco/`) e para os instaladores nativos v0.2.0 com SHA-256 verificados. Próxima etapa: Fase G9 (Backups Google Drive). Responsável: Coordenador SLT Games.
