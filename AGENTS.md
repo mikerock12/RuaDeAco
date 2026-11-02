@@ -85,3 +85,10 @@ npm --prefix server test  # quando mexer no servidor
 
 Atualize o `CONTEXTO_PROJETO_RUA_DE_ACO.md` (data da revisão, resumo no topo e
 histórico) e o doc específico em `docs/` quando a mudança for relevante.
+
+
+## Registro de etapas (Plano SLT Games 2026)
+
+- **2026-11-01 / Fase G0 (Inventário e Baseline P0)**: Criado `contexto.md` sincronizado com `CONTEXTO_PROJETO_RUA_DE_ACO.md`. Base `master`/`web-beta` verificada em `e39c8fa87640698fb89dd23deb1c21b624dfb4e6`. Bateria completa executada e aprovada localmente: `typecheck` OK, `vitest` 59/59 arquivos (590/590 testes), `validate:sprites` OK, `audit:hitboxes` OK, `build` OK e `server test` 11/11 arquivos (71/71 testes). Próxima etapa: Fase G1 (exportador determinístico de fixtures golden para paridade C++). Responsável: Coordenador SLT Games.
+
+- **2026-11-01 / Fase G1 (Exportador de Fixtures e Replays Golden para Paridade C++)**: Criados `src/combat/parityExporter.ts`, `src/combat/__tests__/parityExporter.test.ts` e o manifesto determinístico `docs/parity/golden_fixtures.json` (exportando os 6 lutadores completos, 3 arenas, constantes de 60 Hz e 3 cenários de replay com hashes FNV-1a de 64 bits). Nenhuma regra de combate nem `__COMBAT_ENGINE_VERSION__` foi alterada. Testes cliente subiram para 60 arquivos / 591 testes aprovados; servidor 71/71 aprovados. Responsável: Coordenador SLT Games.
